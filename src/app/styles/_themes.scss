@@ -4,6 +4,10 @@
 
   --color-bg-page: #141415;
   --color-text-primary: #f5f5f7;
+
+  --color-skeleton: #232326;
+  --color-skeleton-highlight: rgba(255, 255, 255, 0.05);
+  --color-skeleton-highlight-strong: rgba(255, 255, 255, 0.1);
 }
 
 [data-theme='light'] {
@@ -11,4 +15,8 @@
 
   --color-bg-page: #f5f5f7;
   --color-text-primary: #141415;
+
+  --color-skeleton: #e5e5e8;
+  --color-skeleton-highlight: rgba(20, 20, 21, 0.05);
+  --color-skeleton-highlight-strong: rgba(20, 20, 21, 0.1);
 }
