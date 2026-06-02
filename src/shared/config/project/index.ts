@@ -1,0 +1,1 @@
+export { projectConfig } from './projectConfig';
