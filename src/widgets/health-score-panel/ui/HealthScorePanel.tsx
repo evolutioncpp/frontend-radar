@@ -1,6 +1,7 @@
 import { useId } from 'react';
 
 import { getScoreStatus } from '@/entities/report';
+import { formatScore, normalizeScore } from '@/shared/lib/format-score';
 import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
 import { Progress } from '@/shared/ui/Progress';
@@ -39,7 +40,7 @@ const getStatusLabel = (status: ReturnType<typeof getScoreStatus>) => {
 
 export const HealthScorePanel = ({ score }: HealthScorePanelProps) => {
   const titleId = useId();
-  const normalizedScore = Math.min(Math.max(score, 0), 100);
+  const normalizedScore = normalizeScore(score);
   const status = getScoreStatus(normalizedScore);
 
   return (
@@ -60,7 +61,10 @@ export const HealthScorePanel = ({ score }: HealthScorePanelProps) => {
         <span className={s.scoreMax}>/100</span>
       </div>
 
-      <Progress aria-label="Frontend health score progress" value={normalizedScore} />
+      <Progress
+        aria-label={`Frontend health score ${formatScore(normalizedScore)}`}
+        value={normalizedScore}
+      />
 
       <p className={s.description}>
         This score summarizes repository setup, documentation, testing, CI/CD, dependencies and
