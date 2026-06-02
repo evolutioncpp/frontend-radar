@@ -12,3 +12,12 @@ export type {
   ScoreCategory,
   ScoreStatus,
 } from './model/types';
+
+export {
+  getCheckStatusBadgeVariant,
+  getCheckStatusLabel,
+  getRecommendationSeverityBadgeVariant,
+  getRecommendationSeverityLabel,
+  getScoreStatusBadgeVariant,
+  getScoreStatusLabel,
+} from './model/statusMappers';

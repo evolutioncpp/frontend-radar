@@ -1,40 +1,15 @@
-import { Badge, type BadgeVariant } from '@/shared/ui/Badge';
+import { getScoreStatusBadgeVariant, getScoreStatusLabel } from '@/entities/report';
+import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
 import { Progress } from '@/shared/ui/Progress';
 
 import s from './MetricsGrid.module.scss';
 
-import type { ScoreBreakdownItem, ScoreStatus } from '@/entities/report';
+import type { ScoreBreakdownItem } from '@/entities/report';
 
 interface MetricsGridProps {
   metrics: ScoreBreakdownItem[];
 }
-
-const getBadgeVariant = (status: ScoreStatus): BadgeVariant => {
-  switch (status) {
-    case 'excellent':
-      return 'success';
-    case 'good':
-      return 'info';
-    case 'warning':
-      return 'warning';
-    case 'critical':
-      return 'danger';
-  }
-};
-
-const getStatusLabel = (status: ScoreStatus) => {
-  switch (status) {
-    case 'excellent':
-      return 'Excellent';
-    case 'good':
-      return 'Good';
-    case 'warning':
-      return 'Needs attention';
-    case 'critical':
-      return 'Critical';
-  }
-};
 
 export const MetricsGrid = ({ metrics }: MetricsGridProps) => {
   return (
@@ -44,7 +19,9 @@ export const MetricsGrid = ({ metrics }: MetricsGridProps) => {
           <div className={s.metricHeader}>
             <h3 className={s.metricTitle}>{metric.label}</h3>
 
-            <Badge variant={getBadgeVariant(metric.status)}>{getStatusLabel(metric.status)}</Badge>
+            <Badge variant={getScoreStatusBadgeVariant(metric.status)}>
+              {getScoreStatusLabel(metric.status)}
+            </Badge>
           </div>
 
           <div className={s.metricScore}>

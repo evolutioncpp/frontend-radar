@@ -1,6 +1,6 @@
 import { useId } from 'react';
 
-import { getScoreStatus } from '@/entities/report';
+import { getScoreStatus, getScoreStatusBadgeVariant, getScoreStatusLabel } from '@/entities/report';
 import { formatScore, normalizeScore } from '@/shared/lib/format-score';
 import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
@@ -11,32 +11,6 @@ import s from './HealthScorePanel.module.scss';
 interface HealthScorePanelProps {
   score: number;
 }
-
-const getBadgeVariant = (status: ReturnType<typeof getScoreStatus>) => {
-  switch (status) {
-    case 'excellent':
-      return 'success';
-    case 'good':
-      return 'info';
-    case 'warning':
-      return 'warning';
-    case 'critical':
-      return 'danger';
-  }
-};
-
-const getStatusLabel = (status: ReturnType<typeof getScoreStatus>) => {
-  switch (status) {
-    case 'excellent':
-      return 'Excellent';
-    case 'good':
-      return 'Good';
-    case 'warning':
-      return 'Needs attention';
-    case 'critical':
-      return 'Critical';
-  }
-};
 
 export const HealthScorePanel = ({ score }: HealthScorePanelProps) => {
   const titleId = useId();
@@ -53,7 +27,7 @@ export const HealthScorePanel = ({ score }: HealthScorePanelProps) => {
           </h2>
         </div>
 
-        <Badge variant={getBadgeVariant(status)}>{getStatusLabel(status)}</Badge>
+        <Badge variant={getScoreStatusBadgeVariant(status)}>{getScoreStatusLabel(status)}</Badge>
       </div>
 
       <div className={s.score}>
