@@ -1,0 +1,10 @@
+.progress {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+}
+
+.progressBar {
+  width: var(--progress-value);
+  height: 100%;
+}
