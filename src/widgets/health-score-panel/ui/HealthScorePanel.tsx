@@ -1,7 +1,5 @@
-import { useId } from 'react';
-
 import { getScoreStatus, getScoreStatusBadgeVariant, getScoreStatusLabel } from '@/entities/report';
-import { formatScore, normalizeScore } from '@/shared/lib/format-score';
+import { normalizeScore } from '@/shared/lib/format-score';
 import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
 import { Progress } from '@/shared/ui/Progress';
@@ -13,37 +11,39 @@ interface HealthScorePanelProps {
 }
 
 export const HealthScorePanel = ({ score }: HealthScorePanelProps) => {
-  const titleId = useId();
   const normalizedScore = normalizeScore(score);
   const status = getScoreStatus(normalizedScore);
 
   return (
-    <Card aria-labelledby={titleId} className={s.healthScorePanel}>
+    <Card className={s.healthScorePanel}>
       <div className={s.header}>
-        <div className={s.headerInfo}>
+        <div className={s.heading}>
           <p className={s.label}>Frontend Health Score</p>
-          <h2 className={s.title} id={titleId}>
-            Overall project quality
-          </h2>
+          <h2 className={s.title}>Overall project quality</h2>
         </div>
 
-        <Badge variant={getScoreStatusBadgeVariant(status)}>{getScoreStatusLabel(status)}</Badge>
+        <Badge className={s.status} variant={getScoreStatusBadgeVariant(status)}>
+          {getScoreStatusLabel(status)}
+        </Badge>
       </div>
 
-      <div className={s.score}>
-        <span className={s.scoreValue}>{normalizedScore}</span>
-        <span className={s.scoreMax}>/100</span>
+      <div className={s.scoreBlock}>
+        <div aria-label={`Frontend health score ${normalizedScore} out of 100`} className={s.score}>
+          <span className={s.scoreValue}>{normalizedScore}</span>
+          <span className={s.scoreMax}>/100</span>
+        </div>
+
+        <p className={s.description}>
+          This score summarizes repository setup, documentation, testing, CI/CD, dependencies and
+          maintainability signals.
+        </p>
       </div>
 
       <Progress
-        aria-label={`Frontend health score ${formatScore(normalizedScore)}`}
+        aria-label="Frontend health score progress"
+        className={s.progress}
         value={normalizedScore}
       />
-
-      <p className={s.description}>
-        This score summarizes repository setup, documentation, testing, CI/CD, dependencies and
-        maintainability signals.
-      </p>
     </Card>
   );
 };

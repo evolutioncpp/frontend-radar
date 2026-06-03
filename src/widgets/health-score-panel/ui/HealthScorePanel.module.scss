@@ -1,0 +1,101 @@
+@use 'app/styles/helpers' as *;
+
+.healthScorePanel {
+  display: grid;
+  gap: $space-5;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-4;
+}
+
+.heading {
+  display: grid;
+  min-width: 0;
+  gap: $space-2;
+}
+
+.label {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-xl;
+  line-height: $line-height-sm;
+}
+
+.status {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.scoreBlock {
+  display: grid;
+  gap: $space-3;
+}
+
+.score {
+  display: flex;
+  align-items: baseline;
+  gap: $space-2;
+  font-family: var(--font-family-mono);
+}
+
+.scoreValue {
+  color: var(--color-text-primary);
+  font-size: $font-size-5xl;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.scoreMax {
+  color: var(--color-text-muted);
+  font-size: $font-size-lg;
+  font-weight: $font-weight-medium;
+}
+
+.description {
+  max-width: 56rem;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: $font-size-sm;
+  line-height: $line-height-md;
+}
+
+.progress {
+  margin-top: $space-1;
+}
+
+@include media-max($breakpoint-sm) {
+  .header {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .heading {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .status {
+    flex: 0 0 auto;
+    margin-inline-start: $space-3;
+    white-space: nowrap;
+  }
+
+  .scoreValue {
+    font-size: $font-size-4xl;
+  }
+}
