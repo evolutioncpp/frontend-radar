@@ -1,11 +1,14 @@
-import { getScoreStatusBadgeVariant, getScoreStatusLabel } from '@/entities/report';
+import {
+  getScoreStatusBadgeVariant,
+  getScoreStatusLabel,
+  type ScoreBreakdownItem,
+} from '@/entities/report';
+import { normalizeScore } from '@/shared/lib/format-score';
 import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
 import { Progress } from '@/shared/ui/Progress';
 
 import s from './MetricsGrid.module.scss';
-
-import type { ScoreBreakdownItem } from '@/entities/report';
 
 interface MetricsGridProps {
   metrics: ScoreBreakdownItem[];
@@ -13,31 +16,55 @@ interface MetricsGridProps {
 
 export const MetricsGrid = ({ metrics }: MetricsGridProps) => {
   return (
-    <section aria-label="Score breakdown" className={s.metricsGrid}>
-      {metrics.map((metric) => (
-        <Card className={s.metricCard} key={metric.category}>
-          <div className={s.metricHeader}>
-            <h3 className={s.metricTitle}>{metric.label}</h3>
+    <Card aria-label="Score breakdown" className={s.metricsGrid}>
+      <div className={s.header}>
+        <div>
+          <p className={s.label}>Score breakdown</p>
+          <h2 className={s.title}>Quality metrics</h2>
+        </div>
 
-            <Badge variant={getScoreStatusBadgeVariant(metric.status)}>
-              {getScoreStatusLabel(metric.status)}
-            </Badge>
-          </div>
+        <span className={s.counter}>{metrics.length} metrics</span>
+      </div>
 
-          <div className={s.metricScore}>
-            <span className={s.metricScoreValue}>{metric.value}</span>
-            <span className={s.metricScoreMax}>{metric.maxValue}</span>
-          </div>
+      <ul aria-label="Metrics list" className={s.list}>
+        {metrics.map((metric) => {
+          const normalizedValue = normalizeScore(metric.value, metric.maxValue);
 
-          <Progress
-            aria-label={`${metric.label} score progress`}
-            max={metric.maxValue}
-            value={metric.value}
-          />
+          return (
+            <li className={s.metricRow} key={metric.category}>
+              <div className={s.metricMain}>
+                <h3 className={s.metricTitle}>{metric.label}</h3>
+                <p className={s.metricDescription}>{metric.description}</p>
+              </div>
 
-          <p className={s.metricDescription}>{metric.description}</p>
-        </Card>
-      ))}
-    </section>
+              <div className={s.metricMeta}>
+                <Badge
+                  className={s.metricStatus}
+                  variant={getScoreStatusBadgeVariant(metric.status)}
+                >
+                  {getScoreStatusLabel(metric.status)}
+                </Badge>
+
+                <span
+                  aria-label={`${metric.label} score ${normalizedValue} out of ${metric.maxValue}`}
+                  className={s.metricScore}
+                >
+                  <span className={s.metricScoreValue}>{normalizedValue}</span>
+                  <span className={s.metricScoreSeparator}>/</span>
+                  <span className={s.metricScoreMax}>{metric.maxValue}</span>
+                </span>
+              </div>
+
+              <Progress
+                aria-label={`${metric.label} score progress`}
+                className={s.metricProgress}
+                max={metric.maxValue}
+                value={metric.value}
+              />
+            </li>
+          );
+        })}
+      </ul>
+    </Card>
   );
 };

@@ -37,6 +37,19 @@ describe('MetricsGrid', () => {
     render(<MetricsGrid metrics={metrics} />);
 
     expect(screen.getByLabelText('Score breakdown')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Quality metrics' })).toBeInTheDocument();
+  });
+
+  test('renders metrics counter', () => {
+    render(<MetricsGrid metrics={metrics} />);
+
+    expect(screen.getByText('3 metrics')).toBeInTheDocument();
+  });
+
+  test('renders metrics list', () => {
+    render(<MetricsGrid metrics={metrics} />);
+
+    expect(screen.getByLabelText('Metrics list')).toBeInTheDocument();
   });
 
   test('renders metric titles', () => {
@@ -45,14 +58,6 @@ describe('MetricsGrid', () => {
     expect(screen.getByRole('heading', { name: 'Documentation' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Testing' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'CI/CD' })).toBeInTheDocument();
-  });
-
-  test('renders metric scores', () => {
-    render(<MetricsGrid metrics={metrics} />);
-
-    expect(screen.getByText('88')).toBeInTheDocument();
-    expect(screen.getByText('76')).toBeInTheDocument();
-    expect(screen.getByText('92')).toBeInTheDocument();
   });
 
   test('renders metric descriptions', () => {
@@ -67,16 +72,25 @@ describe('MetricsGrid', () => {
     ).toBeInTheDocument();
   });
 
+  test('renders metric scores', () => {
+    render(<MetricsGrid metrics={metrics} />);
+
+    expect(screen.getByLabelText('Documentation score 88 out of 100')).toBeInTheDocument();
+    expect(screen.getByLabelText('Testing score 76 out of 100')).toBeInTheDocument();
+    expect(screen.getByLabelText('CI/CD score 92 out of 100')).toBeInTheDocument();
+  });
+
   test('renders progressbars with correct values', () => {
     render(<MetricsGrid metrics={metrics} />);
 
-    const documentationProgress = screen.getByLabelText('Documentation score progress');
-    const testingProgress = screen.getByLabelText('Testing score progress');
-    const ciProgress = screen.getByLabelText('CI/CD score progress');
+    expect(screen.getByLabelText('Documentation score progress')).toHaveAttribute(
+      'aria-valuenow',
+      '88',
+    );
 
-    expect(documentationProgress).toHaveAttribute('aria-valuenow', '88');
-    expect(testingProgress).toHaveAttribute('aria-valuenow', '76');
-    expect(ciProgress).toHaveAttribute('aria-valuenow', '92');
+    expect(screen.getByLabelText('Testing score progress')).toHaveAttribute('aria-valuenow', '76');
+
+    expect(screen.getByLabelText('CI/CD score progress')).toHaveAttribute('aria-valuenow', '92');
   });
 
   test('renders status labels', () => {

@@ -1,0 +1,134 @@
+@use 'app/styles/helpers' as *;
+
+$metric-status-width: 8.75rem;
+$metric-score-width: 4.5rem;
+
+.metricsGrid {
+  display: grid;
+  gap: $space-5;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-4;
+}
+
+.label {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: $space-2 0 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-xl;
+  line-height: $line-height-sm;
+}
+
+.counter {
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
+  font-size: $font-size-sm;
+}
+
+.list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-border-secondary);
+}
+
+.metricRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(10rem, 0.35fr);
+  align-items: center;
+  gap: $space-5;
+  padding: $space-4 0;
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.metricMain {
+  display: grid;
+  min-width: 0;
+  gap: $space-1;
+}
+
+.metricTitle {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+}
+
+.metricDescription {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: $font-size-sm;
+  line-height: $line-height-md;
+}
+
+.metricMeta {
+  display: grid;
+  grid-template-columns: $metric-status-width $metric-score-width;
+  align-items: center;
+  gap: $space-4;
+}
+
+.metricStatus {
+  min-width: 0;
+}
+
+.metricScore {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: $space-1;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-mono);
+  font-size: $font-size-sm;
+  white-space: nowrap;
+}
+
+.metricScoreValue {
+  color: var(--color-text-primary);
+  font-weight: $font-weight-semibold;
+}
+
+.metricScoreSeparator,
+.metricScoreMax {
+  color: var(--color-text-muted);
+}
+
+.metricProgress {
+  min-width: 10rem;
+}
+
+@include media-max($breakpoint-md) {
+  .metricRow {
+    grid-template-columns: 1fr;
+    gap: $space-3;
+  }
+
+  .metricMeta {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: $space-3;
+  }
+
+  .metricProgress {
+    min-width: 0;
+  }
+}
+
+@include media-max($breakpoint-sm) {
+  .header {
+    flex-direction: column;
+  }
+}
