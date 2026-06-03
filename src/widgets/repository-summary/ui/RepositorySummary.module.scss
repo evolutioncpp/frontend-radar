@@ -1,0 +1,114 @@
+@use 'app/styles/helpers' as *;
+
+.repositorySummary {
+  display: grid;
+  gap: $space-5;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-5;
+}
+
+.main {
+  display: grid;
+  min-width: 0;
+  gap: $space-3;
+}
+
+.label {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-2xl;
+  line-height: $line-height-sm;
+}
+
+.description {
+  max-width: 52rem;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: $font-size-sm;
+  line-height: $line-height-lg;
+}
+
+.repositoryLink {
+  flex: 0 0 auto;
+  color: var(--color-text-secondary);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  transition: color $transition-base;
+
+  &:hover {
+    color: var(--color-accent);
+  }
+}
+
+.metaList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3 $space-5;
+  margin: 0;
+  padding: 0;
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+  color: var(--color-text-muted);
+  font-size: $font-size-sm;
+}
+
+.metaLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+  color: var(--color-text-muted);
+}
+
+.metaIcon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  color: currentColor;
+}
+
+.metaValue {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-weight: $font-weight-medium;
+}
+
+.metaValueCode {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-mono);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+@include media-max($breakpoint-sm) {
+  .header {
+    flex-direction: column;
+  }
+
+  .repositoryLink {
+    width: fit-content;
+  }
+
+  .metaList {
+    display: grid;
+    gap: $space-3;
+  }
+}

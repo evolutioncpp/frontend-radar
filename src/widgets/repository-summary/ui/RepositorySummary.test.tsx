@@ -45,7 +45,7 @@ describe('RepositorySummary', () => {
     expect(screen.getByText('Forks')).toBeInTheDocument();
     expect(screen.getByText('14')).toBeInTheDocument();
 
-    expect(screen.getByText('Default branch')).toBeInTheDocument();
+    expect(screen.getByText('Branch')).toBeInTheDocument();
     expect(screen.getByText('main')).toBeInTheDocument();
 
     expect(screen.getByText('License')).toBeInTheDocument();
