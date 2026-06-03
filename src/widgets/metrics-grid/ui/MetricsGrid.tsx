@@ -7,6 +7,7 @@ import { normalizeScore } from '@/shared/lib/format-score';
 import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
 import { Progress } from '@/shared/ui/Progress';
+import { SectionHeader } from '@/shared/ui/SectionHeader';
 
 import s from './MetricsGrid.module.scss';
 
@@ -20,18 +21,12 @@ interface MetricsGridProps {
 export const MetricsGrid = ({ headerAction, metrics }: MetricsGridProps) => {
   return (
     <Card aria-label="Score breakdown" className={s.metricsGrid}>
-      <div className={s.header}>
-        <div>
-          <div className={s.labelRow}>
-            <p className={s.label}>Score breakdown</p>
-            {headerAction}
-          </div>
-
-          <h2 className={s.title}>Quality metrics</h2>
-        </div>
-
-        <span className={s.counter}>{metrics.length} metrics</span>
-      </div>
+      <SectionHeader
+        action={headerAction}
+        aside={<span className={s.counter}>{metrics.length} metrics</span>}
+        label="Score breakdown"
+        title="Quality metrics"
+      />
 
       <ul aria-label="Metrics list" className={s.list}>
         {metrics.map((metric) => {

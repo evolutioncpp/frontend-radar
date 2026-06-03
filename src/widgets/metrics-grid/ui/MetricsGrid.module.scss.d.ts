@@ -1,8 +1,5 @@
 export type Styles = {
   counter: string;
-  header: string;
-  label: string;
-  labelRow: string;
   list: string;
   metricDescription: string;
   metricMain: string;
@@ -16,7 +13,6 @@ export type Styles = {
   metricsGrid: string;
   metricStatus: string;
   metricTitle: string;
-  title: string;
 };
 
 export type ClassNames = keyof Styles;

@@ -7,6 +7,7 @@ import {
 } from '@/entities/report';
 import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
+import { SectionHeader } from '@/shared/ui/SectionHeader';
 
 import s from './ChecksList.module.scss';
 
@@ -25,18 +26,12 @@ const getChecksCounterLabel = (count: number) => {
 export const ChecksList = ({ checks, className, headerAction }: ChecksListProps) => {
   return (
     <Card className={clsx(s.checksList, className)}>
-      <div className={s.header}>
-        <div>
-          <div className={s.labelRow}>
-            <p className={s.label}>Project checks</p>
-            {headerAction}
-          </div>
-
-          <h2 className={s.title}>Quality signals</h2>
-        </div>
-
-        <span className={s.counter}>{getChecksCounterLabel(checks.length)}</span>
-      </div>
+      <SectionHeader
+        action={headerAction}
+        aside={<span className={s.counter}>{getChecksCounterLabel(checks.length)}</span>}
+        label="Project checks"
+        title="Quality signals"
+      />
 
       <ul aria-label="Project checks list" className={s.list}>
         {checks.map((check) => (

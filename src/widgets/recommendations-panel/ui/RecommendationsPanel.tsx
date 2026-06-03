@@ -7,6 +7,7 @@ import {
 } from '@/entities/report';
 import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
+import { SectionHeader } from '@/shared/ui/SectionHeader';
 
 import s from './RecommendationsPanel.module.scss';
 
@@ -29,18 +30,16 @@ export const RecommendationsPanel = ({
 }: RecommendationsPanelProps) => {
   return (
     <Card className={clsx(s.recommendationsPanel, className)}>
-      <div className={s.header}>
-        <div>
-          <div className={s.labelRow}>
-            <p className={s.label}>Next steps</p>
-            {headerAction}
-          </div>
-
-          <h2 className={s.title}>Recommendations</h2>
-        </div>
-
-        <span className={s.counter}>{getRecommendationsCounterLabel(recommendations.length)}</span>
-      </div>
+      <SectionHeader
+        action={headerAction}
+        aside={
+          <span className={s.counter}>
+            {getRecommendationsCounterLabel(recommendations.length)}
+          </span>
+        }
+        label="Next steps"
+        title="Recommendations"
+      />
 
       {recommendations.length > 0 ? (
         <ul aria-label="Recommendations list" className={s.list}>
