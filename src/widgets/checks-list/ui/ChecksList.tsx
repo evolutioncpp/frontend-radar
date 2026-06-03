@@ -8,19 +8,19 @@ import { Card } from '@/shared/ui/Card';
 
 import s from './ChecksList.module.scss';
 
-const getChecksCounterLabel = (count: number) => {
-  return `${count} ${count === 1 ? 'check' : 'checks'}`;
-};
-
 interface ChecksListProps {
   checks: ReportCheck[];
 }
+
+const getChecksCounterLabel = (count: number) => {
+  return `${count} ${count === 1 ? 'check' : 'checks'}`;
+};
 
 export const ChecksList = ({ checks }: ChecksListProps) => {
   return (
     <Card className={s.checksList}>
       <div className={s.header}>
-        <div className={s.headerInfo}>
+        <div>
           <p className={s.label}>Project checks</p>
           <h2 className={s.title}>Quality signals</h2>
         </div>
@@ -31,7 +31,7 @@ export const ChecksList = ({ checks }: ChecksListProps) => {
       <ul aria-label="Project checks list" className={s.list}>
         {checks.map((check) => (
           <li className={s.item} key={check.id}>
-            <Badge variant={getCheckStatusBadgeVariant(check.status)}>
+            <Badge className={s.status} variant={getCheckStatusBadgeVariant(check.status)}>
               {getCheckStatusLabel(check.status)}
             </Badge>
 

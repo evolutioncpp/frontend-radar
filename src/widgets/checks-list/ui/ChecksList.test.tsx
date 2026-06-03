@@ -42,7 +42,13 @@ describe('ChecksList', () => {
   test('renders checks list', () => {
     render(<ChecksList checks={checks} />);
 
-    expect(screen.getByLabelText('Project checks list')).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: 'Project checks list' })).toBeInTheDocument();
+  });
+
+  test('renders all checks as list items', () => {
+    render(<ChecksList checks={checks} />);
+
+    expect(screen.getAllByRole('listitem')).toHaveLength(checks.length);
   });
 
   test('renders check labels', () => {
@@ -73,10 +79,11 @@ describe('ChecksList', () => {
     expect(screen.getByText('Failed')).toBeInTheDocument();
   });
 
-  test('renders empty state counter when checks list is empty', () => {
+  test('renders zero counter when checks list is empty', () => {
     render(<ChecksList checks={[]} />);
 
     expect(screen.getByText('0 checks')).toBeInTheDocument();
-    expect(screen.getByLabelText('Project checks list')).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: 'Project checks list' })).toBeInTheDocument();
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0);
   });
 });
