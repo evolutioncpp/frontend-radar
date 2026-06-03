@@ -32,10 +32,12 @@
   position: fixed;
   inset: 0;
   z-index: $z-index-dropdown - 1;
+  min-height: 100svh;
   background: rgba(0, 0, 0, 0.45);
   opacity: 0;
   pointer-events: none;
   transition: opacity $transition-base;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .mobileSidebarOverlayVisible {
@@ -46,7 +48,12 @@
 @include media-max($breakpoint-lg) {
   .dashboardLayout,
   .dashboardLayoutCollapsed {
-    grid-template-columns: 1fr;
+    display: block;
+    min-height: 100svh;
+  }
+
+  .workspace {
+    min-height: 100svh;
   }
 
   .content {
