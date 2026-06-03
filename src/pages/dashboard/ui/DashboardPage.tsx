@@ -60,23 +60,57 @@ export const DashboardPage = () => {
   useEffect(() => {
     let animationFrameId = 0;
 
+    const getSectionElements = () => {
+      return dashboardSectionIds
+        .map((sectionId) => document.getElementById(sectionId))
+        .filter((section): section is HTMLElement => Boolean(section));
+    };
+
+    const isSectionVisible = (section: HTMLElement) => {
+      const rect = section.getBoundingClientRect();
+
+      return rect.bottom > 0 && rect.top < window.innerHeight;
+    };
+
+    const getActiveSectionHash = () => {
+      const sections = getSectionElements();
+
+      if (sections.length === 0) {
+        return '';
+      }
+
+      if (window.scrollY <= 24) {
+        return '';
+      }
+
+      const isPageBottom =
+        Math.ceil(window.scrollY + window.innerHeight) >= document.documentElement.scrollHeight - 2;
+
+      if (isPageBottom) {
+        const visibleSections = sections.filter(isSectionVisible);
+        const lastVisibleSection = visibleSections[visibleSections.length - 1];
+
+        return lastVisibleSection ? `#${lastVisibleSection.id}` : '';
+      }
+
+      const activationOffset = 160;
+
+      const crossedSections = sections.filter((section) => {
+        const rect = section.getBoundingClientRect();
+
+        return rect.top <= activationOffset;
+      });
+
+      const activeSection = crossedSections[crossedSections.length - 1];
+
+      return activeSection ? `#${activeSection.id}` : '';
+    };
+
     const updateHashFromScroll = () => {
       cancelAnimationFrame(animationFrameId);
 
       animationFrameId = requestAnimationFrame(() => {
-        const sections = dashboardSectionIds
-          .map((sectionId) => document.getElementById(sectionId))
-          .filter((section): section is HTMLElement => Boolean(section));
-
-        const activeSection = [...sections]
-          .reverse()
-          .find((section) => section.getBoundingClientRect().top <= 140);
-
-        if (!activeSection) {
-          return;
-        }
-
-        const nextHash = `#${activeSection.id}`;
+        const nextHash = getActiveSectionHash();
 
         if (window.location.hash === nextHash) {
           return;
@@ -90,12 +124,13 @@ export const DashboardPage = () => {
       });
     };
 
-    updateHashFromScroll();
+    const timeoutId = window.setTimeout(updateHashFromScroll, 150);
 
     window.addEventListener('scroll', updateHashFromScroll, { passive: true });
     window.addEventListener('resize', updateHashFromScroll);
 
     return () => {
+      window.clearTimeout(timeoutId);
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('scroll', updateHashFromScroll);
       window.removeEventListener('resize', updateHashFromScroll);

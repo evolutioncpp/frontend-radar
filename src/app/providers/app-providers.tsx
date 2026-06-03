@@ -1,4 +1,5 @@
 import { StoreProvider } from './store-provider';
+import { ThemeProvider } from './theme-provider';
 
 import type { ReactNode } from 'react';
 
@@ -7,5 +8,10 @@ type AppProvidersProps = {
 };
 
 export function AppProviders({ children }: AppProvidersProps) {
-  return <StoreProvider>{children}</StoreProvider>;
+  return (
+    <StoreProvider>
+      <ThemeProvider />
+      {children}
+    </StoreProvider>
+  );
 }
