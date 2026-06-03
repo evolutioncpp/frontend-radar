@@ -1,8 +1,33 @@
+@use 'app/styles/helpers' as *;
+
 .dashboardLayout {
+  display: grid;
+  grid-template-columns: $dashboard-sidebar-width minmax(0, 1fr);
+  min-height: 100dvh;
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
 }
 
 .workspace {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .content {
+  flex: 1;
+  width: 100%;
+  max-width: $dashboard-content-max-width;
+  margin-inline: auto;
+  padding: $space-8;
+}
+
+@include media-max($breakpoint-lg) {
+  .dashboardLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .content {
+    padding: $space-4;
+  }
 }

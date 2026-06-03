@@ -8,11 +8,15 @@ import s from './DashboardHeader.module.scss';
 export const DashboardHeader = () => {
   return (
     <header className={s.dashboardHeader}>
-      <Link to={AppRoutes.HOME}>{projectConfig.name}</Link>
+      <Link className={s.logo} to={AppRoutes.HOME}>
+        {projectConfig.name}
+      </Link>
 
-      <a href={projectConfig.repositoryUrl} rel="noreferrer" target="_blank">
-        Github
-      </a>
+      <div className={s.actions}>
+        <a className={s.link} href={projectConfig.repositoryUrl} rel="noreferrer" target="_blank">
+          Github
+        </a>
+      </div>
     </header>
   );
 };

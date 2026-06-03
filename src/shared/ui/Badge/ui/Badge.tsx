@@ -13,8 +13,8 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 
 export const Badge = ({ children, className, variant = 'default', ...props }: BadgeProps) => {
   return (
-    <div className={clsx(s.badge, s[`badge_${variant}`], className)} {...props}>
+    <span className={clsx(s.badge, s[`badge_${variant}`], className)} {...props}>
       {children}
-    </div>
+    </span>
   );
 };

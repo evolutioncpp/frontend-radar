@@ -10,7 +10,7 @@ export const PublicHeader = () => {
   return (
     <header className={s.publicHeader}>
       <Link className={s.logo} to={AppRoutes.HOME}>
-        Frontend Radar
+        {projectConfig.name}
       </Link>
 
       <nav aria-label="Public navigation" className={s.navigation}>

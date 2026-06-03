@@ -1,0 +1,40 @@
+@use 'app/styles/helpers' as *;
+
+.dashboardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-4;
+  border-bottom: 1px solid var(--color-border-primary);
+  background: var(--color-bg-page);
+  padding: $space-5 $space-8;
+}
+
+.logo {
+  color: var(--color-text-primary);
+  font-size: $font-size-md;
+  font-weight: $font-weight-extra-bold;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+}
+
+.link {
+  color: var(--color-text-secondary);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  transition: color $transition-base;
+
+  &:hover {
+    color: var(--color-text-primary);
+  }
+}
+
+@include media-max($breakpoint-lg) {
+  .dashboardHeader {
+    padding: $space-4;
+  }
+}

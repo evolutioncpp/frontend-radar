@@ -1,5 +1,60 @@
+@use 'app/styles/helpers' as *;
+
 .dashboardSidebar {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  border-right: 1px solid var(--color-border-primary);
+  background: var(--color-bg-surface);
+  padding: $space-5;
 }
 
-.dashboardNavigation .navigationLink {
+.navigation {
+  display: grid;
+  gap: $space-2;
+}
+
+.navigationLink {
+  display: flex;
+  align-items: center;
+  border-radius: $radius-md;
+  padding: $space-3 $space-4;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  transition:
+    background-color $transition-base,
+    color $transition-base;
+
+  &:hover {
+    background: var(--color-bg-surface-hover);
+    color: var(--color-text-primary);
+  }
+}
+
+.navigationLinkActive {
+  background: var(--color-bg-surface-hover);
+  color: var(--color-text-primary);
+}
+
+@include media-max($breakpoint-lg) {
+  .dashboardSidebar {
+    position: static;
+    min-width: 0;
+    max-width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border-primary);
+  }
+
+  .navigation {
+    display: flex;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .navigationLink {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
 }

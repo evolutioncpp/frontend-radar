@@ -7,7 +7,7 @@ import s from './DashboardLayout.module.scss';
 
 export const DashboardLayout = () => {
   return (
-    <div className={s.DashboardLayout}>
+    <div className={s.dashboardLayout}>
       <DashboardSidebar />
 
       <div className={s.workspace}>
