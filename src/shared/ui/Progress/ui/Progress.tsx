@@ -9,7 +9,11 @@ interface ProgressProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'>
   max?: number;
 }
 
-export const Progress = ({ className, max = 100, value, ...props }: ProgressProps) => {
+type ProgressStyle = CSSProperties & {
+  '--progress-value': string;
+};
+
+export const Progress = ({ className, max = 100, style, value, ...props }: ProgressProps) => {
   const safeValue = Math.min(Math.max(value, 0), max);
   const percentage = max > 0 ? Math.round((safeValue / max) * 100) : 0;
 
@@ -20,12 +24,13 @@ export const Progress = ({ className, max = 100, value, ...props }: ProgressProp
       aria-valuenow={safeValue}
       className={clsx(s.progress, className)}
       role="progressbar"
+      style={
+        {
+          ...style,
+          '--progress-value': `${percentage}%`,
+        } as ProgressStyle
+      }
       {...props}
-    >
-      <div
-        className={s.progressBar}
-        style={{ '--progress-value': `${percentage}%` } as CSSProperties}
-      />
-    </div>
+    />
   );
 };

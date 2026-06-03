@@ -15,4 +15,10 @@ describe('Card', () => {
 
     expect(screen.getByText('Card content')).toHaveClass('custom-card');
   });
+
+  test('supports outlined variant', () => {
+    render(<Card variant="outlined">Card content</Card>);
+
+    expect(screen.getByText('Card content')).toBeInTheDocument();
+  });
 });

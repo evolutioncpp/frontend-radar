@@ -1,5 +1,7 @@
 export type Styles = {
-  progress: string;
+  card: string;
+  card_flat: string;
+  card_outlined: string;
 };
 
 export type ClassNames = keyof Styles;

@@ -1,25 +1,44 @@
+@use 'app/styles/helpers' as *;
+
 .badge {
+  --badge-color: var(--color-text-muted);
+
   display: inline-flex;
   align-items: center;
   width: fit-content;
+  gap: $space-2;
+  color: var(--badge-color);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-xs;
+
+  &::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-top: 1px;
+    flex: 0 0 auto;
+    border-radius: $radius-full;
+    background: var(--badge-color);
+  }
 }
 
 .badge_default {
-  color: inherit;
+  --badge-color: var(--color-text-muted);
 }
 
 .badge_success {
-  color: inherit;
+  --badge-color: var(--color-success);
 }
 
 .badge_warning {
-  color: inherit;
+  --badge-color: var(--color-warning);
 }
 
 .badge_danger {
-  color: inherit;
+  --badge-color: var(--color-danger);
 }
 
 .badge_info {
-  color: inherit;
+  --badge-color: var(--color-info);
 }
