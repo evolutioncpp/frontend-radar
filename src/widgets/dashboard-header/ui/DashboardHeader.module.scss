@@ -1,6 +1,9 @@
 @use 'app/styles/helpers' as *;
 
 .dashboardHeader {
+  position: sticky;
+  top: 0;
+  z-index: $z-index-header;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -10,10 +13,59 @@
   padding: $space-5 $space-8;
 }
 
+.start {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: $space-3;
+}
+
+.sidebarToggle,
+.mobileSidebarToggle {
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--color-border-primary);
+  border-radius: $radius-sm;
+  background: var(--color-bg-surface);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition:
+    background-color $transition-base,
+    border-color $transition-base,
+    color $transition-base;
+
+  &:hover {
+    background: var(--color-bg-surface-hover);
+    color: var(--color-text-primary);
+  }
+}
+
+.sidebarToggle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  display: inline-flex;
+  transform: translate(-50%, 50%);
+}
+
+.mobileSidebarToggle {
+  display: none;
+}
+
+.toggleIcon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}
+
 .logo {
   color: var(--color-text-primary);
-  font-size: $font-size-md;
-  font-weight: $font-weight-extra-bold;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  line-height: $line-height-sm;
 }
 
 .actions {
@@ -26,15 +78,32 @@
   color: var(--color-text-secondary);
   font-size: $font-size-sm;
   font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
   transition: color $transition-base;
 
   &:hover {
-    color: var(--color-text-primary);
+    color: var(--color-accent);
   }
 }
 
 @include media-max($breakpoint-lg) {
   .dashboardHeader {
     padding: $space-4;
+  }
+
+  .sidebarToggle {
+    display: none;
+  }
+
+  .mobileSidebarToggle {
+    display: inline-flex;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebarToggle,
+  .mobileSidebarToggle,
+  .link {
+    transition: none;
   }
 }

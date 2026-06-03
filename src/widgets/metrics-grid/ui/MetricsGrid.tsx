@@ -10,16 +10,23 @@ import { Progress } from '@/shared/ui/Progress';
 
 import s from './MetricsGrid.module.scss';
 
+import type { ReactNode } from 'react';
+
 interface MetricsGridProps {
   metrics: ScoreBreakdownItem[];
+  headerAction?: ReactNode;
 }
 
-export const MetricsGrid = ({ metrics }: MetricsGridProps) => {
+export const MetricsGrid = ({ headerAction, metrics }: MetricsGridProps) => {
   return (
     <Card aria-label="Score breakdown" className={s.metricsGrid}>
       <div className={s.header}>
         <div>
-          <p className={s.label}>Score breakdown</p>
+          <div className={s.labelRow}>
+            <p className={s.label}>Score breakdown</p>
+            {headerAction}
+          </div>
+
           <h2 className={s.title}>Quality metrics</h2>
         </div>
 

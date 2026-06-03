@@ -4,6 +4,7 @@ export type Styles = {
   heading: string;
   healthScorePanel: string;
   label: string;
+  labelRow: string;
   progress: string;
   score: string;
   scoreBlock: string;

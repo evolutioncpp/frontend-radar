@@ -2,9 +2,12 @@ export type Styles = {
   content: string;
   dashboardPage: string;
   description: string;
+  detailsCard: string;
   detailsGrid: string;
+  detailsSection: string;
   header: string;
   label: string;
+  section: string;
   title: string;
 };
 

@@ -2,7 +2,7 @@
 
 .dashboardPage {
   display: grid;
-  gap: $space-6;
+  gap: $space-8;
 }
 
 .header {
@@ -14,21 +14,22 @@
   margin: 0;
   color: var(--color-text-muted);
   font-size: $font-size-xs;
-  font-weight: $font-weight-bold;
+  font-weight: $font-weight-semibold;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .title {
-  max-width: 100%;
+  max-width: 52rem;
   margin: 0;
   color: var(--color-text-primary);
-  font-size: $font-size-page-title;
-  line-height: $line-height-xs;
+  font-size: $font-size-4xl;
+  line-height: $line-height-sm;
+  letter-spacing: -0.04em;
 }
 
 .description {
-  max-width: 100%;
+  max-width: 48rem;
   margin: 0;
   color: var(--color-text-secondary);
   font-size: $font-size-md;
@@ -37,32 +38,52 @@
 
 .content {
   display: grid;
-  min-width: 0;
   gap: $space-5;
+}
+
+.section {
+  position: relative;
+  min-width: 0;
+  scroll-margin-top: calc($space-8 + $space-8);
 }
 
 .detailsGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
   gap: $space-5;
 }
 
+.detailsSection {
+  display: flex;
+}
+
+.detailsCard {
+  flex: 1;
+  min-width: 0;
+  align-content: start;
+}
+
 @include media-max($breakpoint-lg) {
+  .dashboardPage {
+    gap: $space-6;
+  }
+
+  .title {
+    font-size: $font-size-3xl;
+  }
+
   .detailsGrid {
     grid-template-columns: 1fr;
   }
 }
 
 @include media-max($breakpoint-sm) {
-  .dashboardPage {
-    gap: $space-5;
+  .title {
+    font-size: $font-size-2xl;
   }
 
-  .content {
-    gap: $space-4;
-  }
-
-  .detailsGrid {
-    gap: $space-4;
+  .description {
+    font-size: $font-size-sm;
   }
 }

@@ -3,6 +3,10 @@ export type Styles = {
   dashboardHeader: string;
   link: string;
   logo: string;
+  mobileSidebarToggle: string;
+  sidebarToggle: string;
+  start: string;
+  toggleIcon: string;
 };
 
 export type ClassNames = keyof Styles;

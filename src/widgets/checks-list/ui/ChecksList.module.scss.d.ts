@@ -7,6 +7,7 @@ export type Styles = {
   header: string;
   item: string;
   label: string;
+  labelRow: string;
   list: string;
   status: string;
   title: string;

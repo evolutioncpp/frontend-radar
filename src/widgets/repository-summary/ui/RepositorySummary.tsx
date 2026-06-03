@@ -1,45 +1,47 @@
-import { BranchIcon, ForkIcon, LicenseIcon, StarIcon } from '@/shared/assets/icons/github';
+import { GitBranch, GitFork, Scale, Star, type LucideIcon } from 'lucide-react';
+
 import { formatNumber } from '@/shared/lib/format-number';
 import { Card } from '@/shared/ui/Card';
 
 import s from './RepositorySummary.module.scss';
 
 import type { ReportRepository } from '@/entities/report';
-import type { ComponentType, SVGProps } from 'react';
+import type { ReactNode } from 'react';
 
 interface RepositorySummaryProps {
   repository: ReportRepository;
+  headerAction?: ReactNode;
 }
 
-type MetaItem = {
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
+interface MetaItem {
+  icon: LucideIcon;
   label: string;
   value: string;
   isCode?: boolean;
-};
+}
 
-export const RepositorySummary = ({ repository }: RepositorySummaryProps) => {
+export const RepositorySummary = ({ headerAction, repository }: RepositorySummaryProps) => {
   const repositoryFullName = `${repository.owner}/${repository.name}`;
 
   const metaItems: MetaItem[] = [
     {
-      icon: StarIcon,
+      icon: Star,
       label: 'Stars',
       value: formatNumber(repository.stars),
     },
     {
-      icon: ForkIcon,
+      icon: GitFork,
       label: 'Forks',
       value: formatNumber(repository.forks),
     },
     {
-      icon: BranchIcon,
+      icon: GitBranch,
       label: 'Branch',
       value: repository.defaultBranch,
       isCode: true,
     },
     {
-      icon: LicenseIcon,
+      icon: Scale,
       label: 'License',
       value: repository.license ?? 'Unknown',
     },
@@ -49,7 +51,10 @@ export const RepositorySummary = ({ repository }: RepositorySummaryProps) => {
     <Card className={s.repositorySummary}>
       <div className={s.header}>
         <div className={s.main}>
-          <p className={s.label}>Repository</p>
+          <div className={s.labelRow}>
+            <p className={s.label}>Repository</p>
+            {headerAction}
+          </div>
 
           <h2 className={s.title}>{repositoryFullName}</h2>
 
@@ -70,7 +75,7 @@ export const RepositorySummary = ({ repository }: RepositorySummaryProps) => {
           return (
             <div className={s.metaItem} key={item.label}>
               <dt className={s.metaLabel}>
-                <Icon aria-hidden="true" className={s.metaIcon} />
+                <Icon aria-hidden="true" className={s.metaIcon} strokeWidth={2} />
                 <span>{item.label}</span>
               </dt>
 

@@ -1,3 +1,5 @@
+import clsx from 'clsx';
+
 import {
   getRecommendationSeverityBadgeVariant,
   getRecommendationSeverityLabel,
@@ -8,20 +10,32 @@ import { Card } from '@/shared/ui/Card';
 
 import s from './RecommendationsPanel.module.scss';
 
+import type { ReactNode } from 'react';
+
 interface RecommendationsPanelProps {
   recommendations: ReportRecommendation[];
+  className?: string;
+  headerAction?: ReactNode;
 }
 
 const getRecommendationsCounterLabel = (count: number) => {
   return `${count} ${count === 1 ? 'recommendation' : 'recommendations'}`;
 };
 
-export const RecommendationsPanel = ({ recommendations }: RecommendationsPanelProps) => {
+export const RecommendationsPanel = ({
+  className,
+  headerAction,
+  recommendations,
+}: RecommendationsPanelProps) => {
   return (
-    <Card className={s.recommendationsPanel}>
+    <Card className={clsx(s.recommendationsPanel, className)}>
       <div className={s.header}>
         <div>
-          <p className={s.label}>Next steps</p>
+          <div className={s.labelRow}>
+            <p className={s.label}>Next steps</p>
+            {headerAction}
+          </div>
+
           <h2 className={s.title}>Recommendations</h2>
         </div>
 

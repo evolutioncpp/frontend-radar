@@ -6,6 +6,7 @@ export type Styles = {
   header: string;
   item: string;
   label: string;
+  labelRow: string;
   list: string;
   recommendationsPanel: string;
   recommendationTitle: string;

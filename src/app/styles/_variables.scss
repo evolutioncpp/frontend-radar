@@ -6,7 +6,8 @@ $breakpoint-xl: 80rem; // 1280px
 
 // Layout
 $dashboard-sidebar-width: 16.25rem; // 260px
-$dashboard-content-max-width: 77.5rem; // 1240px
+$dashboard-sidebar-collapsed-width: 5rem; // 80px
+$dashboard-content-max-width: 80rem; // 1280px
 
 // Spacing
 $space-1: 0.25rem; // 4px
@@ -58,7 +59,7 @@ $transition-base: 200ms ease;
 $transition-slow: 300ms ease;
 
 // Z-indexes
-$z-index-header: 100;
-$z-index-sidebar: 120;
+$z-index-sidebar: 100;
+$z-index-header: 120;
 $z-index-dropdown: 200;
 $z-index-modal: 300;

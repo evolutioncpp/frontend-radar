@@ -18,6 +18,12 @@
   gap: $space-3;
 }
 
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+}
+
 .label {
   margin: 0;
   color: var(--color-text-muted);

@@ -1,26 +1,40 @@
 @use 'app/styles/helpers' as *;
 
+$sidebar-text-fade-duration: 0.14s;
+$sidebar-text-fade-delay: 0.12s;
+
 .dashboardSidebar {
   position: sticky;
   top: 0;
+  z-index: $z-index-sidebar;
+  min-width: 0;
   height: 100dvh;
+  overflow: hidden;
   border-right: 1px solid var(--color-border-primary);
   background: var(--color-bg-surface);
-  padding: $space-5;
+}
+
+.sidebarBody {
+  width: $dashboard-sidebar-width;
+  padding-block: $space-5;
 }
 
 .navigation {
   display: grid;
-  gap: $space-2;
+  gap: $space-1;
 }
 
 .navigationLink {
-  display: flex;
+  display: grid;
+  grid-template-columns: $dashboard-sidebar-collapsed-width minmax(0, 1fr);
   align-items: center;
-  border-radius: $radius-md;
-  padding: $space-3 $space-4;
+  min-height: 2.75rem;
+  overflow: hidden;
+  color: var(--color-text-secondary);
   font-size: $font-size-sm;
   font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+  white-space: nowrap;
   transition:
     background-color $transition-base,
     color $transition-base;
@@ -36,25 +50,174 @@
   color: var(--color-text-primary);
 }
 
+.navigationIcon {
+  justify-self: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: currentColor;
+}
+
+.navigationText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity $sidebar-text-fade-duration ease $sidebar-text-fade-delay,
+    transform $sidebar-text-fade-duration ease $sidebar-text-fade-delay;
+}
+
+.sectionNavigation {
+  display: grid;
+  gap: $space-3;
+  margin-top: $space-6;
+  padding-top: $space-5;
+  border-top: 1px solid var(--color-border-secondary);
+}
+
+.sectionNavigationTitle {
+  margin: 0;
+  padding-inline-start: $dashboard-sidebar-collapsed-width;
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity $sidebar-text-fade-duration ease $sidebar-text-fade-delay,
+    transform $sidebar-text-fade-duration ease $sidebar-text-fade-delay;
+}
+
+.sectionNavigationLinks {
+  display: grid;
+  gap: $space-1;
+}
+
+.sectionNavigationLink {
+  display: grid;
+  grid-template-columns: $dashboard-sidebar-collapsed-width minmax(0, 1fr);
+  align-items: center;
+  min-height: 2.5rem;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: $font-size-sm;
+  line-height: $line-height-sm;
+  white-space: nowrap;
+  transition:
+    background-color $transition-base,
+    color $transition-base;
+
+  &:hover {
+    background: var(--color-bg-surface-hover);
+    color: var(--color-text-primary);
+  }
+}
+
+.sectionNavigationIcon {
+  justify-self: center;
+  width: 1rem;
+  height: 1rem;
+  color: currentColor;
+}
+
+.sectionNavigationText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity $sidebar-text-fade-duration ease $sidebar-text-fade-delay,
+    transform $sidebar-text-fade-duration ease $sidebar-text-fade-delay;
+}
+
+.dashboardSidebarCollapsed {
+  .navigationText,
+  .sectionNavigationText,
+  .sectionNavigationTitle {
+    opacity: 0;
+    transform: translateX(-0.25rem);
+    transition-delay: 0s;
+  }
+}
+
 @include media-max($breakpoint-lg) {
   .dashboardSidebar {
-    position: static;
-    min-width: 0;
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: $z-index-dropdown;
+    width: min($dashboard-sidebar-width, calc(100vw - $space-8));
     max-width: 100%;
-    height: auto;
-    border-right: none;
-    border-bottom: 1px solid var(--color-border-primary);
+    height: 100dvh;
+    overflow-y: auto;
+    border-right: 1px solid var(--color-border-primary);
+    border-bottom: none;
+    overscroll-behavior: contain;
+    transform: translateX(-100%);
+    transition: transform $transition-base;
+  }
+
+  .dashboardSidebarMobileOpen {
+    transform: translateX(0);
+  }
+
+  .sidebarBody {
+    width: 100%;
+    padding-block: $space-5;
   }
 
   .navigation {
-    display: flex;
-    max-width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
+    display: grid;
+    gap: $space-1;
+    max-width: none;
+    overflow: visible;
   }
 
   .navigationLink {
-    flex: 0 0 auto;
-    white-space: nowrap;
+    grid-template-columns: $dashboard-sidebar-collapsed-width minmax(0, 1fr);
+    min-height: 2.75rem;
+    padding: 0;
+  }
+
+  .navigationText {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .sectionNavigation {
+    display: grid;
+  }
+
+  .sectionNavigationText,
+  .sectionNavigationTitle {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .dashboardSidebarCollapsed {
+    .navigationText,
+    .sectionNavigationText,
+    .sectionNavigationTitle {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboardSidebar,
+  .navigationLink,
+  .navigationText,
+  .sectionNavigationLink,
+  .sectionNavigationText,
+  .sectionNavigationTitle {
+    transition: none;
+    transform: none;
   }
 }

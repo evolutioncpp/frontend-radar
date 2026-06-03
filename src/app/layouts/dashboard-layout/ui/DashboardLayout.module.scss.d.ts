@@ -1,6 +1,9 @@
 export type Styles = {
   content: string;
   dashboardLayout: string;
+  dashboardLayoutCollapsed: string;
+  mobileSidebarOverlay: string;
+  mobileSidebarOverlayVisible: string;
   workspace: string;
 };
 

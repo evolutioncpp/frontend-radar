@@ -2,6 +2,7 @@ export type Styles = {
   description: string;
   header: string;
   label: string;
+  labelRow: string;
   main: string;
   metaIcon: string;
   metaItem: string;

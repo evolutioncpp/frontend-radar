@@ -18,6 +18,12 @@
   gap: $space-2;
 }
 
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+}
+
 .label {
   margin: 0;
   color: var(--color-text-muted);
@@ -79,9 +85,7 @@
 
 @include media-max($breakpoint-sm) {
   .header {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
+    gap: $space-3;
   }
 
   .heading {
@@ -92,7 +96,6 @@
   .status {
     flex: 0 0 auto;
     margin-inline-start: $space-3;
-    white-space: nowrap;
   }
 
   .scoreValue {

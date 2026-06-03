@@ -1,3 +1,5 @@
+import clsx from 'clsx';
+
 import {
   getCheckStatusBadgeVariant,
   getCheckStatusLabel,
@@ -8,20 +10,28 @@ import { Card } from '@/shared/ui/Card';
 
 import s from './ChecksList.module.scss';
 
+import type { ReactNode } from 'react';
+
 interface ChecksListProps {
   checks: ReportCheck[];
+  className?: string;
+  headerAction?: ReactNode;
 }
 
 const getChecksCounterLabel = (count: number) => {
   return `${count} ${count === 1 ? 'check' : 'checks'}`;
 };
 
-export const ChecksList = ({ checks }: ChecksListProps) => {
+export const ChecksList = ({ checks, className, headerAction }: ChecksListProps) => {
   return (
-    <Card className={s.checksList}>
+    <Card className={clsx(s.checksList, className)}>
       <div className={s.header}>
         <div>
-          <p className={s.label}>Project checks</p>
+          <div className={s.labelRow}>
+            <p className={s.label}>Project checks</p>
+            {headerAction}
+          </div>
+
           <h2 className={s.title}>Quality signals</h2>
         </div>
 

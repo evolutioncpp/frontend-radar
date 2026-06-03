@@ -2,6 +2,7 @@ export type Styles = {
   counter: string;
   header: string;
   label: string;
+  labelRow: string;
   list: string;
   metricDescription: string;
   metricMain: string;

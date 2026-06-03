@@ -14,6 +14,12 @@ $recommendation-severity-width: 6.75rem;
   gap: $space-4;
 }
 
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+}
+
 .label {
   margin: 0;
   color: var(--color-text-muted);

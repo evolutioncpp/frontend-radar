@@ -6,11 +6,14 @@ import { Progress } from '@/shared/ui/Progress';
 
 import s from './HealthScorePanel.module.scss';
 
+import type { ReactNode } from 'react';
+
 interface HealthScorePanelProps {
   score: number;
+  headerAction?: ReactNode;
 }
 
-export const HealthScorePanel = ({ score }: HealthScorePanelProps) => {
+export const HealthScorePanel = ({ headerAction, score }: HealthScorePanelProps) => {
   const normalizedScore = normalizeScore(score);
   const status = getScoreStatus(normalizedScore);
 
@@ -18,7 +21,11 @@ export const HealthScorePanel = ({ score }: HealthScorePanelProps) => {
     <Card className={s.healthScorePanel}>
       <div className={s.header}>
         <div className={s.heading}>
-          <p className={s.label}>Frontend Health Score</p>
+          <div className={s.labelRow}>
+            <p className={s.label}>Frontend Health Score</p>
+            {headerAction}
+          </div>
+
           <h2 className={s.title}>Overall project quality</h2>
         </div>
 

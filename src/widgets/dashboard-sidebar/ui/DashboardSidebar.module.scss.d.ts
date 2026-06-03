@@ -1,8 +1,19 @@
 export type Styles = {
   dashboardSidebar: string;
+  dashboardSidebarCollapsed: string;
+  dashboardSidebarMobileOpen: string;
   navigation: string;
+  navigationIcon: string;
   navigationLink: string;
   navigationLinkActive: string;
+  navigationText: string;
+  sectionNavigation: string;
+  sectionNavigationIcon: string;
+  sectionNavigationLink: string;
+  sectionNavigationLinks: string;
+  sectionNavigationText: string;
+  sectionNavigationTitle: string;
+  sidebarBody: string;
 };
 
 export type ClassNames = keyof Styles;
