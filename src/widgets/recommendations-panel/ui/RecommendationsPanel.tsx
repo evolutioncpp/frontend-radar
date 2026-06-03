@@ -32,7 +32,10 @@ export const RecommendationsPanel = ({ recommendations }: RecommendationsPanelPr
         <ul aria-label="Recommendations list" className={s.list}>
           {recommendations.map((recommendation) => (
             <li className={s.item} key={recommendation.id}>
-              <Badge variant={getRecommendationSeverityBadgeVariant(recommendation.severity)}>
+              <Badge
+                className={s.severity}
+                variant={getRecommendationSeverityBadgeVariant(recommendation.severity)}
+              >
                 {getRecommendationSeverityLabel(recommendation.severity)}
               </Badge>
 

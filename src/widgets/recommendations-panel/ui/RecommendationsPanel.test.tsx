@@ -45,7 +45,13 @@ describe('RecommendationsPanel', () => {
   test('renders recommendations list', () => {
     render(<RecommendationsPanel recommendations={recommendations} />);
 
-    expect(screen.getByLabelText('Recommendations list')).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: 'Recommendations list' })).toBeInTheDocument();
+  });
+
+  test('renders all recommendations as list items', () => {
+    render(<RecommendationsPanel recommendations={recommendations} />);
+
+    expect(screen.getAllByRole('listitem')).toHaveLength(recommendations.length);
   });
 
   test('renders recommendation titles', () => {
@@ -83,6 +89,7 @@ describe('RecommendationsPanel', () => {
 
     expect(screen.getByText('0 recommendations')).toBeInTheDocument();
     expect(screen.getByText('No recommendations for now.')).toBeInTheDocument();
-    expect(screen.queryByLabelText('Recommendations list')).not.toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Recommendations list' })).not.toBeInTheDocument();
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0);
   });
 });
