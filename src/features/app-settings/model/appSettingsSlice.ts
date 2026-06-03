@@ -11,6 +11,9 @@ const appSettingsSlice = createSlice({
     setTheme: (state, action: PayloadAction<AppTheme>) => {
       state.theme = action.payload;
     },
+    toggleTheme: (state) => {
+      state.theme = state.theme === 'dark' ? 'light' : 'dark';
+    },
     setLanguage: (state, action: PayloadAction<AppLanguage>) => {
       state.language = action.payload;
     },
@@ -23,7 +26,12 @@ const appSettingsSlice = createSlice({
   },
 });
 
-export const { setDashboardSidebarCollapsed, setLanguage, setTheme, toggleDashboardSidebar } =
-  appSettingsSlice.actions;
+export const {
+  setDashboardSidebarCollapsed,
+  setLanguage,
+  setTheme,
+  toggleDashboardSidebar,
+  toggleTheme,
+} = appSettingsSlice.actions;
 
 export const appSettingsReducer = appSettingsSlice.reducer;

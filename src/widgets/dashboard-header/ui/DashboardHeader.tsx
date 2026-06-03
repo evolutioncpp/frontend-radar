@@ -1,6 +1,7 @@
 import { Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { ThemeToggle } from '@/features/app-settings';
 import { projectConfig } from '@/shared/config/project';
 import { AppRoutes } from '@/shared/config/routes/appRoutes';
 
@@ -53,6 +54,8 @@ export const DashboardHeader = ({
       </div>
 
       <div className={s.actions}>
+        <ThemeToggle />
+
         <a
           aria-label="Open Frontend Radar repository on GitHub"
           className={s.link}

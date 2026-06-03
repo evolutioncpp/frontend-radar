@@ -7,6 +7,14 @@ import { AppRoutes } from '@/shared/config/routes/appRoutes';
 
 import { DashboardHeader } from './DashboardHeader';
 
+vi.mock('@/features/app-settings', () => ({
+  ThemeToggle: () => (
+    <button aria-label="Switch to light theme" type="button">
+      Theme
+    </button>
+  ),
+}));
+
 const renderHeader = (props?: React.ComponentProps<typeof DashboardHeader>) => {
   return render(
     <MemoryRouter>
@@ -31,6 +39,12 @@ describe('DashboardHeader', () => {
     expect(
       screen.getByRole('link', { name: 'Open Frontend Radar repository on GitHub' }),
     ).toHaveAttribute('href', projectConfig.repositoryUrl);
+  });
+
+  test('renders theme toggle', () => {
+    renderHeader();
+
+    expect(screen.getByRole('button', { name: 'Switch to light theme' })).toBeInTheDocument();
   });
 
   test('renders collapse sidebar button by default', () => {

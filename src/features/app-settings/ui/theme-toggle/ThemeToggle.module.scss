@@ -1,0 +1,33 @@
+@use 'app/styles/helpers' as *;
+
+.themeToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: $radius-sm;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition:
+    background-color $transition-base,
+    border-color $transition-base,
+    color $transition-base;
+
+  &:hover {
+    background: var(--color-bg-surface-hover);
+    color: var(--color-text-primary);
+  }
+}
+
+.icon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .themeToggle {
+    transition: none;
+  }
+}
