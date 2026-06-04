@@ -5,6 +5,27 @@ import { ChecksList } from './ChecksList';
 
 import type { ReportCheck } from '@/entities/report';
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: Record<string, string | number>) => {
+      const translations: Record<string, string> = {
+        'checks.label': 'Project checks',
+        'checks.title': 'Quality signals',
+        'checks.listAria': 'Project checks list',
+        'statuses.passed': 'Passed',
+        'statuses.warning': 'Warning',
+        'statuses.failed': 'Failed',
+      };
+
+      if (key === 'checks.counter') {
+        return `${options?.count} ${options?.count === 1 ? 'check' : 'checks'}`;
+      }
+
+      return translations[key] ?? key;
+    },
+  }),
+}));
+
 const checks: ReportCheck[] = [
   {
     id: 'readme-exists',

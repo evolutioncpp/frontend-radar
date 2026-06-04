@@ -1,7 +1,9 @@
 import { GitBranch, GitFork, Scale, Star, type LucideIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { formatNumber } from '@/shared/lib/format-number';
 import { Card } from '@/shared/ui/Card';
+import { SectionHeader } from '@/shared/ui/SectionHeader';
 
 import s from './RepositorySummary.module.scss';
 
@@ -14,6 +16,7 @@ interface RepositorySummaryProps {
 }
 
 interface MetaItem {
+  id: string;
   icon: LucideIcon;
   label: string;
   value: string;
@@ -21,59 +24,59 @@ interface MetaItem {
 }
 
 export const RepositorySummary = ({ headerAction, repository }: RepositorySummaryProps) => {
+  const { t } = useTranslation('dashboard');
+
   const repositoryFullName = `${repository.owner}/${repository.name}`;
 
   const metaItems: MetaItem[] = [
     {
+      id: 'stars',
       icon: Star,
-      label: 'Stars',
+      label: t('repository.metadata.stars'),
       value: formatNumber(repository.stars),
     },
     {
+      id: 'forks',
       icon: GitFork,
-      label: 'Forks',
+      label: t('repository.metadata.forks'),
       value: formatNumber(repository.forks),
     },
     {
+      id: 'branch',
       icon: GitBranch,
-      label: 'Branch',
+      label: t('repository.metadata.branch'),
       value: repository.defaultBranch,
       isCode: true,
     },
     {
+      id: 'license',
       icon: Scale,
-      label: 'License',
-      value: repository.license ?? 'Unknown',
+      label: t('repository.metadata.license'),
+      value: repository.license ?? t('repository.metadata.unknown'),
     },
   ];
 
   return (
     <Card className={s.repositorySummary}>
-      <div className={s.header}>
-        <div className={s.main}>
-          <div className={s.labelRow}>
-            <p className={s.label}>Repository</p>
-            {headerAction}
-          </div>
+      <SectionHeader
+        action={headerAction}
+        aside={
+          <a className={s.repositoryLink} href={repository.url} rel="noreferrer" target="_blank">
+            {t('repository.openRepository')}
+          </a>
+        }
+        label={t('repository.label')}
+        title={repositoryFullName}
+      />
 
-          <h2 className={s.title}>{repositoryFullName}</h2>
+      {repository.description ? <p className={s.description}>{repository.description}</p> : null}
 
-          {repository.description ? (
-            <p className={s.description}>{repository.description}</p>
-          ) : null}
-        </div>
-
-        <a className={s.repositoryLink} href={repository.url} rel="noreferrer" target="_blank">
-          Open repository
-        </a>
-      </div>
-
-      <dl aria-label="Repository metadata" className={s.metaList}>
+      <dl aria-label={t('repository.metadataAria')} className={s.metaList}>
         {metaItems.map((item) => {
           const Icon = item.icon;
 
           return (
-            <div className={s.metaItem} key={item.label}>
+            <div className={s.metaItem} key={item.id}>
               <dt className={s.metaLabel}>
                 <Icon aria-hidden="true" className={s.metaIcon} strokeWidth={2} />
                 <span>{item.label}</span>

@@ -15,6 +15,29 @@ vi.mock('@/features/app-settings', () => ({
   ),
 }));
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'sidebar.dashboardNavigation': 'Dashboard navigation',
+        'sidebar.pageNavigation': 'Page navigation',
+        'sidebar.onThisPage': 'On this page',
+
+        'sidebar.items.overview': 'Overview',
+        'sidebar.items.history': 'History',
+        'sidebar.items.settings': 'Settings',
+        'sidebar.items.repository': 'Repository',
+        'sidebar.items.healthScore': 'Health score',
+        'sidebar.items.metrics': 'Metrics',
+        'sidebar.items.checks': 'Checks',
+        'sidebar.items.recommendations': 'Recommendations',
+      };
+
+      return translations[key] ?? key;
+    },
+  }),
+}));
+
 const renderSidebar = (props?: React.ComponentProps<typeof DashboardSidebar>) => {
   return render(
     <MemoryRouter initialEntries={[AppRoutes.DASHBOARD]}>

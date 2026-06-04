@@ -8,7 +8,6 @@ export type Styles = {
   optionIcon: string;
   options: string;
   optionSelected: string;
-  screenReaderText: string;
   text: string;
   trigger: string;
   triggerCollapsed: string;

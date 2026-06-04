@@ -10,6 +10,7 @@ import {
   Settings,
   type LucideIcon,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
 
 import { LanguageSwitcher } from '@/features/app-settings';
@@ -42,12 +43,25 @@ const navigationIcons: Record<DashboardNavigationIcon, LucideIcon> = {
   recommendations: Lightbulb,
 };
 
+const navigationLabelKeys = {
+  overview: 'sidebar.items.overview',
+  history: 'sidebar.items.history',
+  settings: 'sidebar.items.settings',
+  repository: 'sidebar.items.repository',
+  healthScore: 'sidebar.items.healthScore',
+  metrics: 'sidebar.items.metrics',
+  checks: 'sidebar.items.checks',
+  recommendations: 'sidebar.items.recommendations',
+} as const satisfies Record<DashboardNavigationIcon, string>;
+
 export const DashboardSidebar = ({
   isCollapsed = false,
   isMobileOpen = false,
   onNavigate,
   onSectionNavigate,
 }: DashboardSidebarProps) => {
+  const { t } = useTranslation('dashboard');
+
   const isTooltipDisabled = !isCollapsed || isMobileOpen;
 
   const handleSectionLinkClick = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -69,22 +83,23 @@ export const DashboardSidebar = ({
       )}
     >
       <div className={s.sidebarBody}>
-        <nav aria-label="Dashboard navigation" className={s.navigation}>
+        <nav aria-label={t('sidebar.dashboardNavigation')} className={s.navigation}>
           {dashboardNavigationItems.map((item) => {
             const Icon = navigationIcons[item.icon];
+            const label = t(navigationLabelKeys[item.icon]);
 
             return (
               <Tooltip
                 align="center"
-                className={isCollapsed ? s.collapsedTooltip : undefined}
-                content={item.label}
+                className={clsx(s.sidebarTooltip, isCollapsed && s.sidebarTooltipCollapsed)}
+                content={label}
                 disabled={isTooltipDisabled}
                 isFullWidth
                 key={item.to}
                 side="right"
               >
                 <NavLink
-                  aria-label={item.label}
+                  aria-label={label}
                   className={({ isActive }) =>
                     clsx(s.navigationLink, isActive && s.navigationLinkActive)
                   }
@@ -93,38 +108,39 @@ export const DashboardSidebar = ({
                   to={item.to}
                 >
                   <Icon aria-hidden="true" className={s.navigationIcon} strokeWidth={2} />
-                  <span className={s.navigationText}>{item.label}</span>
+                  <span className={s.navigationText}>{label}</span>
                 </NavLink>
               </Tooltip>
             );
           })}
         </nav>
 
-        <nav aria-label="Page navigation" className={s.sectionNavigation}>
-          <p className={s.sectionNavigationTitle}>On this page</p>
+        <nav aria-label={t('sidebar.pageNavigation')} className={s.sectionNavigation}>
+          <p className={s.sectionNavigationTitle}>{t('sidebar.onThisPage')}</p>
 
           <div className={s.sectionNavigationLinks}>
             {dashboardSectionNavigationItems.map((item) => {
               const Icon = navigationIcons[item.icon];
+              const label = t(navigationLabelKeys[item.icon]);
 
               return (
                 <Tooltip
                   align="center"
-                  className={isCollapsed ? s.collapsedTooltip : undefined}
-                  content={item.label}
+                  className={clsx(s.sidebarTooltip, isCollapsed && s.sidebarTooltipCollapsed)}
+                  content={label}
                   disabled={isTooltipDisabled}
                   isFullWidth
                   key={item.href}
                   side="right"
                 >
                   <a
-                    aria-label={item.label}
+                    aria-label={label}
                     className={s.sectionNavigationLink}
                     href={item.href}
                     onClick={(event) => handleSectionLinkClick(event, item.href)}
                   >
                     <Icon aria-hidden="true" className={s.sectionNavigationIcon} strokeWidth={2} />
-                    <span className={s.sectionNavigationText}>{item.label}</span>
+                    <span className={s.sectionNavigationText}>{label}</span>
                   </a>
                 </Tooltip>
               );

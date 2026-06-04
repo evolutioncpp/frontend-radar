@@ -1,4 +1,5 @@
 import { Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { ThemeToggle } from '@/features/app-settings';
@@ -20,17 +21,27 @@ export const DashboardHeader = ({
   onToggleMobileSidebar,
   onToggleSidebar,
 }: DashboardHeaderProps) => {
+  const { t } = useTranslation('dashboard');
+
   const SidebarToggleIcon = isSidebarCollapsed ? PanelLeftOpen : PanelLeftClose;
   const MobileToggleIcon = isMobileSidebarOpen ? X : Menu;
+
+  const sidebarToggleLabel = isSidebarCollapsed
+    ? t('header.expandSidebar')
+    : t('header.collapseSidebar');
+
+  const mobileSidebarToggleLabel = isMobileSidebarOpen
+    ? t('header.closeNavigation')
+    : t('header.openNavigation');
 
   return (
     <header className={s.dashboardHeader}>
       <button
         aria-expanded={!isSidebarCollapsed}
-        aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        aria-label={sidebarToggleLabel}
         className={s.sidebarToggle}
         onClick={onToggleSidebar}
-        title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        title={sidebarToggleLabel}
         type="button"
       >
         <SidebarToggleIcon aria-hidden="true" className={s.toggleIcon} strokeWidth={2} />
@@ -39,10 +50,10 @@ export const DashboardHeader = ({
       <div className={s.start}>
         <button
           aria-expanded={isMobileSidebarOpen}
-          aria-label={isMobileSidebarOpen ? 'Close navigation' : 'Open navigation'}
+          aria-label={mobileSidebarToggleLabel}
           className={s.mobileSidebarToggle}
           onClick={onToggleMobileSidebar}
-          title={isMobileSidebarOpen ? 'Close navigation' : 'Open navigation'}
+          title={mobileSidebarToggleLabel}
           type="button"
         >
           <MobileToggleIcon aria-hidden="true" className={s.toggleIcon} strokeWidth={2} />
@@ -57,13 +68,13 @@ export const DashboardHeader = ({
         <ThemeToggle />
 
         <a
-          aria-label="Open Frontend Radar repository on GitHub"
+          aria-label={t('header.openRepositoryAria')}
           className={s.link}
           href={projectConfig.repositoryUrl}
           rel="noreferrer"
           target="_blank"
         >
-          View on GitHub
+          {t('header.openRepository')}
         </a>
       </div>
     </header>

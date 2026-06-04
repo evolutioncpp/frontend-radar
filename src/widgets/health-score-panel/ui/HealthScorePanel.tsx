@@ -1,15 +1,12 @@
 import clsx from 'clsx';
+import { useTranslation } from 'react-i18next';
 
-import {
-  getScoreStatus,
-  getScoreStatusBadgeVariant,
-  getScoreStatusLabel,
-  type ScoreStatus,
-} from '@/entities/report';
+import { getScoreStatus, getScoreStatusBadgeVariant, type ScoreStatus } from '@/entities/report';
 import { normalizeScore } from '@/shared/lib/format-score';
 import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
 import { Progress } from '@/shared/ui/Progress';
+import { SectionHeader } from '@/shared/ui/SectionHeader';
 
 import s from './HealthScorePanel.module.scss';
 
@@ -27,41 +24,48 @@ const scoreStatusClassMap: Record<ScoreStatus, string> = {
   critical: s.scoreValueCritical,
 };
 
+const scoreStatusLabelKeys = {
+  excellent: 'statuses.excellent',
+  good: 'statuses.good',
+  warning: 'statuses.warning',
+  critical: 'statuses.critical',
+} as const satisfies Record<ScoreStatus, string>;
+
 export const HealthScorePanel = ({ headerAction, score }: HealthScorePanelProps) => {
+  const { t } = useTranslation('dashboard');
+
   const normalizedScore = normalizeScore(score);
   const status = getScoreStatus(normalizedScore);
 
   return (
     <Card className={s.healthScorePanel}>
-      <div className={s.header}>
-        <div className={s.heading}>
-          <div className={s.labelRow}>
-            <p className={s.label}>Frontend Health Score</p>
-            {headerAction}
-          </div>
-
-          <h2 className={s.title}>Overall project quality</h2>
-        </div>
-
-        <Badge className={s.status} variant={getScoreStatusBadgeVariant(status)}>
-          {getScoreStatusLabel(status)}
-        </Badge>
-      </div>
+      <SectionHeader
+        action={headerAction}
+        aside={
+          <Badge className={s.status} variant={getScoreStatusBadgeVariant(status)}>
+            {t(scoreStatusLabelKeys[status])}
+          </Badge>
+        }
+        label={t('healthScore.label')}
+        title={t('healthScore.title')}
+      />
 
       <div className={s.scoreBlock}>
-        <div aria-label={`Frontend health score ${normalizedScore} out of 100`} className={s.score}>
+        <div
+          aria-label={t('healthScore.scoreAria', {
+            score: normalizedScore,
+          })}
+          className={s.score}
+        >
           <span className={clsx(s.scoreValue, scoreStatusClassMap[status])}>{normalizedScore}</span>
           <span className={s.scoreMax}>/100</span>
         </div>
 
-        <p className={s.description}>
-          This score summarizes repository setup, documentation, testing, CI/CD, dependencies and
-          maintainability signals.
-        </p>
+        <p className={s.description}>{t('healthScore.description')}</p>
       </div>
 
       <Progress
-        aria-label="Frontend health score progress"
+        aria-label={t('healthScore.progressAria')}
         className={s.progress}
         value={normalizedScore}
       />

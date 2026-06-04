@@ -1,8 +1,6 @@
-import {
-  getScoreStatusBadgeVariant,
-  getScoreStatusLabel,
-  type ScoreBreakdownItem,
-} from '@/entities/report';
+import { useTranslation } from 'react-i18next';
+
+import { getScoreStatusBadgeVariant, type ScoreBreakdownItem } from '@/entities/report';
 import { normalizeScore } from '@/shared/lib/format-score';
 import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
@@ -18,17 +16,26 @@ interface MetricsGridProps {
   headerAction?: ReactNode;
 }
 
+const scoreStatusLabelKeys = {
+  excellent: 'statuses.excellent',
+  good: 'statuses.good',
+  warning: 'statuses.warning',
+  critical: 'statuses.critical',
+} as const satisfies Record<ScoreBreakdownItem['status'], string>;
+
 export const MetricsGrid = ({ headerAction, metrics }: MetricsGridProps) => {
+  const { t } = useTranslation('dashboard');
+
   return (
-    <Card aria-label="Score breakdown" className={s.metricsGrid}>
+    <Card aria-label={t('metrics.label')} className={s.metricsGrid}>
       <SectionHeader
         action={headerAction}
-        aside={<span className={s.counter}>{metrics.length} metrics</span>}
-        label="Score breakdown"
-        title="Quality metrics"
+        aside={<span className={s.counter}>{t('metrics.counter', { count: metrics.length })}</span>}
+        label={t('metrics.label')}
+        title={t('metrics.title')}
       />
 
-      <ul aria-label="Metrics list" className={s.list}>
+      <ul aria-label={t('metrics.listAria')} className={s.list}>
         {metrics.map((metric) => {
           const normalizedValue = normalizeScore(metric.value, metric.maxValue);
 
@@ -44,11 +51,15 @@ export const MetricsGrid = ({ headerAction, metrics }: MetricsGridProps) => {
                   className={s.metricStatus}
                   variant={getScoreStatusBadgeVariant(metric.status)}
                 >
-                  {getScoreStatusLabel(metric.status)}
+                  {t(scoreStatusLabelKeys[metric.status])}
                 </Badge>
 
                 <span
-                  aria-label={`${metric.label} score ${normalizedValue} out of ${metric.maxValue}`}
+                  aria-label={t('metrics.scoreAria', {
+                    label: metric.label,
+                    score: normalizedValue,
+                    max: metric.maxValue,
+                  })}
                   className={s.metricScore}
                 >
                   <span className={s.metricScoreValue}>{normalizedValue}</span>
@@ -58,7 +69,9 @@ export const MetricsGrid = ({ headerAction, metrics }: MetricsGridProps) => {
               </div>
 
               <Progress
-                aria-label={`${metric.label} score progress`}
+                aria-label={t('metrics.progressAria', {
+                  label: metric.label,
+                })}
                 className={s.metricProgress}
                 max={metric.maxValue}
                 value={metric.value}

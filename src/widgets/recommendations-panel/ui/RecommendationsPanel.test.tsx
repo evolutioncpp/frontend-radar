@@ -5,6 +5,28 @@ import { RecommendationsPanel } from './RecommendationsPanel';
 
 import type { ReportRecommendation } from '@/entities/report';
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: Record<string, string | number>) => {
+      const translations: Record<string, string> = {
+        'recommendations.label': 'Next steps',
+        'recommendations.title': 'Recommendations',
+        'recommendations.listAria': 'Recommendations list',
+        'recommendations.empty': 'No recommendations for now.',
+        'statuses.high': 'High',
+        'statuses.medium': 'Medium',
+        'statuses.low': 'Low',
+      };
+
+      if (key === 'recommendations.counter') {
+        return `${options?.count} ${options?.count === 1 ? 'recommendation' : 'recommendations'}`;
+      }
+
+      return translations[key] ?? key;
+    },
+  }),
+}));
+
 const recommendations: ReportRecommendation[] = [
   {
     id: 'add-github-actions',

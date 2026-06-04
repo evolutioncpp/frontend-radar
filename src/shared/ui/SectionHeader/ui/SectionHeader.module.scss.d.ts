@@ -1,4 +1,5 @@
 export type Styles = {
+  action: string;
   aside: string;
   label: string;
   labelRow: string;

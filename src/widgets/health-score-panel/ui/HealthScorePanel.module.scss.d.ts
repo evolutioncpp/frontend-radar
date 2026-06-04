@@ -1,10 +1,6 @@
 export type Styles = {
   description: string;
-  header: string;
-  heading: string;
   healthScorePanel: string;
-  label: string;
-  labelRow: string;
   progress: string;
   score: string;
   scoreBlock: string;
@@ -15,7 +11,6 @@ export type Styles = {
   scoreValueGood: string;
   scoreValueWarning: string;
   status: string;
-  title: string;
 };
 
 export type ClassNames = keyof Styles;

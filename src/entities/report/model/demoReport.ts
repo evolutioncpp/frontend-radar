@@ -1,6 +1,12 @@
-import type { ProjectReport } from './types';
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
-export const demoReport: ProjectReport = {
+import type { ProjectReport } from './types';
+import type { TFunction } from 'i18next';
+
+type DemoReportT = TFunction<'demo-report'>;
+
+const createDemoReport = (t: DemoReportT): ProjectReport => ({
   id: 'demo-report',
   createdAt: '2026-06-02T00:00:00.000Z',
   totalScore: 82,
@@ -8,8 +14,7 @@ export const demoReport: ProjectReport = {
     owner: 'evolutioncpp',
     name: 'frontend-radar',
     url: 'https://github.com/evolutioncpp/frontend-radar',
-    description:
-      'A frontend project health dashboard for analyzing repository quality, tooling, tests and documentation.',
+    description: t('repository.description'),
     stars: 128,
     forks: 14,
     defaultBranch: 'main',
@@ -19,120 +24,124 @@ export const demoReport: ProjectReport = {
   scoreBreakdown: [
     {
       category: 'documentation',
-      label: 'Documentation',
+      label: t('metrics.documentation.label'),
       value: 88,
       maxValue: 100,
       status: 'good',
-      description: 'README and setup documentation are mostly complete.',
+      description: t('metrics.documentation.description'),
     },
     {
       category: 'testing',
-      label: 'Testing',
+      label: t('metrics.testing.label'),
       value: 76,
       maxValue: 100,
       status: 'good',
-      description: 'Unit and e2e testing foundation exists, but coverage can be improved.',
+      description: t('metrics.testing.description'),
     },
     {
       category: 'ci',
-      label: 'CI/CD',
+      label: t('metrics.ci.label'),
       value: 92,
       maxValue: 100,
       status: 'excellent',
-      description: 'Automated checks are configured for build and quality gates.',
+      description: t('metrics.ci.description'),
     },
     {
       category: 'dependencies',
-      label: 'Dependencies',
+      label: t('metrics.dependencies.label'),
       value: 71,
       maxValue: 100,
       status: 'warning',
-      description: 'Core dependencies are modern, but update policy is not defined yet.',
+      description: t('metrics.dependencies.description'),
     },
     {
       category: 'maintainability',
-      label: 'Maintainability',
+      label: t('metrics.maintainability.label'),
       value: 84,
       maxValue: 100,
       status: 'good',
-      description: 'Project structure is predictable and follows layered architecture.',
+      description: t('metrics.maintainability.description'),
     },
     {
       category: 'performance',
-      label: 'Performance',
+      label: t('metrics.performance.label'),
       value: 79,
       maxValue: 100,
       status: 'good',
-      description: 'Build setup is optimized, but runtime metrics are not tracked yet.',
+      description: t('metrics.performance.description'),
     },
     {
       category: 'accessibility',
-      label: 'Accessibility',
+      label: t('metrics.accessibility.label'),
       value: 65,
       maxValue: 100,
       status: 'warning',
-      description: 'Basic accessibility linting exists, but manual checks are still needed.',
+      description: t('metrics.accessibility.description'),
     },
   ],
   checks: [
     {
       id: 'readme-exists',
-      label: 'README exists',
+      label: t('checks.readmeExists.label'),
       status: 'passed',
     },
     {
       id: 'package-json-exists',
-      label: 'package.json exists',
+      label: t('checks.packageJsonExists.label'),
       status: 'passed',
     },
     {
       id: 'typescript-detected',
-      label: 'TypeScript detected',
+      label: t('checks.typescriptDetected.label'),
       status: 'passed',
     },
     {
       id: 'lint-script-exists',
-      label: 'Lint script exists',
+      label: t('checks.lintScriptExists.label'),
       status: 'passed',
     },
     {
       id: 'test-script-exists',
-      label: 'Test script exists',
+      label: t('checks.testScriptExists.label'),
       status: 'passed',
     },
     {
       id: 'storybook-missing',
-      label: 'Storybook is not configured',
+      label: t('checks.storybookMissing.label'),
       status: 'warning',
-      description: 'Storybook can help document and test UI components in isolation.',
+      description: t('checks.storybookMissing.description'),
     },
     {
       id: 'env-example-missing',
-      label: '.env.example is missing',
+      label: t('checks.envExampleMissing.label'),
       status: 'failed',
-      description: 'Document required environment variables for local setup.',
+      description: t('checks.envExampleMissing.description'),
     },
   ],
   recommendations: [
     {
       id: 'add-github-actions',
       severity: 'high',
-      title: 'Add GitHub Actions pipeline',
-      description:
-        'Run lint, build, unit tests and e2e tests on every pull request to prevent regressions.',
+      title: t('recommendations.addGithubActions.title'),
+      description: t('recommendations.addGithubActions.description'),
     },
     {
       id: 'add-storybook',
       severity: 'medium',
-      title: 'Document UI components with Storybook',
-      description: 'Add stories for shared UI components and important dashboard states.',
+      title: t('recommendations.addStorybook.title'),
+      description: t('recommendations.addStorybook.description'),
     },
     {
       id: 'add-env-example',
       severity: 'low',
-      title: 'Add .env.example',
-      description:
-        'Document required environment variables so contributors can run the project locally.',
+      title: t('recommendations.addEnvExample.title'),
+      description: t('recommendations.addEnvExample.description'),
     },
   ],
+});
+
+export const useDemoReport = () => {
+  const { t } = useTranslation('demo-report');
+
+  return useMemo(() => createDemoReport(t), [t]);
 };

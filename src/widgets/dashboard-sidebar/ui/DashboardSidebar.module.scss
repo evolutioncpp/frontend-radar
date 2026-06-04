@@ -35,6 +35,7 @@
   display: grid;
   grid-template-columns: $dashboard-sidebar-collapsed-width minmax(0, 1fr);
   align-items: center;
+  width: 100%;
   min-height: 2.75rem;
   overflow: hidden;
   color: var(--color-text-secondary);
@@ -126,6 +127,7 @@
   display: grid;
   grid-template-columns: $dashboard-sidebar-collapsed-width minmax(0, 1fr);
   align-items: center;
+  width: 100%;
   min-height: 2.5rem;
   overflow: hidden;
   color: var(--color-text-muted);
@@ -170,7 +172,11 @@
   }
 }
 
-.collapsedTooltip {
+.sidebarTooltip {
+  --tooltip-trigger-width: #{$dashboard-sidebar-width};
+}
+
+.sidebarTooltipCollapsed {
   --tooltip-trigger-width: #{$dashboard-sidebar-collapsed-width};
 }
 
@@ -253,6 +259,11 @@
       transform: none;
       transition: none;
     }
+  }
+
+  .sidebarTooltip,
+  .sidebarTooltipCollapsed {
+    --tooltip-trigger-width: 100%;
   }
 }
 

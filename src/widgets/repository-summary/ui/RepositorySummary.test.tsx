@@ -5,6 +5,25 @@ import { RepositorySummary } from './RepositorySummary';
 
 import type { ReportRepository } from '@/entities/report';
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'repository.label': 'Repository',
+        'repository.openRepository': 'Open repository',
+        'repository.metadataAria': 'Repository metadata',
+        'repository.metadata.stars': 'Stars',
+        'repository.metadata.forks': 'Forks',
+        'repository.metadata.branch': 'Branch',
+        'repository.metadata.license': 'License',
+        'repository.metadata.unknown': 'Unknown',
+      };
+
+      return translations[key] ?? key;
+    },
+  }),
+}));
+
 const repository: ReportRepository = {
   owner: 'evolutioncpp',
   name: 'frontend-radar',

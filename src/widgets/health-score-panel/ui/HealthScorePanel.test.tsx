@@ -3,6 +3,31 @@ import { describe, expect, test } from 'vitest';
 
 import { HealthScorePanel } from './HealthScorePanel';
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: Record<string, number>) => {
+      const translations: Record<string, string> = {
+        'healthScore.label': 'Frontend Health Score',
+        'healthScore.title': 'Overall project quality',
+        'healthScore.description':
+          'This score summarizes repository setup, documentation, testing, CI/CD, dependencies and maintainability signals.',
+        'healthScore.progressAria': 'Frontend health score progress',
+
+        'statuses.excellent': 'Excellent',
+        'statuses.good': 'Good',
+        'statuses.warning': 'Warning',
+        'statuses.critical': 'Critical',
+      };
+
+      if (key === 'healthScore.scoreAria') {
+        return `Frontend health score ${options?.score} out of 100`;
+      }
+
+      return translations[key] ?? key;
+    },
+  }),
+}));
+
 describe('HealthScorePanel', () => {
   test('renders health score content', () => {
     render(<HealthScorePanel score={82} />);

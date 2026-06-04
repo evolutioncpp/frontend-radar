@@ -1,8 +1,8 @@
 import clsx from 'clsx';
+import { useTranslation } from 'react-i18next';
 
 import {
   getRecommendationSeverityBadgeVariant,
-  getRecommendationSeverityLabel,
   type ReportRecommendation,
 } from '@/entities/report';
 import { Badge } from '@/shared/ui/Badge';
@@ -19,37 +19,41 @@ interface RecommendationsPanelProps {
   headerAction?: ReactNode;
 }
 
-const getRecommendationsCounterLabel = (count: number) => {
-  return `${count} ${count === 1 ? 'recommendation' : 'recommendations'}`;
-};
+const recommendationSeverityLabelKeys = {
+  high: 'statuses.high',
+  medium: 'statuses.medium',
+  low: 'statuses.low',
+} as const satisfies Record<ReportRecommendation['severity'], string>;
 
 export const RecommendationsPanel = ({
   className,
   headerAction,
   recommendations,
 }: RecommendationsPanelProps) => {
+  const { t } = useTranslation('dashboard');
+
   return (
     <Card className={clsx(s.recommendationsPanel, className)}>
       <SectionHeader
         action={headerAction}
         aside={
           <span className={s.counter}>
-            {getRecommendationsCounterLabel(recommendations.length)}
+            {t('recommendations.counter', { count: recommendations.length })}
           </span>
         }
-        label="Next steps"
-        title="Recommendations"
+        label={t('recommendations.label')}
+        title={t('recommendations.title')}
       />
 
       {recommendations.length > 0 ? (
-        <ul aria-label="Recommendations list" className={s.list}>
+        <ul aria-label={t('recommendations.listAria')} className={s.list}>
           {recommendations.map((recommendation) => (
             <li className={s.item} key={recommendation.id}>
               <Badge
                 className={s.severity}
                 variant={getRecommendationSeverityBadgeVariant(recommendation.severity)}
               >
-                {getRecommendationSeverityLabel(recommendation.severity)}
+                {t(recommendationSeverityLabelKeys[recommendation.severity])}
               </Badge>
 
               <div className={s.content}>
@@ -60,7 +64,7 @@ export const RecommendationsPanel = ({
           ))}
         </ul>
       ) : (
-        <p className={s.emptyState}>No recommendations for now.</p>
+        <p className={s.emptyState}>{t('recommendations.empty')}</p>
       )}
     </Card>
   );

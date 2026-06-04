@@ -1,4 +1,4 @@
-export { demoReport } from './model/demoReport';
+export { useDemoReport } from './model/demoReport';
 export { getScoreStatus } from './model/getScoreStatus';
 
 export type {
@@ -15,9 +15,6 @@ export type {
 
 export {
   getCheckStatusBadgeVariant,
-  getCheckStatusLabel,
   getRecommendationSeverityBadgeVariant,
-  getRecommendationSeverityLabel,
   getScoreStatusBadgeVariant,
-  getScoreStatusLabel,
 } from './model/statusMappers';

@@ -1,9 +1,5 @@
 export type Styles = {
   description: string;
-  header: string;
-  label: string;
-  labelRow: string;
-  main: string;
   metaIcon: string;
   metaItem: string;
   metaLabel: string;
@@ -12,7 +8,6 @@ export type Styles = {
   metaValueCode: string;
   repositoryLink: string;
   repositorySummary: string;
-  title: string;
 };
 
 export type ClassNames = keyof Styles;

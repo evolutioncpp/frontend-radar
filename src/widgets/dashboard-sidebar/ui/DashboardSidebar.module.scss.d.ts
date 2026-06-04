@@ -1,5 +1,4 @@
 export type Styles = {
-  collapsedTooltip: string;
   dashboardSidebar: string;
   dashboardSidebarCollapsed: string;
   dashboardSidebarMobileOpen: string;
@@ -16,6 +15,8 @@ export type Styles = {
   sectionNavigationTitle: string;
   sidebarBody: string;
   sidebarFooter: string;
+  sidebarTooltip: string;
+  sidebarTooltipCollapsed: string;
 };
 
 export type ClassNames = keyof Styles;

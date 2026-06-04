@@ -8,6 +8,7 @@
 .tooltipFullWidth {
   display: block;
   width: var(--tooltip-trigger-width, 100%);
+  transition: width $transition-base;
 }
 
 .content {
@@ -77,6 +78,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .tooltipFullWidth,
   .content {
     transition: none;
   }

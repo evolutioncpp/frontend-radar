@@ -1,10 +1,7 @@
 import clsx from 'clsx';
+import { useTranslation } from 'react-i18next';
 
-import {
-  getCheckStatusBadgeVariant,
-  getCheckStatusLabel,
-  type ReportCheck,
-} from '@/entities/report';
+import { getCheckStatusBadgeVariant, type ReportCheck } from '@/entities/report';
 import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
@@ -19,25 +16,29 @@ interface ChecksListProps {
   headerAction?: ReactNode;
 }
 
-const getChecksCounterLabel = (count: number) => {
-  return `${count} ${count === 1 ? 'check' : 'checks'}`;
-};
+const checkStatusLabelKeys = {
+  passed: 'statuses.passed',
+  warning: 'statuses.warning',
+  failed: 'statuses.failed',
+} as const satisfies Record<ReportCheck['status'], string>;
 
 export const ChecksList = ({ checks, className, headerAction }: ChecksListProps) => {
+  const { t } = useTranslation('dashboard');
+
   return (
     <Card className={clsx(s.checksList, className)}>
       <SectionHeader
         action={headerAction}
-        aside={<span className={s.counter}>{getChecksCounterLabel(checks.length)}</span>}
-        label="Project checks"
-        title="Quality signals"
+        aside={<span className={s.counter}>{t('checks.counter', { count: checks.length })}</span>}
+        label={t('checks.label')}
+        title={t('checks.title')}
       />
 
-      <ul aria-label="Project checks list" className={s.list}>
+      <ul aria-label={t('checks.listAria')} className={s.list}>
         {checks.map((check) => (
           <li className={s.item} key={check.id}>
             <Badge className={s.status} variant={getCheckStatusBadgeVariant(check.status)}>
-              {getCheckStatusLabel(check.status)}
+              {t(checkStatusLabelKeys[check.status])}
             </Badge>
 
             <div className={s.content}>

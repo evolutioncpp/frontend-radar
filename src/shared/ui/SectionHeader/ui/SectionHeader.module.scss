@@ -1,9 +1,9 @@
 @use 'app/styles/helpers' as *;
 
 .sectionHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
   gap: $space-4;
 }
 
@@ -14,41 +14,60 @@
 }
 
 .labelRow {
-  display: flex;
+  display: grid;
+  width: fit-content;
+  max-width: 100%;
   min-width: 0;
-  align-items: center;
+  grid-template-columns: minmax(0, auto) max-content;
+  align-items: start;
+  justify-content: start;
   gap: $space-2;
 }
 
 .label {
+  min-width: 0;
   margin: 0;
   color: var(--color-text-muted);
   font-size: $font-size-xs;
   font-weight: $font-weight-semibold;
   letter-spacing: 0.08em;
+  line-height: $line-height-sm;
   text-transform: uppercase;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: start;
+  height: 1em;
+  margin-block-start: 0.0625rem;
+  line-height: 1;
 }
 
 .title {
   margin: 0;
   color: var(--color-text-primary);
   font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
   line-height: $line-height-sm;
 }
 
 .aside {
-  flex: 0 0 auto;
+  display: flex;
   min-width: 0;
+  align-items: flex-start;
+  justify-content: flex-end;
+  align-self: start;
+  line-height: $line-height-sm;
 }
 
 @include media-max($breakpoint-sm) {
   .sectionHeader {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: $space-2;
+    gap: $space-3;
   }
 
-  .aside {
-    justify-self: start;
+  .labelRow {
+    grid-template-columns: minmax(0, auto) max-content;
   }
 }

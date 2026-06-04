@@ -1,0 +1,101 @@
+{
+  "header": {
+    "openRepository": "Открыть на GitHub",
+    "openRepositoryAria": "Открыть репозиторий Frontend Radar на GitHub",
+    "collapseSidebar": "Свернуть сайдбар",
+    "expandSidebar": "Развернуть сайдбар",
+    "openNavigation": "Открыть навигацию",
+    "closeNavigation": "Закрыть навигацию"
+  },
+  "sidebar": {
+    "dashboardNavigation": "Навигация дашборда",
+    "pageNavigation": "Навигация по странице",
+    "onThisPage": "На этой странице",
+    "items": {
+      "overview": "Обзор",
+      "history": "История",
+      "settings": "Настройки",
+      "repository": "Репозиторий",
+      "healthScore": "Оценка здоровья",
+      "metrics": "Метрики",
+      "checks": "Проверки",
+      "recommendations": "Рекомендации"
+    }
+  },
+  "page": {
+    "label": "Демо-отчёт",
+    "title": "Обзор состояния frontend-проекта",
+    "description": "Анализируйте качество репозитория, инструменты, тесты, документацию и готовность к доставке в одном дашборде.",
+    "reportAria": "Отчёт дашборда",
+    "sections": {
+      "repository": "Сводка репозитория",
+      "healthScore": "Оценка здоровья",
+      "metrics": "Метрики качества",
+      "checks": "Проверки проекта",
+      "recommendations": "Рекомендации"
+    },
+    "copySectionLink": "Скопировать ссылку на раздел «{{section}}»",
+    "copySectionTitle": "Скопировать ссылку на раздел",
+    "copied": "Скопировано"
+  },
+  "repository": {
+    "label": "Репозиторий",
+    "openRepository": "Открыть репозиторий",
+    "metadataAria": "Метаданные репозитория",
+    "metadata": {
+      "stars": "Звёзды",
+      "forks": "Форки",
+      "branch": "Ветка",
+      "license": "Лицензия",
+      "unknown": "Неизвестно"
+    }
+  },
+  "healthScore": {
+    "label": "Оценка здоровья frontend",
+    "title": "Общее качество проекта",
+    "scoreAria": "Оценка здоровья frontend {{score}} из 100",
+    "description": "Эта оценка суммирует настройку репозитория, документацию, тестирование, CI/CD, зависимости и сигналы поддерживаемости.",
+    "progressAria": "Прогресс оценки здоровья frontend"
+  },
+  "metrics": {
+    "label": "Разбивка оценки",
+    "title": "Метрики качества",
+    "counter_one": "{{count}} метрика",
+    "counter_few": "{{count}} метрики",
+    "counter_many": "{{count}} метрик",
+    "counter_other": "{{count}} метрики",
+    "listAria": "Список метрик",
+    "scoreAria": "Оценка {{label}}: {{score}} из {{max}}",
+    "progressAria": "Прогресс оценки {{label}}"
+  },
+  "checks": {
+    "label": "Проверки проекта",
+    "title": "Сигналы качества",
+    "counter_one": "{{count}} проверка",
+    "counter_few": "{{count}} проверки",
+    "counter_many": "{{count}} проверок",
+    "counter_other": "{{count}} проверки",
+    "listAria": "Список проверок проекта"
+  },
+  "recommendations": {
+    "label": "Следующие шаги",
+    "title": "Рекомендации",
+    "counter_one": "{{count}} рекомендация",
+    "counter_few": "{{count}} рекомендации",
+    "counter_many": "{{count}} рекомендаций",
+    "counter_other": "{{count}} рекомендации",
+    "listAria": "Список рекомендаций",
+    "empty": "Пока рекомендаций нет."
+  },
+  "statuses": {
+    "excellent": "Отлично",
+    "good": "Хорошо",
+    "warning": "Внимание",
+    "critical": "Критично",
+    "passed": "Пройдено",
+    "failed": "Провалено",
+    "high": "Высокий",
+    "medium": "Средний",
+    "low": "Низкий"
+  }
+}

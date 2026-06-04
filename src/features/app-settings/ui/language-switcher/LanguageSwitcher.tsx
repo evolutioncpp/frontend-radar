@@ -47,6 +47,7 @@ export const LanguageSwitcher = ({
   return (
     <Dropdown
       align={align}
+      ariaLabel={t('actions.switchLanguage')}
       className={clsx(
         s.languageSwitcher,
         isSidebarVariant && s.languageSwitcherSidebar,
@@ -59,13 +60,7 @@ export const LanguageSwitcher = ({
         <>
           <Globe aria-hidden="true" className={s.icon} strokeWidth={2} />
 
-          {isSidebarVariant ? (
-            <span aria-hidden="true" className={s.text}>
-              {t('common.language')}
-            </span>
-          ) : null}
-
-          <span className={s.screenReaderText}>{t('actions.switchLanguage')}</span>
+          {isSidebarVariant ? <span className={s.text}>{t('common.language')}</span> : null}
         </>
       }
       triggerClassName={clsx(

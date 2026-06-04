@@ -14,7 +14,7 @@ interface DropdownRenderApi {
 }
 
 interface DropdownProps {
-  ariaLabel?: string;
+  ariaLabel: string;
   trigger: ReactNode;
   children: ReactNode | ((api: DropdownRenderApi) => ReactNode);
   side?: DropdownSide;

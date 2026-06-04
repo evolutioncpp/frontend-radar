@@ -15,6 +15,23 @@ vi.mock('@/features/app-settings', () => ({
   ),
 }));
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'header.openRepository': 'View on GitHub',
+        'header.openRepositoryAria': 'Open Frontend Radar repository on GitHub',
+        'header.collapseSidebar': 'Collapse sidebar',
+        'header.expandSidebar': 'Expand sidebar',
+        'header.openNavigation': 'Open navigation',
+        'header.closeNavigation': 'Close navigation',
+      };
+
+      return translations[key] ?? key;
+    },
+  }),
+}));
+
 const renderHeader = (props?: React.ComponentProps<typeof DashboardHeader>) => {
   return render(
     <MemoryRouter>

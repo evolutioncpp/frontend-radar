@@ -18,7 +18,7 @@ export const SectionHeader = ({ action, aside, className, label, title }: Sectio
       <div className={s.main}>
         <div className={s.labelRow}>
           <p className={s.label}>{label}</p>
-          {action}
+          {action ? <div className={s.action}>{action}</div> : null}
         </div>
 
         <h2 className={s.title}>{title}</h2>

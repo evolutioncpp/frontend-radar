@@ -5,6 +5,36 @@ import { MetricsGrid } from './MetricsGrid';
 
 import type { ScoreBreakdownItem } from '@/entities/report';
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: Record<string, string | number>) => {
+      const translations: Record<string, string> = {
+        'metrics.label': 'Score breakdown',
+        'metrics.title': 'Quality metrics',
+        'metrics.listAria': 'Metrics list',
+        'statuses.excellent': 'Excellent',
+        'statuses.good': 'Good',
+        'statuses.warning': 'Warning',
+        'statuses.critical': 'Critical',
+      };
+
+      if (key === 'metrics.counter') {
+        return `${options?.count} ${options?.count === 1 ? 'metric' : 'metrics'}`;
+      }
+
+      if (key === 'metrics.scoreAria') {
+        return `${options?.label} score ${options?.score} out of ${options?.max}`;
+      }
+
+      if (key === 'metrics.progressAria') {
+        return `${options?.label} score progress`;
+      }
+
+      return translations[key] ?? key;
+    },
+  }),
+}));
+
 const metrics: ScoreBreakdownItem[] = [
   {
     category: 'documentation',

@@ -1,0 +1,95 @@
+{
+  "header": {
+    "openRepository": "View on GitHub",
+    "openRepositoryAria": "Open Frontend Radar repository on GitHub",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
+    "openNavigation": "Open navigation",
+    "closeNavigation": "Close navigation"
+  },
+  "sidebar": {
+    "dashboardNavigation": "Dashboard navigation",
+    "pageNavigation": "Page navigation",
+    "onThisPage": "On this page",
+    "items": {
+      "overview": "Overview",
+      "history": "History",
+      "settings": "Settings",
+      "repository": "Repository",
+      "healthScore": "Health score",
+      "metrics": "Metrics",
+      "checks": "Checks",
+      "recommendations": "Recommendations"
+    }
+  },
+  "page": {
+    "label": "Demo report",
+    "title": "Frontend project health overview",
+    "description": "Analyze repository quality, tooling, testing, documentation and delivery readiness in a single dashboard.",
+    "reportAria": "Dashboard report",
+    "sections": {
+      "repository": "Repository summary",
+      "healthScore": "Health score",
+      "metrics": "Quality metrics",
+      "checks": "Project checks",
+      "recommendations": "Recommendations"
+    },
+    "copySectionLink": "Copy link to {{section}} section",
+    "copySectionTitle": "Copy section link",
+    "copied": "Copied"
+  },
+  "repository": {
+    "label": "Repository",
+    "openRepository": "Open repository",
+    "metadataAria": "Repository metadata",
+    "metadata": {
+      "stars": "Stars",
+      "forks": "Forks",
+      "branch": "Branch",
+      "license": "License",
+      "unknown": "Unknown"
+    }
+  },
+  "healthScore": {
+    "label": "Frontend Health Score",
+    "title": "Overall project quality",
+    "scoreAria": "Frontend health score {{score}} out of 100",
+    "description": "This score summarizes repository setup, documentation, testing, CI/CD, dependencies and maintainability signals.",
+    "progressAria": "Frontend health score progress"
+  },
+  "metrics": {
+    "label": "Score breakdown",
+    "title": "Quality metrics",
+    "counter_one": "{{count}} metric",
+    "counter_other": "{{count}} metrics",
+    "listAria": "Metrics list",
+    "scoreAria": "{{label}} score {{score}} out of {{max}}",
+    "progressAria": "{{label}} score progress"
+  },
+  "checks": {
+    "label": "Project checks",
+    "title": "Quality signals",
+    "counter_one": "{{count}} check",
+    "counter_other": "{{count}} checks",
+    "listAria": "Project checks list"
+  },
+  "recommendations": {
+    "label": "Next steps",
+    "title": "Recommendations",
+    "counter_one": "{{count}} recommendation",
+    "counter_other": "{{count}} recommendations",
+    "listAria": "Recommendations list",
+    "empty": "No recommendations for now."
+  },
+  "statuses": {
+    "excellent": "Excellent",
+    "good": "Good",
+    "warning": "Warning",
+    "critical": "Critical",
+    "passed": "Passed",
+    "failed": "Failed",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  }
+}

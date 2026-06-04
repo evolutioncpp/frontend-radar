@@ -2,10 +2,18 @@
   "extends": "./tsconfig.app.json",
   "compilerOptions": {
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@locales/*": ["./public/locales/*"]
     },
     "types": ["vite/client", "vitest/globals", "vitest/jsdom", "node"],
     "noEmit": true
   },
-  "include": ["src", "e2e", "vite.config.ts", "vitest.config.ts", "playwright.config.ts"]
+  "include": [
+    "src",
+    "public/locales/**/*.json",
+    "e2e",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "playwright.config.ts"
+  ]
 }

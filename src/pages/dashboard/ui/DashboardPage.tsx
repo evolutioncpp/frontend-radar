@@ -1,8 +1,9 @@
 import { Link as LinkIcon } from 'lucide-react';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 
-import { demoReport } from '@/entities/report';
+import { useDemoReport } from '@/entities/report';
 import { DashboardSectionIds } from '@/shared/config/navigation/dashboardSections';
 import { CopyButton } from '@/shared/ui/CopyButton';
 import { ChecksList } from '@/widgets/checks-list';
@@ -13,15 +14,16 @@ import { RepositorySummary } from '@/widgets/repository-summary';
 
 import s from './DashboardPage.module.scss';
 
-const dashboardSectionLabels: Record<string, string> = {
-  [DashboardSectionIds.REPOSITORY]: 'Repository summary',
-  [DashboardSectionIds.HEALTH_SCORE]: 'Health score',
-  [DashboardSectionIds.METRICS]: 'Quality metrics',
-  [DashboardSectionIds.CHECKS]: 'Project checks',
-  [DashboardSectionIds.RECOMMENDATIONS]: 'Recommendations',
-};
-
 const dashboardSectionIds = Object.values(DashboardSectionIds);
+type DashboardSectionId = (typeof DashboardSectionIds)[keyof typeof DashboardSectionIds];
+
+const sectionLabelKeys = {
+  [DashboardSectionIds.REPOSITORY]: 'page.sections.repository',
+  [DashboardSectionIds.HEALTH_SCORE]: 'page.sections.healthScore',
+  [DashboardSectionIds.METRICS]: 'page.sections.metrics',
+  [DashboardSectionIds.CHECKS]: 'page.sections.checks',
+  [DashboardSectionIds.RECOMMENDATIONS]: 'page.sections.recommendations',
+} as const satisfies Record<DashboardSectionId, string>;
 
 const getSectionIdFromHash = (hash: string) => {
   return decodeURIComponent(hash.replace('#', ''));
@@ -31,16 +33,11 @@ const getSectionUrl = (sectionId: string) => {
   return `${window.location.origin}${window.location.pathname}${window.location.search}#${sectionId}`;
 };
 
-const replaceSectionHash = (sectionId: string) => {
-  window.history.replaceState(
-    null,
-    '',
-    `${window.location.pathname}${window.location.search}#${sectionId}`,
-  );
-};
-
 export const DashboardPage = () => {
   const { hash } = useLocation();
+  const { t } = useTranslation('dashboard');
+
+  const report = useDemoReport();
 
   useEffect(() => {
     if (!hash) {
@@ -137,16 +134,21 @@ export const DashboardPage = () => {
     };
   }, []);
 
-  const renderSectionLinkButton = (sectionId: string) => {
-    const sectionLabel = dashboardSectionLabels[sectionId];
+  const getCopySectionLabel = (sectionName: string) => {
+    return t('page.copySectionLink', {
+      section: sectionName,
+    });
+  };
+
+  const renderSectionLinkButton = (sectionId: DashboardSectionId) => {
+    const sectionName = t(sectionLabelKeys[sectionId]);
 
     return (
       <CopyButton
-        ariaLabel={`Copy link to ${sectionLabel} section`}
-        copiedTitle="Copied"
+        ariaLabel={getCopySectionLabel(sectionName)}
+        copiedTitle={t('page.copied')}
         icon={LinkIcon}
-        onCopied={() => replaceSectionHash(sectionId)}
-        title="Copy section link"
+        title={t('page.copySectionTitle')}
         value={() => getSectionUrl(sectionId)}
       />
     );
@@ -155,17 +157,14 @@ export const DashboardPage = () => {
   return (
     <div className={s.dashboardPage}>
       <section className={s.header}>
-        <p className={s.label}>Demo report</p>
+        <p className={s.label}>{t('page.label')}</p>
 
-        <h1 className={s.title}>Frontend project health overview</h1>
+        <h1 className={s.title}>{t('page.title')}</h1>
 
-        <p className={s.description}>
-          Analyze repository quality, tooling, testing, documentation and delivery readiness in a
-          single dashboard.
-        </p>
+        <p className={s.description}>{t('page.description')}</p>
       </section>
 
-      <section aria-label="Dashboard report" className={s.content}>
+      <section className={s.content} aria-label={t('page.reportAria')}>
         <section
           aria-label="Repository summary"
           className={s.section}
@@ -173,54 +172,54 @@ export const DashboardPage = () => {
         >
           <RepositorySummary
             headerAction={renderSectionLinkButton(DashboardSectionIds.REPOSITORY)}
-            repository={demoReport.repository}
+            repository={report.repository}
           />
         </section>
 
         <section
-          aria-label="Health score"
+          aria-label={t('page.sections.healthScore')}
           className={s.section}
           id={DashboardSectionIds.HEALTH_SCORE}
         >
           <HealthScorePanel
             headerAction={renderSectionLinkButton(DashboardSectionIds.HEALTH_SCORE)}
-            score={demoReport.totalScore}
+            score={report.totalScore}
           />
         </section>
 
         <section
-          aria-label="Quality metrics"
+          aria-label={t('page.sections.metrics')}
           className={s.section}
           id={DashboardSectionIds.METRICS}
         >
           <MetricsGrid
             headerAction={renderSectionLinkButton(DashboardSectionIds.METRICS)}
-            metrics={demoReport.scoreBreakdown}
+            metrics={report.scoreBreakdown}
           />
         </section>
 
         <div className={s.detailsGrid}>
           <section
-            aria-label="Project checks"
+            aria-label={t('page.sections.checks')}
             className={`${s.section} ${s.detailsSection}`}
             id={DashboardSectionIds.CHECKS}
           >
             <ChecksList
-              checks={demoReport.checks}
+              checks={report.checks}
               className={s.detailsCard}
               headerAction={renderSectionLinkButton(DashboardSectionIds.CHECKS)}
             />
           </section>
 
           <section
-            aria-label="Recommendations"
+            aria-label={t('page.sections.recommendations')}
             className={`${s.section} ${s.detailsSection}`}
             id={DashboardSectionIds.RECOMMENDATIONS}
           >
             <RecommendationsPanel
               className={s.detailsCard}
               headerAction={renderSectionLinkButton(DashboardSectionIds.RECOMMENDATIONS)}
-              recommendations={demoReport.recommendations}
+              recommendations={report.recommendations}
             />
           </section>
         </div>
