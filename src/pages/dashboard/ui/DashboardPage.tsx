@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import { useDemoReport } from '@/entities/report';
-import { useDashboardSectionHashSync } from '@/features/dashboard-section-navigation';
+import { useDashboardSectionsReady } from '@/features/dashboard-section-navigation';
 import { DashboardSectionIds } from '@/shared/config/navigation/dashboardSections';
 import { ChecksList } from '@/widgets/checks-list';
 import { HealthScorePanel } from '@/widgets/health-score-panel';
@@ -18,7 +18,7 @@ export const DashboardPage = () => {
 
   const report = useDemoReport();
 
-  useDashboardSectionHashSync();
+  useDashboardSectionsReady();
 
   return (
     <div className={s.dashboardPage}>

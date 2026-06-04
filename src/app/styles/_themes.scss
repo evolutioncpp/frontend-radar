@@ -27,6 +27,11 @@
   --color-danger: #f85149;
   --color-info: #79c0ff;
 
+  --color-score-excellent: var(--color-success);
+  --color-score-good: var(--color-info);
+  --color-score-warning: var(--color-warning);
+  --color-score-critical: var(--color-danger);
+
   --color-progress-danger: #f85149;
   --color-progress-warning: #d29922;
   --color-progress-success: #3fb950;
@@ -67,6 +72,11 @@
   --color-warning: #b7791f;
   --color-danger: #dc2626;
   --color-info: #2563eb;
+
+  --color-score-excellent: var(--color-success);
+  --color-score-good: var(--color-info);
+  --color-score-warning: var(--color-warning);
+  --color-score-critical: var(--color-danger);
 
   --color-progress-danger: #dc2626;
   --color-progress-warning: #b7791f;

@@ -1,28 +1,117 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import {
   getActiveDashboardSectionHash,
+  getDashboardSectionHref,
   getDashboardSectionIdFromHash,
+  isDashboardSectionId,
+  navigateToDashboardSection,
   scrollToDashboardSection,
 } from './dashboardSectionNavigation';
 
-export const useDashboardSectionHashSync = () => {
-  const { hash } = useLocation();
+const sectionNavigationLockDelay = 900;
 
-  useEffect(() => {
-    if (!hash) {
+interface UseDashboardSectionHashSyncOptions {
+  readyVersion: number;
+}
+
+const getValidatedDashboardSectionHash = (hash: string) => {
+  const sectionId = getDashboardSectionIdFromHash(hash);
+
+  return isDashboardSectionId(sectionId) ? getDashboardSectionHref(sectionId) : '';
+};
+
+export const useDashboardSectionHashSync = ({
+  readyVersion,
+}: UseDashboardSectionHashSyncOptions) => {
+  const sectionNavigationLockTimeoutRef = useRef<number | null>(null);
+  const { hash } = useLocation();
+  const isReady = readyVersion > 0;
+
+  const [activeSectionHref, setActiveSectionHref] = useState(() => {
+    return getValidatedDashboardSectionHash(window.location.hash);
+  });
+
+  const lockSectionNavigation = useCallback(() => {
+    if (sectionNavigationLockTimeoutRef.current !== null) {
+      window.clearTimeout(sectionNavigationLockTimeoutRef.current);
+    }
+
+    sectionNavigationLockTimeoutRef.current = window.setTimeout(() => {
+      sectionNavigationLockTimeoutRef.current = null;
+    }, sectionNavigationLockDelay);
+  }, []);
+
+  const syncActiveSectionFromScroll = useCallback(() => {
+    if (!isReady || sectionNavigationLockTimeoutRef.current !== null) {
       return;
     }
 
-    const sectionId = getDashboardSectionIdFromHash(hash);
+    const nextHash = getActiveDashboardSectionHash();
 
-    requestAnimationFrame(() => {
-      scrollToDashboardSection(sectionId, 'auto');
+    setActiveSectionHref((currentHash) => {
+      return currentHash === nextHash ? currentHash : nextHash;
     });
-  }, [hash]);
+
+    if (window.location.hash === nextHash) {
+      return;
+    }
+
+    window.history.replaceState(
+      null,
+      '',
+      `${window.location.pathname}${window.location.search}${nextHash}`,
+    );
+  }, [isReady]);
+
+  const navigateToSection = useCallback(
+    (href: string) => {
+      const sectionId = href.startsWith('#') ? getDashboardSectionIdFromHash(href) : href;
+
+      if (!isDashboardSectionId(sectionId)) {
+        return;
+      }
+
+      const nextHash = getDashboardSectionHref(sectionId);
+
+      setActiveSectionHref(nextHash);
+      lockSectionNavigation();
+      navigateToDashboardSection(nextHash);
+    },
+    [lockSectionNavigation],
+  );
 
   useEffect(() => {
+    if (!isReady) {
+      return;
+    }
+
+    const nextHash = getValidatedDashboardSectionHash(hash || window.location.hash);
+
+    const animationFrameId = requestAnimationFrame(() => {
+      if (!nextHash) {
+        syncActiveSectionFromScroll();
+        return;
+      }
+
+      const sectionId = getDashboardSectionIdFromHash(nextHash);
+
+      setActiveSectionHref(nextHash);
+      lockSectionNavigation();
+      scrollToDashboardSection(sectionId, 'auto');
+    });
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [hash, isReady, lockSectionNavigation, readyVersion, syncActiveSectionFromScroll]);
+
+  useEffect(() => {
+    if (!isReady) {
+      return;
+    }
+
     let animationFrameId: number | null = null;
 
     const updateHashFromScroll = () => {
@@ -32,18 +121,7 @@ export const useDashboardSectionHashSync = () => {
 
       animationFrameId = requestAnimationFrame(() => {
         animationFrameId = null;
-
-        const nextHash = getActiveDashboardSectionHash();
-
-        if (window.location.hash === nextHash) {
-          return;
-        }
-
-        window.history.replaceState(
-          null,
-          '',
-          `${window.location.pathname}${window.location.search}${nextHash}`,
-        );
+        syncActiveSectionFromScroll();
       });
     };
 
@@ -59,8 +137,17 @@ export const useDashboardSectionHashSync = () => {
         cancelAnimationFrame(animationFrameId);
       }
 
+      if (sectionNavigationLockTimeoutRef.current !== null) {
+        window.clearTimeout(sectionNavigationLockTimeoutRef.current);
+      }
+
       window.removeEventListener('scroll', updateHashFromScroll);
       window.removeEventListener('resize', updateHashFromScroll);
     };
-  }, []);
+  }, [isReady, syncActiveSectionFromScroll]);
+
+  return {
+    activeSectionHref,
+    navigateToSection,
+  };
 };

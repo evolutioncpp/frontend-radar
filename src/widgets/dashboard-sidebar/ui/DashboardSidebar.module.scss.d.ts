@@ -10,6 +10,7 @@ export type Styles = {
   sectionNavigation: string;
   sectionNavigationIcon: string;
   sectionNavigationLink: string;
+  sectionNavigationLinkActive: string;
   sectionNavigationLinks: string;
   sectionNavigationText: string;
   sectionNavigationTitle: string;

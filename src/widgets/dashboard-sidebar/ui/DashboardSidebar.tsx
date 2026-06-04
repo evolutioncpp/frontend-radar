@@ -9,6 +9,7 @@ import s from './DashboardSidebar.module.scss';
 import { dashboardNavigationItems, dashboardSectionNavigationItems } from '../model/navigation';
 
 interface DashboardSidebarProps {
+  activeSectionHref?: string;
   isCollapsed?: boolean;
   isMobileOpen?: boolean;
   onNavigate?: () => void;
@@ -16,6 +17,7 @@ interface DashboardSidebarProps {
 }
 
 export const DashboardSidebar = ({
+  activeSectionHref = '',
   isCollapsed = false,
   isMobileOpen = false,
   onNavigate,
@@ -56,6 +58,7 @@ export const DashboardSidebar = ({
               <DashboardSectionNavigationLink
                 href={item.href}
                 icon={item.icon}
+                isActive={activeSectionHref === item.href}
                 isCollapsed={isCollapsed}
                 isTooltipDisabled={isTooltipDisabled}
                 key={item.href}

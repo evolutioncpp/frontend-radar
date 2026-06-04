@@ -30,10 +30,18 @@ export const getDashboardSectionUrl = (sectionId: string) => {
 };
 
 export const scrollToDashboardSection = (sectionId: string, behavior: ScrollBehavior) => {
-  document.getElementById(sectionId)?.scrollIntoView({
+  const section = document.getElementById(sectionId);
+
+  if (!section) {
+    return false;
+  }
+
+  section.scrollIntoView({
     behavior,
     block: 'start',
   });
+
+  return true;
 };
 
 export const navigateToDashboardSection = (href: string) => {

@@ -1,5 +1,7 @@
 @use 'app/styles/helpers' as *;
 
+$dashboard-section-scroll-offset: calc($space-10 + $space-10);
+
 .dashboardPage {
   display: grid;
   gap: $space-8;
@@ -43,7 +45,7 @@
 
 .section {
   min-width: 0;
-  scroll-margin-top: calc($space-8 + $space-10);
+  scroll-margin-top: $dashboard-section-scroll-offset;
 }
 
 .detailsGrid {

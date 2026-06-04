@@ -144,6 +144,15 @@
   }
 }
 
+.sectionNavigationLinkActive {
+  background: var(--color-nav-item-active);
+  color: var(--color-nav-item-active-text);
+
+  .sectionNavigationIcon {
+    color: var(--color-nav-item-active-icon);
+  }
+}
+
 .sectionNavigationIcon {
   justify-self: center;
   width: 1rem;

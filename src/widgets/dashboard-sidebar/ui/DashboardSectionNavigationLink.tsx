@@ -13,6 +13,7 @@ import type { MouseEvent } from 'react';
 interface DashboardSectionNavigationLinkProps {
   href: string;
   icon: DashboardNavigationIcon;
+  isActive?: boolean;
   isCollapsed: boolean;
   isTooltipDisabled: boolean;
   onNavigate?: () => void;
@@ -22,6 +23,7 @@ interface DashboardSectionNavigationLinkProps {
 export const DashboardSectionNavigationLink = ({
   href,
   icon,
+  isActive = false,
   isCollapsed,
   isTooltipDisabled,
   onNavigate,
@@ -51,7 +53,13 @@ export const DashboardSectionNavigationLink = ({
       isFullWidth
       side="right"
     >
-      <a aria-label={label} className={s.sectionNavigationLink} href={href} onClick={handleClick}>
+      <a
+        aria-current={isActive ? 'location' : undefined}
+        aria-label={label}
+        className={clsx(s.sectionNavigationLink, isActive && s.sectionNavigationLinkActive)}
+        href={href}
+        onClick={handleClick}
+      >
         <Icon aria-hidden="true" className={s.sectionNavigationIcon} strokeWidth={2} />
         <span className={s.sectionNavigationText}>{label}</span>
       </a>
