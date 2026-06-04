@@ -77,3 +77,9 @@
     gap: $space-3;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .repositoryLink {
+    transition: none;
+  }
+}

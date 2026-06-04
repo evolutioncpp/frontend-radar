@@ -221,27 +221,10 @@
     padding-block: $space-5;
   }
 
-  .navigation {
-    display: grid;
-    gap: $space-1;
-    max-width: none;
-    overflow: visible;
-  }
-
-  .navigationLink {
-    grid-template-columns: $dashboard-sidebar-collapsed-width minmax(0, 1fr);
-    min-height: 2.75rem;
-    padding: 0;
-  }
-
   .navigationText {
     opacity: 1;
     transform: none;
     transition: none;
-  }
-
-  .sectionNavigation {
-    display: grid;
   }
 
   .sectionNavigationText,
