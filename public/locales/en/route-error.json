@@ -1,0 +1,11 @@
+{
+  "eyebrow": "Route error",
+  "title": "Something went wrong",
+  "titleWithStatus": "Error {{status}}",
+  "description": "The page could not be rendered. Try going back or returning to the home page.",
+  "descriptionWithStatus": "The route failed with: {{statusText}}.",
+  "unknownStatus": "Unknown error",
+  "goBack": "Go back",
+  "goHome": "Go home",
+  "details": "Error details"
+}
