@@ -10,6 +10,10 @@ export type Styles = {
   scoreBlock: string;
   scoreMax: string;
   scoreValue: string;
+  scoreValueCritical: string;
+  scoreValueExcellent: string;
+  scoreValueGood: string;
+  scoreValueWarning: string;
   status: string;
   title: string;
 };

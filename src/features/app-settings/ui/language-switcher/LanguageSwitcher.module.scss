@@ -1,0 +1,165 @@
+@use 'app/styles/helpers' as *;
+
+.languageSwitcher {
+  display: block;
+}
+
+.languageSwitcherSidebar {
+  width: 100%;
+  transition: width $transition-base;
+}
+
+.languageSwitcherCollapsed {
+  width: $dashboard-sidebar-collapsed-width;
+}
+
+.trigger {
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    background-color $transition-base,
+    color $transition-base;
+
+  &:hover {
+    background: var(--color-nav-item-hover);
+    color: var(--color-text-primary);
+  }
+}
+
+.triggerSidebar {
+  display: grid;
+  grid-template-columns: $dashboard-sidebar-collapsed-width minmax(0, 1fr);
+  align-items: center;
+  justify-items: start;
+  width: 100%;
+  min-height: 2.75rem;
+  overflow: hidden;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+  white-space: nowrap;
+}
+
+.triggerIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--color-border-primary);
+  border-radius: $radius-sm;
+  background: var(--color-bg-surface);
+}
+
+.triggerCollapsed {
+  .text {
+    opacity: 0;
+    transform: translateX(-0.25rem);
+    pointer-events: none;
+    transition-delay: 0s;
+  }
+}
+
+.icon {
+  justify-self: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: 0 0 auto;
+  color: currentColor;
+}
+
+.text {
+  justify-self: start;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity $sidebar-text-fade-duration ease $sidebar-text-fade-delay,
+    transform $sidebar-text-fade-duration ease $sidebar-text-fade-delay;
+}
+
+.dropdown {
+  min-width: 10.5rem;
+}
+
+.options {
+  display: grid;
+  gap: $space-1;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-3;
+  width: 100%;
+  border: 0;
+  border-radius: $radius-sm;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: $space-2 $space-3;
+  font-size: $font-size-sm;
+  line-height: $line-height-sm;
+  text-align: left;
+  transition:
+    background-color $transition-base,
+    color $transition-base;
+
+  &:hover {
+    background: var(--color-nav-item-hover);
+    color: var(--color-text-primary);
+  }
+}
+
+.optionSelected {
+  background: var(--color-nav-item-active);
+  color: var(--color-nav-item-active-text);
+}
+
+.optionIcon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  color: var(--color-nav-item-active-icon);
+}
+
+.screenReaderText {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@include media-max($breakpoint-lg) {
+  .languageSwitcherCollapsed {
+    width: 100%;
+  }
+
+  .triggerCollapsed {
+    .text {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+      transition: none;
+    }
+  }
+
+  .dropdown {
+    min-width: 9.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .languageSwitcherSidebar,
+  .trigger,
+  .text,
+  .option {
+    transition: none;
+  }
+}

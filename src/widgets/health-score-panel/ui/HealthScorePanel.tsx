@@ -1,4 +1,11 @@
-import { getScoreStatus, getScoreStatusBadgeVariant, getScoreStatusLabel } from '@/entities/report';
+import clsx from 'clsx';
+
+import {
+  getScoreStatus,
+  getScoreStatusBadgeVariant,
+  getScoreStatusLabel,
+  type ScoreStatus,
+} from '@/entities/report';
 import { normalizeScore } from '@/shared/lib/format-score';
 import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
@@ -12,6 +19,13 @@ interface HealthScorePanelProps {
   score: number;
   headerAction?: ReactNode;
 }
+
+const scoreStatusClassMap: Record<ScoreStatus, string> = {
+  excellent: s.scoreValueExcellent,
+  good: s.scoreValueGood,
+  warning: s.scoreValueWarning,
+  critical: s.scoreValueCritical,
+};
 
 export const HealthScorePanel = ({ headerAction, score }: HealthScorePanelProps) => {
   const normalizedScore = normalizeScore(score);
@@ -36,7 +50,7 @@ export const HealthScorePanel = ({ headerAction, score }: HealthScorePanelProps)
 
       <div className={s.scoreBlock}>
         <div aria-label={`Frontend health score ${normalizedScore} out of 100`} className={s.score}>
-          <span className={s.scoreValue}>{normalizedScore}</span>
+          <span className={clsx(s.scoreValue, scoreStatusClassMap[status])}>{normalizedScore}</span>
           <span className={s.scoreMax}>/100</span>
         </div>
 

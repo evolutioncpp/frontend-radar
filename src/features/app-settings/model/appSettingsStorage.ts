@@ -1,10 +1,11 @@
+import { defaultLanguage, normalizeSupportedLanguage } from '@/shared/config/i18n';
 import { StorageKeys } from '@/shared/config/storage';
 
-import type { AppLanguage, AppSettingsState, AppTheme } from './appSettingsTypes';
+import type { AppSettingsState, AppTheme } from './appSettingsTypes';
 
 const defaultAppSettingsState: AppSettingsState = {
   theme: 'dark',
-  language: 'en',
+  language: defaultLanguage,
   isDashboardSidebarCollapsed: false,
 };
 
@@ -14,10 +15,6 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
 
 const isAppTheme = (value: unknown): value is AppTheme => {
   return value === 'dark' || value === 'light';
-};
-
-const isAppLanguage = (value: unknown): value is AppLanguage => {
-  return value === 'en' || value === 'ru';
 };
 
 const canUseLocalStorage = () => {
@@ -31,12 +28,32 @@ const normalizeAppSettingsState = (value: unknown): AppSettingsState => {
 
   return {
     theme: isAppTheme(value.theme) ? value.theme : defaultAppSettingsState.theme,
-    language: isAppLanguage(value.language) ? value.language : defaultAppSettingsState.language,
+    language: normalizeSupportedLanguage(value.language),
     isDashboardSidebarCollapsed:
       typeof value.isDashboardSidebarCollapsed === 'boolean'
         ? value.isDashboardSidebarCollapsed
         : defaultAppSettingsState.isDashboardSidebarCollapsed,
   };
+};
+
+export const hasStoredAppLanguage = () => {
+  if (!canUseLocalStorage()) {
+    return false;
+  }
+
+  try {
+    const storedValue = localStorage.getItem(StorageKeys.APP_SETTINGS);
+
+    if (!storedValue) {
+      return false;
+    }
+
+    const parsedValue: unknown = JSON.parse(storedValue);
+
+    return isRecord(parsedValue) && typeof parsedValue.language === 'string';
+  } catch {
+    return false;
+  }
 };
 
 export const loadAppSettingsState = (): AppSettingsState => {

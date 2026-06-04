@@ -12,6 +12,9 @@ import {
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
+import { LanguageSwitcher } from '@/features/app-settings';
+import { Tooltip } from '@/shared/ui/Tooltip';
+
 import s from './DashboardSidebar.module.scss';
 import {
   dashboardNavigationItems,
@@ -45,6 +48,8 @@ export const DashboardSidebar = ({
   onNavigate,
   onSectionNavigate,
 }: DashboardSidebarProps) => {
+  const isTooltipDisabled = !isCollapsed || isMobileOpen;
+
   const handleSectionLinkClick = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
     if (!onSectionNavigate) {
       onNavigate?.();
@@ -69,20 +74,28 @@ export const DashboardSidebar = ({
             const Icon = navigationIcons[item.icon];
 
             return (
-              <NavLink
-                aria-label={item.label}
-                className={({ isActive }) =>
-                  clsx(s.navigationLink, isActive && s.navigationLinkActive)
-                }
-                end={item.end}
+              <Tooltip
+                align="center"
+                className={isCollapsed ? s.collapsedTooltip : undefined}
+                content={item.label}
+                disabled={isTooltipDisabled}
+                isFullWidth
                 key={item.to}
-                onClick={onNavigate}
-                title={isCollapsed ? item.label : undefined}
-                to={item.to}
+                side="right"
               >
-                <Icon aria-hidden="true" className={s.navigationIcon} strokeWidth={2} />
-                <span className={s.navigationText}>{item.label}</span>
-              </NavLink>
+                <NavLink
+                  aria-label={item.label}
+                  className={({ isActive }) =>
+                    clsx(s.navigationLink, isActive && s.navigationLinkActive)
+                  }
+                  end={item.end}
+                  onClick={onNavigate}
+                  to={item.to}
+                >
+                  <Icon aria-hidden="true" className={s.navigationIcon} strokeWidth={2} />
+                  <span className={s.navigationText}>{item.label}</span>
+                </NavLink>
+              </Tooltip>
             );
           })}
         </nav>
@@ -95,21 +108,38 @@ export const DashboardSidebar = ({
               const Icon = navigationIcons[item.icon];
 
               return (
-                <a
-                  aria-label={item.label}
-                  className={s.sectionNavigationLink}
-                  href={item.href}
+                <Tooltip
+                  align="center"
+                  className={isCollapsed ? s.collapsedTooltip : undefined}
+                  content={item.label}
+                  disabled={isTooltipDisabled}
+                  isFullWidth
                   key={item.href}
-                  onClick={(event) => handleSectionLinkClick(event, item.href)}
-                  title={isCollapsed ? item.label : undefined}
+                  side="right"
                 >
-                  <Icon aria-hidden="true" className={s.sectionNavigationIcon} strokeWidth={2} />
-                  <span className={s.sectionNavigationText}>{item.label}</span>
-                </a>
+                  <a
+                    aria-label={item.label}
+                    className={s.sectionNavigationLink}
+                    href={item.href}
+                    onClick={(event) => handleSectionLinkClick(event, item.href)}
+                  >
+                    <Icon aria-hidden="true" className={s.sectionNavigationIcon} strokeWidth={2} />
+                    <span className={s.sectionNavigationText}>{item.label}</span>
+                  </a>
+                </Tooltip>
               );
             })}
           </div>
         </nav>
+
+        <div className={s.sidebarFooter}>
+          <LanguageSwitcher
+            align="center"
+            isCollapsed={isCollapsed}
+            side="right"
+            variant="sidebar"
+          />
+        </div>
       </div>
     </aside>
   );

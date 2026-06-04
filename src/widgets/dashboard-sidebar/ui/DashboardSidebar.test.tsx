@@ -7,6 +7,14 @@ import { AppRoutes } from '@/shared/config/routes/appRoutes';
 
 import { DashboardSidebar } from './DashboardSidebar';
 
+vi.mock('@/features/app-settings', () => ({
+  LanguageSwitcher: () => (
+    <button aria-label="Switch language" type="button">
+      Language
+    </button>
+  ),
+}));
+
 const renderSidebar = (props?: React.ComponentProps<typeof DashboardSidebar>) => {
   return render(
     <MemoryRouter initialEntries={[AppRoutes.DASHBOARD]}>
@@ -97,5 +105,26 @@ describe('DashboardSidebar', () => {
 
     expect(onSectionNavigate).toHaveBeenCalledWith(`#${DashboardSectionIds.METRICS}`);
     expect(onNavigate).not.toHaveBeenCalled();
+  });
+
+  test('renders language switcher', () => {
+    renderSidebar();
+
+    expect(screen.getByRole('button', { name: 'Switch language' })).toBeInTheDocument();
+  });
+
+  test('does not render native title attributes for collapsed navigation links', () => {
+    renderSidebar({ isCollapsed: true });
+
+    expect(screen.getByRole('link', { name: 'Overview' })).not.toHaveAttribute('title');
+    expect(screen.getByRole('link', { name: 'Metrics' })).not.toHaveAttribute('title');
+  });
+
+  test('renders custom tooltip for collapsed navigation links', () => {
+    renderSidebar({ isCollapsed: true });
+
+    fireEvent.mouseEnter(screen.getByRole('link', { name: 'Overview' }));
+
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Overview');
   });
 });

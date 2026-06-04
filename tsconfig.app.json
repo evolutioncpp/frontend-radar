@@ -6,6 +6,7 @@
     "module": "esnext",
     "types": ["vite/client", "vitest/globals", "vitest/jsdom"],
     "skipLibCheck": true,
+    "resolveJsonModule": true,
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -27,5 +28,5 @@
       "@locales/*": ["./public/locales/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "public/locales/**/*.json"]
 }

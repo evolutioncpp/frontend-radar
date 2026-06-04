@@ -1,0 +1,12 @@
+{
+  "actions": {
+    "switchLanguage": "Switch language"
+  },
+  "common": {
+    "language": "Language",
+    "languages": {
+      "en": "English",
+      "ru": "Русский"
+    }
+  }
+}
