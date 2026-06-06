@@ -2,9 +2,11 @@ import { Link as LinkIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { getDashboardSectionUrl } from '@/features/dashboard-section-navigation';
+import {
+  dashboardSectionPageLabelKeys,
+  type DashboardSectionId,
+} from '@/shared/config/navigation/dashboardSections';
 import { CopyButton } from '@/shared/ui/CopyButton';
-
-import { dashboardSectionLabelKeys, type DashboardSectionId } from '../../model/dashboardSections';
 
 interface DashboardSectionCopyButtonProps {
   sectionId: DashboardSectionId;
@@ -13,7 +15,7 @@ interface DashboardSectionCopyButtonProps {
 export const DashboardSectionCopyButton = ({ sectionId }: DashboardSectionCopyButtonProps) => {
   const { t } = useTranslation('dashboard');
 
-  const sectionName = t(dashboardSectionLabelKeys[sectionId]);
+  const sectionName = t(dashboardSectionPageLabelKeys[sectionId]);
 
   return (
     <CopyButton

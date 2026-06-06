@@ -1,31 +1,21 @@
-import { DashboardSectionIds } from '@/shared/config/navigation/dashboardSections';
+import {
+  dashboardSectionIds,
+  getDashboardSectionHref,
+  getDashboardSectionIdFromHash,
+  type DashboardSectionId,
+} from '@/shared/config/navigation/dashboardSections';
 
-export type DashboardSectionId = (typeof DashboardSectionIds)[keyof typeof DashboardSectionIds];
-
-export const dashboardSectionIds: DashboardSectionId[] = [
-  DashboardSectionIds.REPOSITORY,
-  DashboardSectionIds.HEALTH_SCORE,
-  DashboardSectionIds.METRICS,
-  DashboardSectionIds.CHECKS,
-  DashboardSectionIds.RECOMMENDATIONS,
-];
+export { dashboardSectionIds, getDashboardSectionHref, getDashboardSectionIdFromHash };
+export type { DashboardSectionId };
 
 const activationOffset = 160;
 const pageTopClearOffset = 24;
-
-export const getDashboardSectionHref = (sectionId: string) => {
-  return `#${sectionId}`;
-};
-
-export const getDashboardSectionIdFromHash = (hash: string) => {
-  return decodeURIComponent(hash.replace('#', ''));
-};
 
 export const isDashboardSectionId = (sectionId: string): sectionId is DashboardSectionId => {
   return dashboardSectionIds.includes(sectionId as DashboardSectionId);
 };
 
-export const getDashboardSectionUrl = (sectionId: string) => {
+export const getDashboardSectionUrl = (sectionId: DashboardSectionId) => {
   return `${window.location.origin}${window.location.pathname}${window.location.search}${getDashboardSectionHref(sectionId)}`;
 };
 
@@ -95,8 +85,11 @@ export const getActiveDashboardSectionHash = () => {
   if (isPageBottom) {
     const visibleSections = sections.filter(isSectionVisible);
     const lastVisibleSection = visibleSections[visibleSections.length - 1];
+    const lastVisibleSectionId = lastVisibleSection?.id ?? '';
 
-    return lastVisibleSection ? getDashboardSectionHref(lastVisibleSection.id) : '';
+    return isDashboardSectionId(lastVisibleSectionId)
+      ? getDashboardSectionHref(lastVisibleSectionId)
+      : '';
   }
 
   const crossedSections = sections.filter((section) => {
@@ -106,6 +99,7 @@ export const getActiveDashboardSectionHash = () => {
   });
 
   const activeSection = crossedSections[crossedSections.length - 1];
+  const activeSectionId = activeSection?.id ?? '';
 
-  return activeSection ? getDashboardSectionHref(activeSection.id) : '';
+  return isDashboardSectionId(activeSectionId) ? getDashboardSectionHref(activeSectionId) : '';
 };

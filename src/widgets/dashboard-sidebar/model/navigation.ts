@@ -1,25 +1,21 @@
-import { DashboardSectionIds } from '@/shared/config/navigation/dashboardSections';
+import {
+  dashboardSections,
+  type DashboardSectionNavigationIcon,
+} from '@/shared/config/navigation/dashboardSections';
 import { AppRoutes } from '@/shared/config/routes/appRoutes';
 
-export type DashboardNavigationIcon =
-  | 'overview'
-  | 'history'
-  | 'settings'
-  | 'repository'
-  | 'healthScore'
-  | 'metrics'
-  | 'checks'
-  | 'recommendations';
+export type DashboardPageNavigationIcon = 'overview' | 'history' | 'settings';
+export type DashboardNavigationIcon = DashboardPageNavigationIcon | DashboardSectionNavigationIcon;
 
 interface DashboardNavigationItem {
   to: string;
-  icon: DashboardNavigationIcon;
+  icon: DashboardPageNavigationIcon;
   end?: boolean;
 }
 
 interface DashboardSectionNavigationItem {
   href: string;
-  icon: DashboardNavigationIcon;
+  icon: DashboardSectionNavigationIcon;
 }
 
 export const dashboardNavigationItems: DashboardNavigationItem[] = [
@@ -38,25 +34,8 @@ export const dashboardNavigationItems: DashboardNavigationItem[] = [
   },
 ];
 
-export const dashboardSectionNavigationItems: DashboardSectionNavigationItem[] = [
-  {
-    href: `#${DashboardSectionIds.REPOSITORY}`,
-    icon: 'repository',
-  },
-  {
-    href: `#${DashboardSectionIds.HEALTH_SCORE}`,
-    icon: 'healthScore',
-  },
-  {
-    href: `#${DashboardSectionIds.METRICS}`,
-    icon: 'metrics',
-  },
-  {
-    href: `#${DashboardSectionIds.CHECKS}`,
-    icon: 'checks',
-  },
-  {
-    href: `#${DashboardSectionIds.RECOMMENDATIONS}`,
-    icon: 'recommendations',
-  },
-];
+export const dashboardSectionNavigationItems: DashboardSectionNavigationItem[] =
+  dashboardSections.map((section) => ({
+    href: section.href,
+    icon: section.navigationIcon,
+  }));

@@ -1,1 +1,1 @@
-export { DashboardLayout } from './ui/DashboardLayout';
+export { DashboardLayoutAsync as DashboardLayout } from './ui/DashboardLayout.async';

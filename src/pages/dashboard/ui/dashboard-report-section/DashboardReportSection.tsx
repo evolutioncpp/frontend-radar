@@ -2,7 +2,7 @@ import clsx from 'clsx';
 
 import s from '../DashboardPage.module.scss';
 
-import type { DashboardSectionId } from '../../model/dashboardSections';
+import type { DashboardSectionId } from '@/shared/config/navigation/dashboardSections';
 import type { ReactNode } from 'react';
 
 interface DashboardReportSectionProps {
