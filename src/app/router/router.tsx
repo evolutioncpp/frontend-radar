@@ -7,6 +7,7 @@ import { DashboardHistoryPage } from '@/pages/dashboard-history';
 import { DashboardSettingsPage } from '@/pages/dashboard-settings';
 import { RouteErrorPage } from '@/pages/error';
 import { HomePage } from '@/pages/home';
+import { ReportPage } from '@/pages/report';
 import { AppRoutes } from '@/shared/config/routes/appRoutes';
 
 export const router = createBrowserRouter([
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
       {
         path: AppRoutes.DASHBOARD_SETTINGS,
         element: <DashboardSettingsPage />,
+      },
+      {
+        path: AppRoutes.REPORT,
+        element: <ReportPage />,
       },
     ],
   },

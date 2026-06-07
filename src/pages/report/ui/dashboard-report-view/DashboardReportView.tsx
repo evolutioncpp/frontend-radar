@@ -14,7 +14,7 @@ import { RepositorySummary } from '@/widgets/repository-summary';
 
 import { DashboardReportSection } from '../dashboard-report-section/DashboardReportSection';
 import { DashboardSectionCopyButton } from '../dashboard-section-copy-button/DashboardSectionCopyButton';
-import s from '../DashboardPage.module.scss';
+import s from '../ReportPage.module.scss';
 
 import type { ProjectReport } from '@/entities/report';
 

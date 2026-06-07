@@ -1,6 +1,7 @@
 export type Styles = {
   actions: string;
   dashboardHeader: string;
+  icon: string;
   link: string;
   logo: string;
   mobileSidebarToggle: string;

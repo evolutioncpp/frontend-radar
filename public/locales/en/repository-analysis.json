@@ -1,0 +1,12 @@
+{
+  "form": {
+    "label": "Repository",
+    "placeholder": "https://github.com/owner/repo",
+    "hint": "Paste a GitHub repository URL or owner/repo.",
+    "clear": "Clear repository",
+    "submit": "Analyze",
+    "errors": {
+      "invalidRepository": "Enter a valid GitHub repository."
+    }
+  }
+}

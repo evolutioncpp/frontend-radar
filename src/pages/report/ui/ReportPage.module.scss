@@ -1,0 +1,75 @@
+@use 'app/styles/helpers' as *;
+
+$dashboard-section-scroll-offset: calc($space-10 + $space-10);
+
+.reportPage {
+  display: grid;
+  gap: $space-8;
+}
+
+.content {
+  display: grid;
+  gap: $space-5;
+}
+
+.section {
+  min-width: 0;
+  scroll-margin-top: $dashboard-section-scroll-offset;
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: $space-5;
+}
+
+.detailsSection {
+  display: flex;
+}
+
+.detailsCard {
+  flex: 1;
+  min-width: 0;
+  align-content: start;
+}
+
+.fallbackCard {
+  display: grid;
+  gap: $space-3;
+}
+
+.fallbackTitle {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-2xl;
+  line-height: $line-height-sm;
+}
+
+.fallbackDescription {
+  max-width: 40rem;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: $font-size-md;
+  line-height: $line-height-lg;
+}
+
+@include media-max($breakpoint-lg) {
+  .reportPage {
+    gap: $space-6;
+  }
+
+  .detailsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@include media-max($breakpoint-sm) {
+  .fallbackTitle {
+    font-size: $font-size-xl;
+  }
+
+  .fallbackDescription {
+    font-size: $font-size-sm;
+  }
+}

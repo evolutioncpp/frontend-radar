@@ -1,0 +1,54 @@
+@use 'app/styles/helpers' as *;
+
+.repositoryAnalysisPanel {
+  display: grid;
+  min-width: 0;
+  gap: $space-6;
+}
+
+.header {
+  display: grid;
+  gap: $space-3;
+}
+
+.label {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  max-width: 52rem;
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-4xl;
+  line-height: $line-height-sm;
+  letter-spacing: -0.04em;
+}
+
+.description {
+  max-width: 48rem;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: $font-size-md;
+  line-height: $line-height-lg;
+}
+
+@include media-max($breakpoint-lg) {
+  .title {
+    font-size: $font-size-3xl;
+  }
+}
+
+@include media-max($breakpoint-sm) {
+  .title {
+    font-size: $font-size-2xl;
+  }
+
+  .description {
+    font-size: $font-size-sm;
+  }
+}

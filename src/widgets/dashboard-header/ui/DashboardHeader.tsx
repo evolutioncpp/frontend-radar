@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { ThemeToggle } from '@/features/app-settings';
+import GithubIcon from '@/shared/assets/icons/GitHub_Invertocat_Black.svg?react';
 import { projectConfig } from '@/shared/config/project';
 import { AppRoutes } from '@/shared/config/routes/appRoutes';
 
@@ -74,6 +75,7 @@ export const DashboardHeader = ({
           rel="noreferrer"
           target="_blank"
         >
+          <GithubIcon aria-hidden="true" className={s.icon} focusable="false" />
           {t('header.openRepository')}
         </a>
       </div>

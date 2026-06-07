@@ -1,68 +1,121 @@
 @use 'app/styles/helpers' as *;
 
-$dashboard-section-scroll-offset: calc($space-10 + $space-10);
-
 .dashboardPage {
   display: grid;
   gap: $space-8;
 }
 
-.header {
+.analysisInfoCard {
   display: grid;
-  gap: $space-3;
+  min-width: 0;
+  gap: $space-10;
 }
 
-.label {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: $font-size-xs;
-  font-weight: $font-weight-semibold;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.analysisInfoHeader {
+  display: grid;
+  gap: $space-2;
+  max-width: 46rem;
 }
 
-.title {
-  max-width: 52rem;
+.analysisInfoTitle {
   margin: 0;
   color: var(--color-text-primary);
-  font-size: $font-size-4xl;
+  font-size: $font-size-2xl;
   line-height: $line-height-sm;
-  letter-spacing: -0.04em;
 }
 
-.description {
-  max-width: 48rem;
+.analysisInfoDescription {
   margin: 0;
   color: var(--color-text-secondary);
   font-size: $font-size-md;
   line-height: $line-height-lg;
 }
 
-.content {
+.analysisSteps {
   display: grid;
-  gap: $space-5;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.section {
-  min-width: 0;
-  scroll-margin-top: $dashboard-section-scroll-offset;
-}
-
-.detailsGrid {
+.analysisStep {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: stretch;
-  gap: $space-5;
-}
-
-.detailsSection {
-  display: flex;
-}
-
-.detailsCard {
-  flex: 1;
+  grid-template-columns: 3rem minmax(0, 1fr) minmax(15rem, 19rem);
   min-width: 0;
+  column-gap: $space-5;
+  row-gap: $space-3;
+  padding: $space-5 0;
+  border-top: 1px solid var(--color-border-primary);
+
+  &:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+}
+
+.analysisStepNumber {
+  color: var(--color-text-muted);
+  font-size: $font-size-xl;
+  font-weight: $font-weight-extra-bold;
+  letter-spacing: -0.02em;
+  line-height: $line-height-sm;
+  font-variant-numeric: tabular-nums;
+}
+
+.analysisStepText {
+  display: grid;
+  min-width: 0;
+  gap: $space-2;
+}
+
+.analysisStepTitle {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-md;
+  line-height: $line-height-sm;
+}
+
+.analysisStepDescription {
+  max-width: 56rem;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: $font-size-md;
+  line-height: $line-height-lg;
+}
+
+.analysisStepDetails {
+  display: grid;
   align-content: start;
+  min-width: 0;
+  gap: $space-2;
+}
+
+.analysisStepDetailsTitle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-md;
+}
+
+.analysisStepDetailsList {
+  display: grid;
+  gap: $space-1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.analysisStepDetailsItem {
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-size: $font-size-sm;
+  line-height: $line-height-md;
 }
 
 @include media-max($breakpoint-lg) {
@@ -70,21 +123,41 @@ $dashboard-section-scroll-offset: calc($space-10 + $space-10);
     gap: $space-6;
   }
 
-  .title {
-    font-size: $font-size-3xl;
+  .analysisStep {
+    grid-template-columns: 3rem minmax(0, 1fr);
   }
 
-  .detailsGrid {
-    grid-template-columns: 1fr;
+  .analysisStepDetails {
+    grid-column: 2;
+    margin-top: $space-2;
+    padding-top: $space-3;
   }
 }
 
 @include media-max($breakpoint-sm) {
-  .title {
-    font-size: $font-size-2xl;
+  .analysisInfoTitle {
+    font-size: $font-size-xl;
   }
 
-  .description {
+  .analysisInfoDescription {
     font-size: $font-size-sm;
+  }
+
+  .analysisStep {
+    grid-template-columns: 1fr;
+    gap: $space-3;
+    padding: $space-4 0;
+  }
+
+  .analysisStepDescription,
+  .analysisStepDetailsTitle,
+  .analysisStepDetailsItem {
+    font-size: $font-size-sm;
+  }
+
+  .analysisStepDetails {
+    grid-column: auto;
+    margin-top: 0;
+    padding-top: $space-3;
   }
 }

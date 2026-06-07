@@ -1,6 +1,6 @@
 {
   "header": {
-    "openRepository": "Открыть на GitHub",
+    "openRepository": "GitHub",
     "openRepositoryAria": "Открыть репозиторий Frontend Radar на GitHub",
     "collapseSidebar": "Свернуть сайдбар",
     "expandSidebar": "Развернуть сайдбар",
@@ -23,10 +23,64 @@
     }
   },
   "page": {
-    "label": "Демо-отчёт",
+    "label": "Анализ репозитория",
     "title": "Обзор состояния frontend-проекта",
     "description": "Анализируйте качество репозитория, инструменты, тесты, документацию и готовность к доставке в одном дашборде.",
     "reportAria": "Отчёт дашборда",
+    "analysisInfo": {
+      "title": "Как работает анализ",
+      "description": "Отчёт собирается из данных репозитория, которые можно проверять последовательно: файлов проекта, package metadata, quality tooling и конфигурации доставки.",
+      "steps": {
+        "repository": {
+          "title": "Считываем контекст репозитория",
+          "description": "Frontend Radar начинает со структуры проекта, package metadata, основной ветки, лицензии, README и других файлов, которые показывают, как проект поддерживается.",
+          "detailsTitle": "Используем как вход",
+          "details": {
+            "package": "package.json",
+            "readme": "README",
+            "license": "Лицензия",
+            "branch": "Основная ветка"
+          }
+        },
+        "signals": {
+          "title": "Ищем frontend-сигналы качества",
+          "description": "Анализатор проверяет scripts, TypeScript и bundler setup, linting, formatting, тесты, CI/CD, dependency metadata и покрытие документацией.",
+          "detailsTitle": "Проверяемые сигналы",
+          "details": {
+            "scripts": "Project scripts",
+            "typescript": "TypeScript и bundler setup",
+            "quality": "Linting, formatting и тесты",
+            "delivery": "CI/CD configuration"
+          }
+        },
+        "metrics": {
+          "title": "Собираем разбивку оценки",
+          "description": "Сигналы группируются по разделам отчёта, чтобы результат показывал не только итоговую оценку здоровья, но и сильные зоны вместе с проблемными.",
+          "detailsTitle": "На выходе в отчёте",
+          "details": {
+            "score": "Health score",
+            "metrics": "Метрики качества",
+            "checks": "Проверки проекта",
+            "statuses": "Статусы"
+          }
+        },
+        "recommendations": {
+          "title": "Приоритизируем следующие шаги",
+          "description": "Финальный отчёт превращает слабые сигналы в практические рекомендации, отсортированные по влиянию на поддерживаемость и готовность к доставке.",
+          "detailsTitle": "Логика рекомендаций",
+          "details": {
+            "high": "Высокий приоритет",
+            "medium": "Средний приоритет",
+            "low": "Низкий приоритет",
+            "impact": "Влияние на поддерживаемость"
+          }
+        }
+      }
+    },
+    "reportFallback": {
+      "title": "Отчёт не найден",
+      "description": "Этот отчёт пока недоступен. Запустите новый анализ на странице обзора."
+    },
     "sections": {
       "repository": "Сводка репозитория",
       "healthScore": "Оценка здоровья",

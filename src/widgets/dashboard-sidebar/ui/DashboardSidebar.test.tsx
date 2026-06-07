@@ -6,6 +6,7 @@ import { DashboardSectionIds } from '@/shared/config/navigation/dashboardSection
 import { AppRoutes } from '@/shared/config/routes/appRoutes';
 
 import { DashboardSidebar } from './DashboardSidebar';
+import { dashboardSectionNavigationItems } from '../model/navigation';
 
 vi.mock('@/features/app-settings', () => ({
   LanguageSwitcher: () => (
@@ -62,15 +63,22 @@ describe('DashboardSidebar', () => {
     );
   });
 
-  test('renders page navigation', () => {
+  test('does not render page navigation without section items', () => {
     renderSidebar();
+
+    expect(screen.queryByRole('navigation', { name: 'Page navigation' })).not.toBeInTheDocument();
+    expect(screen.queryByText('On this page')).not.toBeInTheDocument();
+  });
+
+  test('renders page navigation with section items', () => {
+    renderSidebar({ sectionNavigationItems: dashboardSectionNavigationItems });
 
     expect(screen.getByRole('navigation', { name: 'Page navigation' })).toBeInTheDocument();
     expect(screen.getByText('On this page')).toBeInTheDocument();
   });
 
   test('renders dashboard section links', () => {
-    renderSidebar();
+    renderSidebar({ sectionNavigationItems: dashboardSectionNavigationItems });
 
     expect(screen.getByRole('link', { name: 'Repository' })).toHaveAttribute(
       'href',
@@ -111,7 +119,7 @@ describe('DashboardSidebar', () => {
   test('calls onNavigate when page navigation link is clicked without section navigation handler', () => {
     const onNavigate = vi.fn();
 
-    renderSidebar({ onNavigate });
+    renderSidebar({ onNavigate, sectionNavigationItems: dashboardSectionNavigationItems });
 
     fireEvent.click(screen.getByRole('link', { name: 'Metrics' }));
 
@@ -122,7 +130,11 @@ describe('DashboardSidebar', () => {
     const onNavigate = vi.fn();
     const onSectionNavigate = vi.fn();
 
-    renderSidebar({ onNavigate, onSectionNavigate });
+    renderSidebar({
+      onNavigate,
+      onSectionNavigate,
+      sectionNavigationItems: dashboardSectionNavigationItems,
+    });
 
     fireEvent.click(screen.getByRole('link', { name: 'Metrics' }));
 
@@ -137,14 +149,14 @@ describe('DashboardSidebar', () => {
   });
 
   test('does not render native title attributes for collapsed navigation links', () => {
-    renderSidebar({ isCollapsed: true });
+    renderSidebar({ isCollapsed: true, sectionNavigationItems: dashboardSectionNavigationItems });
 
     expect(screen.getByRole('link', { name: 'Overview' })).not.toHaveAttribute('title');
     expect(screen.getByRole('link', { name: 'Metrics' })).not.toHaveAttribute('title');
   });
 
   test('renders custom tooltip for collapsed navigation links', () => {
-    renderSidebar({ isCollapsed: true });
+    renderSidebar({ isCollapsed: true, sectionNavigationItems: dashboardSectionNavigationItems });
 
     fireEvent.mouseEnter(screen.getByRole('link', { name: 'Overview' }));
 

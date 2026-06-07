@@ -13,7 +13,7 @@ interface DashboardNavigationItem {
   end?: boolean;
 }
 
-interface DashboardSectionNavigationItem {
+export interface DashboardSectionNavigationItem {
   href: string;
   icon: DashboardSectionNavigationIcon;
 }

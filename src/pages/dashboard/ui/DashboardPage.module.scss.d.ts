@@ -1,14 +1,19 @@
 export type Styles = {
-  content: string;
+  analysisInfoCard: string;
+  analysisInfoDescription: string;
+  analysisInfoHeader: string;
+  analysisInfoTitle: string;
+  analysisStep: string;
+  analysisStepDescription: string;
+  analysisStepDetails: string;
+  analysisStepDetailsItem: string;
+  analysisStepDetailsList: string;
+  analysisStepDetailsTitle: string;
+  analysisStepNumber: string;
+  analysisSteps: string;
+  analysisStepText: string;
+  analysisStepTitle: string;
   dashboardPage: string;
-  description: string;
-  detailsCard: string;
-  detailsGrid: string;
-  detailsSection: string;
-  header: string;
-  label: string;
-  section: string;
-  title: string;
 };
 
 export type ClassNames = keyof Styles;

@@ -3,8 +3,14 @@ export const AppRoutes = {
   DASHBOARD: '/dashboard',
   DASHBOARD_HISTORY: '/dashboard/history',
   DASHBOARD_SETTINGS: '/dashboard/settings',
-  REPORT: '/report/:id',
+  REPORT: '/dashboard/report/:id',
   COMPARE: '/compare',
 } as const;
 
 export type AppRoute = (typeof AppRoutes)[keyof typeof AppRoutes];
+
+export const DEMO_REPORT_ID = 'demo';
+
+export const getDemoReportPath = () => {
+  return AppRoutes.REPORT.replace(':id', DEMO_REPORT_ID);
+};

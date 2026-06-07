@@ -1,26 +1,24 @@
-import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
-import { useDemoReport } from '@/entities/report';
+import { getDemoReportPath } from '@/shared/config/routes/appRoutes';
+import { RepositoryAnalysisPanel } from '@/widgets/repository-analysis-panel';
 
-import { DashboardReportView } from './dashboard-report-view/DashboardReportView';
+import { DashboardAnalysisInfo } from './dashboard-analysis-info/DashboardAnalysisInfo';
 import s from './DashboardPage.module.scss';
 
-export const DashboardPage = () => {
-  const { t } = useTranslation('dashboard');
+import type { RepositoryAnalysisRequest } from '@/features/repository-analysis';
 
-  const report = useDemoReport();
+export const DashboardPage = () => {
+  const navigate = useNavigate();
+
+  const analyzeRepository = (_request: RepositoryAnalysisRequest) => {
+    void navigate(getDemoReportPath());
+  };
 
   return (
     <div className={s.dashboardPage}>
-      <section className={s.header}>
-        <p className={s.label}>{t('page.label')}</p>
-
-        <h1 className={s.title}>{t('page.title')}</h1>
-
-        <p className={s.description}>{t('page.description')}</p>
-      </section>
-
-      <DashboardReportView report={report} />
+      <RepositoryAnalysisPanel onSubmit={analyzeRepository} />
+      <DashboardAnalysisInfo />
     </div>
   );
 };

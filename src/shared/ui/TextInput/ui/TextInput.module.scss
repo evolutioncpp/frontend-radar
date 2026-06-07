@@ -1,0 +1,166 @@
+@use 'app/styles/helpers' as *;
+
+.textInput {
+  display: grid;
+  gap: $space-2;
+  min-width: 0;
+}
+
+.label {
+  color: var(--color-text-secondary);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+}
+
+.control {
+  position: relative;
+  display: grid;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--color-border-primary);
+  border-radius: $radius-md;
+  background: var(--color-bg-subtle);
+  transition:
+    border-color $transition-base,
+    box-shadow $transition-base,
+    background-color $transition-base;
+
+  &:hover {
+    border-color: var(--color-border-secondary);
+    background: var(--color-bg-surface);
+  }
+
+  &:focus-within {
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-focus);
+  }
+}
+
+.controlInvalid {
+  border-color: var(--color-danger);
+
+  &:focus-within {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 22%, transparent);
+  }
+}
+
+.controlWithLeftIcon {
+  .input {
+    padding-left: $space-10;
+  }
+}
+
+.controlWithRightAction {
+  .input {
+    padding-right: $space-10;
+  }
+}
+
+.input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: $font-size-md;
+  line-height: $line-height-md;
+  padding: $space-3 $space-4;
+
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
+}
+
+.icon,
+.clearButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.icon svg {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}
+
+.leftIcon {
+  left: $space-4;
+}
+
+.rightIcon,
+.clearButton {
+  right: $space-3;
+}
+
+.clearButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 0;
+  border-radius: $radius-sm;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0;
+  transition:
+    background-color $transition-base,
+    box-shadow $transition-base,
+    color $transition-base;
+
+  @include focus-visible;
+
+  &:hover {
+    color: var(--color-text-primary);
+  }
+}
+
+.clearIcon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.hint,
+.error {
+  margin: 0;
+  font-size: $font-size-sm;
+  line-height: $line-height-md;
+}
+
+.hint {
+  color: var(--color-text-muted);
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .control,
+  .clearButton {
+    transition: none;
+  }
+}

@@ -1,147 +1,113 @@
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, test } from 'vitest';
+
+import { AppRoutes } from '@/shared/config/routes/appRoutes';
 
 import { DashboardPage } from './DashboardPage';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, options?: Record<string, string | number>) => {
+    t: (key: string) => {
       const translations: Record<string, string> = {
-        'page.label': 'Demo report',
+        'page.label': 'Repository analysis',
         'page.title': 'Frontend project health overview',
         'page.description':
           'Analyze repository quality, tooling, testing, documentation and delivery readiness in a single dashboard.',
-        'page.reportAria': 'Dashboard report',
+        'page.analysisInfo.title': 'How the analysis works',
+        'page.analysisInfo.description':
+          'The report is assembled from repository data that can be checked consistently: project files, package metadata, quality tooling and delivery configuration.',
+        'page.analysisInfo.steps.repository.title': 'Read the repository context',
+        'page.analysisInfo.steps.repository.description':
+          'Frontend Radar starts with the repository structure, package metadata, default branch, license, README and other files that describe how the project is maintained.',
+        'page.analysisInfo.steps.repository.detailsTitle': 'Used as input',
+        'page.analysisInfo.steps.repository.details.package': 'package.json',
+        'page.analysisInfo.steps.repository.details.readme': 'README',
+        'page.analysisInfo.steps.repository.details.license': 'License',
+        'page.analysisInfo.steps.repository.details.branch': 'Default branch',
+        'page.analysisInfo.steps.signals.title': 'Detect frontend quality signals',
+        'page.analysisInfo.steps.signals.description':
+          'The analyzer looks for scripts, TypeScript and bundler setup, linting, formatting, testing, CI/CD, dependency metadata and documentation coverage.',
+        'page.analysisInfo.steps.signals.detailsTitle': 'Checked signals',
+        'page.analysisInfo.steps.signals.details.scripts': 'Project scripts',
+        'page.analysisInfo.steps.signals.details.typescript': 'TypeScript and bundler setup',
+        'page.analysisInfo.steps.signals.details.quality': 'Linting, formatting and tests',
+        'page.analysisInfo.steps.signals.details.delivery': 'CI/CD configuration',
+        'page.analysisInfo.steps.metrics.title': 'Build the score breakdown',
+        'page.analysisInfo.steps.metrics.description':
+          'Signals are grouped into report sections so the result shows not only the final health score, but also which areas are strong and which need attention.',
+        'page.analysisInfo.steps.metrics.detailsTitle': 'Report output',
+        'page.analysisInfo.steps.metrics.details.score': 'Health score',
+        'page.analysisInfo.steps.metrics.details.metrics': 'Quality metrics',
+        'page.analysisInfo.steps.metrics.details.checks': 'Project checks',
+        'page.analysisInfo.steps.metrics.details.statuses': 'Status labels',
+        'page.analysisInfo.steps.recommendations.title': 'Prioritize next steps',
+        'page.analysisInfo.steps.recommendations.description':
+          'The final report turns weak signals into practical recommendations, ordered by impact on project maintainability and delivery readiness.',
+        'page.analysisInfo.steps.recommendations.detailsTitle': 'Recommendation logic',
+        'page.analysisInfo.steps.recommendations.details.high': 'High priority',
+        'page.analysisInfo.steps.recommendations.details.medium': 'Medium priority',
+        'page.analysisInfo.steps.recommendations.details.low': 'Low priority',
+        'page.analysisInfo.steps.recommendations.details.impact': 'Impact on maintainability',
 
-        'page.sections.repository': 'Repository summary',
-        'page.sections.healthScore': 'Health score',
-        'page.sections.metrics': 'Quality metrics',
-        'page.sections.checks': 'Project checks',
-        'page.sections.recommendations': 'Recommendations',
-
-        'page.copySectionTitle': 'Copy section link',
-        'page.copied': 'Copied',
-
-        'repository.label': 'Repository',
-        'repository.openRepository': 'Open repository',
-        'repository.metadataAria': 'Repository metadata',
-        'repository.metadata.stars': 'Stars',
-        'repository.metadata.forks': 'Forks',
-        'repository.metadata.branch': 'Branch',
-        'repository.metadata.license': 'License',
-        'repository.metadata.unknown': 'Unknown',
-
-        'healthScore.label': 'Frontend Health Score',
-        'healthScore.title': 'Overall project quality',
-        'healthScore.description':
-          'This score summarizes repository setup, documentation, testing, CI/CD, dependencies and maintainability signals.',
-        'healthScore.progressAria': 'Frontend health score progress',
-
-        'metrics.label': 'Score breakdown',
-        'metrics.title': 'Quality metrics',
-        'metrics.listAria': 'Metrics list',
-
-        'checks.label': 'Project checks',
-        'checks.title': 'Quality signals',
-        'checks.listAria': 'Project checks list',
-
-        'recommendations.label': 'Next steps',
-        'recommendations.title': 'Recommendations',
-        'recommendations.listAria': 'Recommendations list',
-        'recommendations.empty': 'No recommendations for now.',
-
-        'statuses.excellent': 'Excellent',
-        'statuses.good': 'Good',
-        'statuses.warning': 'Warning',
-        'statuses.critical': 'Critical',
-        'statuses.passed': 'Passed',
-        'statuses.failed': 'Failed',
-        'statuses.high': 'High',
-        'statuses.medium': 'Medium',
-        'statuses.low': 'Low',
+        'form.label': 'Repository',
+        'form.placeholder': 'https://github.com/owner/repo',
+        'form.hint': 'Paste a GitHub repository URL or owner/repo.',
+        'form.clear': 'Clear repository',
+        'form.submit': 'Analyze',
+        'form.errors.invalidRepository': 'Enter a valid GitHub repository.',
       };
-
-      if (key === 'page.copySectionLink') {
-        return `Copy link to ${options?.section} section`;
-      }
-
-      if (key === 'healthScore.scoreAria') {
-        return `Frontend health score ${options?.score} out of 100`;
-      }
-
-      if (key === 'metrics.counter') {
-        return `${options?.count} ${options?.count === 1 ? 'metric' : 'metrics'}`;
-      }
-
-      if (key === 'checks.counter') {
-        return `${options?.count} ${options?.count === 1 ? 'check' : 'checks'}`;
-      }
-
-      if (key === 'recommendations.counter') {
-        return `${options?.count} ${options?.count === 1 ? 'recommendation' : 'recommendations'}`;
-      }
-
-      if (key === 'metrics.scoreAria') {
-        return `${options?.label} score ${options?.score} out of ${options?.max}`;
-      }
-
-      if (key === 'metrics.progressAria') {
-        return `${options?.label} score progress`;
-      }
 
       return translations[key] ?? key;
     },
   }),
 }));
 
-const renderDashboardPage = (initialEntry = '/dashboard') => {
+const renderDashboardPage = (initialEntry = AppRoutes.DASHBOARD) => {
   return render(
     <MemoryRouter initialEntries={[initialEntry]}>
-      <DashboardPage />
+      <Routes>
+        <Route element={<DashboardPage />} path={AppRoutes.DASHBOARD} />
+        <Route element={<h1>Demo report route</h1>} path={AppRoutes.REPORT} />
+      </Routes>
     </MemoryRouter>,
   );
 };
 
 describe('DashboardPage', () => {
-  test('renders dashboard report content', () => {
+  test('renders analysis form and info card', () => {
     renderDashboardPage();
 
     expect(
       screen.getByRole('heading', { name: 'Frontend project health overview' }),
     ).toBeInTheDocument();
-
-    expect(screen.getByText('Demo report')).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { name: /evolutioncpp\/frontend-radar/i }),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/Frontend Health Score/i)).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Quality metrics' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Quality signals' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Recommendations' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Repository')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Analyze' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'How the analysis works' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Build the score breakdown' })).toBeInTheDocument();
+    expect(screen.getByText('Used as input')).toBeInTheDocument();
+    expect(screen.getByText('package.json')).toBeInTheDocument();
   });
 
-  test('renders section copy link buttons', () => {
+  test('does not render demo report content by default', () => {
     renderDashboardPage();
 
-    expect(
-      screen.getByRole('button', { name: 'Copy link to Repository summary section' }),
-    ).toBeInTheDocument();
+    expect(screen.queryByText(/evolutioncpp\/frontend-radar/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Frontend Health Score/i)).not.toBeInTheDocument();
+  });
 
-    expect(
-      screen.getByRole('button', { name: 'Copy link to Health score section' }),
-    ).toBeInTheDocument();
+  test('navigates to demo report after valid submit', async () => {
+    renderDashboardPage();
 
-    expect(
-      screen.getByRole('button', { name: 'Copy link to Quality metrics section' }),
-    ).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Repository'), {
+      target: {
+        value: 'https://github.com/evolutioncpp/frontend-radar',
+      },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Analyze' }));
 
-    expect(
-      screen.getByRole('button', { name: 'Copy link to Project checks section' }),
-    ).toBeInTheDocument();
-
-    expect(
-      screen.getByRole('button', { name: 'Copy link to Recommendations section' }),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Demo report route' })).toBeInTheDocument();
+    });
   });
 });

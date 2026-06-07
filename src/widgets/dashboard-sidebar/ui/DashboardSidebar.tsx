@@ -6,7 +6,9 @@ import { LanguageSwitcher } from '@/features/app-settings';
 import { DashboardNavigationLink } from './DashboardNavigationLink';
 import { DashboardSectionNavigationLink } from './DashboardSectionNavigationLink';
 import s from './DashboardSidebar.module.scss';
-import { dashboardNavigationItems, dashboardSectionNavigationItems } from '../model/navigation';
+import { dashboardNavigationItems } from '../model/navigation';
+
+import type { DashboardSectionNavigationItem } from '../model/navigation';
 
 interface DashboardSidebarProps {
   activeSectionHref?: string;
@@ -14,6 +16,7 @@ interface DashboardSidebarProps {
   isMobileOpen?: boolean;
   onNavigate?: () => void;
   onSectionNavigate?: (href: string) => void;
+  sectionNavigationItems?: DashboardSectionNavigationItem[];
 }
 
 export const DashboardSidebar = ({
@@ -22,10 +25,12 @@ export const DashboardSidebar = ({
   isMobileOpen = false,
   onNavigate,
   onSectionNavigate,
+  sectionNavigationItems = [],
 }: DashboardSidebarProps) => {
   const { t } = useTranslation('dashboard');
 
   const isTooltipDisabled = !isCollapsed || isMobileOpen;
+  const isSectionNavigationVisible = sectionNavigationItems.length > 0;
 
   return (
     <aside
@@ -50,24 +55,26 @@ export const DashboardSidebar = ({
           ))}
         </nav>
 
-        <nav aria-label={t('sidebar.pageNavigation')} className={s.sectionNavigation}>
-          <p className={s.sectionNavigationTitle}>{t('sidebar.onThisPage')}</p>
+        {isSectionNavigationVisible ? (
+          <nav aria-label={t('sidebar.pageNavigation')} className={s.sectionNavigation}>
+            <p className={s.sectionNavigationTitle}>{t('sidebar.onThisPage')}</p>
 
-          <div className={s.sectionNavigationLinks}>
-            {dashboardSectionNavigationItems.map((item) => (
-              <DashboardSectionNavigationLink
-                href={item.href}
-                icon={item.icon}
-                isActive={activeSectionHref === item.href}
-                isCollapsed={isCollapsed}
-                isTooltipDisabled={isTooltipDisabled}
-                key={item.href}
-                onNavigate={onNavigate}
-                onSectionNavigate={onSectionNavigate}
-              />
-            ))}
-          </div>
-        </nav>
+            <div className={s.sectionNavigationLinks}>
+              {sectionNavigationItems.map((item) => (
+                <DashboardSectionNavigationLink
+                  href={item.href}
+                  icon={item.icon}
+                  isActive={activeSectionHref === item.href}
+                  isCollapsed={isCollapsed}
+                  isTooltipDisabled={isTooltipDisabled}
+                  key={item.href}
+                  onNavigate={onNavigate}
+                  onSectionNavigate={onSectionNavigate}
+                />
+              ))}
+            </div>
+          </nav>
+        ) : null}
 
         <div className={s.sidebarFooter}>
           <LanguageSwitcher

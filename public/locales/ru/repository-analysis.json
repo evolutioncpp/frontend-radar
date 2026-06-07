@@ -1,0 +1,12 @@
+{
+  "form": {
+    "label": "Репозиторий",
+    "placeholder": "https://github.com/owner/repo",
+    "hint": "Вставьте ссылку на GitHub-репозиторий или owner/repo.",
+    "clear": "Очистить репозиторий",
+    "submit": "Анализировать",
+    "errors": {
+      "invalidRepository": "Введите корректный GitHub-репозиторий."
+    }
+  }
+}

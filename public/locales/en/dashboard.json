@@ -1,6 +1,6 @@
 {
   "header": {
-    "openRepository": "View on GitHub",
+    "openRepository": "GitHub",
     "openRepositoryAria": "Open Frontend Radar repository on GitHub",
     "collapseSidebar": "Collapse sidebar",
     "expandSidebar": "Expand sidebar",
@@ -23,10 +23,64 @@
     }
   },
   "page": {
-    "label": "Demo report",
+    "label": "Repository analysis",
     "title": "Frontend project health overview",
     "description": "Analyze repository quality, tooling, testing, documentation and delivery readiness in a single dashboard.",
     "reportAria": "Dashboard report",
+    "analysisInfo": {
+      "title": "How the analysis works",
+      "description": "The report is assembled from repository data that can be checked consistently: project files, package metadata, quality tooling and delivery configuration.",
+      "steps": {
+        "repository": {
+          "title": "Read the repository context",
+          "description": "Frontend Radar starts with the repository structure, package metadata, default branch, license, README and other files that describe how the project is maintained.",
+          "detailsTitle": "Used as input",
+          "details": {
+            "package": "package.json",
+            "readme": "README",
+            "license": "License",
+            "branch": "Default branch"
+          }
+        },
+        "signals": {
+          "title": "Detect frontend quality signals",
+          "description": "The analyzer looks for scripts, TypeScript and bundler setup, linting, formatting, testing, CI/CD, dependency metadata and documentation coverage.",
+          "detailsTitle": "Checked signals",
+          "details": {
+            "scripts": "Project scripts",
+            "typescript": "TypeScript and bundler setup",
+            "quality": "Linting, formatting and tests",
+            "delivery": "CI/CD configuration"
+          }
+        },
+        "metrics": {
+          "title": "Build the score breakdown",
+          "description": "Signals are grouped into report sections so the result shows not only the final health score, but also which areas are strong and which need attention.",
+          "detailsTitle": "Report output",
+          "details": {
+            "score": "Health score",
+            "metrics": "Quality metrics",
+            "checks": "Project checks",
+            "statuses": "Status labels"
+          }
+        },
+        "recommendations": {
+          "title": "Prioritize next steps",
+          "description": "The final report turns weak signals into practical recommendations, ordered by impact on project maintainability and delivery readiness.",
+          "detailsTitle": "Recommendation logic",
+          "details": {
+            "high": "High priority",
+            "medium": "Medium priority",
+            "low": "Low priority",
+            "impact": "Impact on maintainability"
+          }
+        }
+      }
+    },
+    "reportFallback": {
+      "title": "Report not found",
+      "description": "This report is not available yet. Start a new analysis from the dashboard overview."
+    },
     "sections": {
       "repository": "Repository summary",
       "healthScore": "Health score",

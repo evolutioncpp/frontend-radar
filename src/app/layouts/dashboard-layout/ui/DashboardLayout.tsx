@@ -1,21 +1,30 @@
 import clsx from 'clsx';
 import { useCallback, useMemo, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
 import { selectIsDashboardSidebarCollapsed, toggleDashboardSidebar } from '@/features/app-settings';
 import { useDashboardSectionHashSync } from '@/features/dashboard-section-navigation';
 import { useAppDispatch, useAppSelector } from '@/shared/lib/redux/hooks';
 import { DashboardHeader } from '@/widgets/dashboard-header';
-import { DashboardSidebar } from '@/widgets/dashboard-sidebar';
+import { DashboardSidebar, dashboardSectionNavigationItems } from '@/widgets/dashboard-sidebar';
 
 import s from './DashboardLayout.module.scss';
 import { useDashboardMobileSidebar } from '../model/useDashboardMobileSidebar';
 
 export const DashboardLayout = () => {
   const dispatch = useAppDispatch();
+  const { pathname } = useLocation();
   const isSidebarCollapsed = useAppSelector(selectIsDashboardSidebarCollapsed);
 
-  const [dashboardSectionsReadyVersion, setDashboardSectionsReadyVersion] = useState(0);
+  const [dashboardSectionsReadyState, setDashboardSectionsReadyState] = useState({
+    pathname: '',
+    readyVersion: 0,
+  });
+  const dashboardSectionsReadyVersion =
+    dashboardSectionsReadyState.pathname === pathname
+      ? dashboardSectionsReadyState.readyVersion
+      : 0;
+  const isDashboardSectionNavigationReady = dashboardSectionsReadyVersion > 0;
 
   const { activeSectionHref, navigateToSection } = useDashboardSectionHashSync({
     readyVersion: dashboardSectionsReadyVersion,
@@ -29,8 +38,11 @@ export const DashboardLayout = () => {
   };
 
   const handleDashboardSectionsReady = useCallback(() => {
-    setDashboardSectionsReadyVersion((currentVersion) => currentVersion + 1);
-  }, []);
+    setDashboardSectionsReadyState((currentState) => ({
+      pathname,
+      readyVersion: currentState.pathname === pathname ? currentState.readyVersion + 1 : 1,
+    }));
+  }, [pathname]);
 
   const outletContext = useMemo(
     () => ({
@@ -52,6 +64,9 @@ export const DashboardLayout = () => {
         isMobileOpen={isMobileSidebarOpen}
         onNavigate={closeMobileSidebar}
         onSectionNavigate={handleSectionNavigate}
+        sectionNavigationItems={
+          isDashboardSectionNavigationReady ? dashboardSectionNavigationItems : undefined
+        }
       />
 
       <div
