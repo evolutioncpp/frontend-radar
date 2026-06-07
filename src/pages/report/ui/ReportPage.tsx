@@ -1,24 +1,18 @@
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { useProjectReport } from '@/entities/report';
-import { getDemoReportPath } from '@/shared/config/routes/appRoutes';
+import { useRepositoryAnalysisSubmit } from '@/features/repository-analysis';
 import { Card } from '@/shared/ui/Card';
 import { RepositoryAnalysisPanel } from '@/widgets/repository-analysis-panel';
 
 import { DashboardReportView } from './dashboard-report-view/DashboardReportView';
 import s from './ReportPage.module.scss';
 
-import type { RepositoryAnalysisRequest } from '@/features/repository-analysis';
-
 export const ReportPage = () => {
   const { id } = useParams();
   const reportState = useProjectReport(id);
-  const navigate = useNavigate();
-
-  const analyzeRepository = (_request: RepositoryAnalysisRequest) => {
-    void navigate(getDemoReportPath());
-  };
+  const analyzeRepository = useRepositoryAnalysisSubmit();
 
   return (
     <div className={s.reportPage}>

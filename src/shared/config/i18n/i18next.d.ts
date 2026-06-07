@@ -1,6 +1,7 @@
 import 'i18next';
 
 import type common from '@locales/en/common.json';
+import type dashboardHistory from '@locales/en/dashboard-history.json';
 import type dashboard from '@locales/en/dashboard.json';
 import type demoReport from '@locales/en/demo-report.json';
 import type repositoryAnalysis from '@locales/en/repository-analysis.json';
@@ -13,6 +14,7 @@ declare module 'i18next' {
     resources: {
       common: typeof common;
       dashboard: typeof dashboard;
+      'dashboard-history': typeof dashboardHistory;
       'demo-report': typeof demoReport;
       'repository-analysis': typeof repositoryAnalysis;
       'route-error': typeof routeError;

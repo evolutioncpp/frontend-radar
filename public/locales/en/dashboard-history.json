@@ -1,0 +1,19 @@
+{
+  "page": {
+    "title": "History",
+    "description": "Review repository analysis results and reopen reports when you need to revisit project health.",
+    "emptyTitle": "No analysis history yet",
+    "emptyDescription": "Start a repository analysis from the dashboard overview."
+  },
+  "card": {
+    "label": "Latest analysis",
+    "analyzedAt": "Analyzed {{date}}",
+    "openReportAria": "Open report for {{repository}}",
+    "scoreLabel": "Health score",
+    "summary": {
+      "metrics": "Metrics",
+      "checks": "Checks",
+      "recommendations": "Recommendations"
+    }
+  }
+}

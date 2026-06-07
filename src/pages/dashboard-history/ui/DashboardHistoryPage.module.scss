@@ -1,0 +1,263 @@
+@use 'app/styles/helpers' as *;
+
+.dashboardHistoryPage {
+  display: grid;
+  gap: $space-3;
+}
+
+.header {
+  display: grid;
+  gap: $space-2;
+  max-width: 48rem;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-3xl;
+  line-height: $line-height-sm;
+}
+
+.description {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: $font-size-md;
+  line-height: $line-height-lg;
+}
+
+.historyCard {
+  display: grid;
+  min-width: 0;
+  padding: 0;
+  transition:
+    border-color $transition-base,
+    background-color $transition-base;
+
+  &:hover {
+    background: var(--color-bg-surface-hover);
+  }
+}
+
+.cardLink {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-width: 0;
+  gap: $space-6;
+  color: inherit;
+  padding: $space-5;
+
+  @include focus-visible;
+}
+
+.cardLabel {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0.08em;
+  line-height: $line-height-sm;
+  text-transform: uppercase;
+}
+
+.cardTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  min-width: 0;
+  gap: $space-3;
+}
+
+.cardDateCompact {
+  display: none;
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  line-height: $line-height-sm;
+  white-space: nowrap;
+}
+
+.cardMain {
+  display: grid;
+  min-width: 0;
+  gap: $space-3;
+}
+
+.repository {
+  display: grid;
+  min-width: 0;
+  gap: $space-2;
+}
+
+.repositoryName {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-xl;
+  line-height: $line-height-sm;
+}
+
+.meta {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: $font-size-sm;
+  line-height: $line-height-md;
+}
+
+.cardAside {
+  display: grid;
+  grid-template-columns: minmax(8rem, auto) minmax(10rem, 14rem);
+  align-items: end;
+  gap: $space-6;
+}
+
+.score {
+  display: grid;
+  gap: $space-1;
+  min-width: 0;
+  border-right: 1px solid var(--color-border-primary);
+  padding-right: $space-6;
+}
+
+.scoreLabel {
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+}
+
+.scoreValueWrapper {
+  display: inline-flex;
+  align-items: baseline;
+  gap: $space-2;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-mono);
+  line-height: 1;
+}
+
+.scoreValue {
+  color: var(--color-score-good);
+  font-size: $font-size-4xl;
+  font-weight: $font-weight-bold;
+  letter-spacing: -0.04em;
+}
+
+.scoreMax {
+  color: var(--color-text-muted);
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+}
+
+.summaryList {
+  display: grid;
+  gap: $space-2;
+  margin: 0;
+}
+
+.summaryItem {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  align-items: baseline;
+  min-width: 0;
+  gap: $space-2;
+}
+
+.summaryLabel {
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+}
+
+.summaryValue {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  line-height: $line-height-sm;
+}
+
+.emptyCard {
+  display: grid;
+  gap: $space-2;
+}
+
+.emptyTitle {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-xl;
+  line-height: $line-height-sm;
+}
+
+.emptyDescription {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: $font-size-sm;
+  line-height: $line-height-md;
+}
+
+@include media-max($breakpoint-sm) {
+  .title {
+    font-size: $font-size-2xl;
+  }
+
+  .description {
+    font-size: $font-size-sm;
+  }
+
+  .cardLink {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: $space-4;
+  }
+
+  .cardDateCompact {
+    display: block;
+  }
+
+  .meta {
+    display: none;
+  }
+
+  .cardAside {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: $space-3;
+    width: 100%;
+    border-top: 1px solid var(--color-border-primary);
+    padding-top: $space-4;
+  }
+
+  .score {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    width: 100%;
+    border-right: 0;
+    padding-right: 0;
+  }
+
+  .scoreValue {
+    font-size: $font-size-3xl;
+  }
+
+  .summaryList {
+    width: 100%;
+  }
+}
+
+@include media-max(360px) {
+  .score {
+    display: grid;
+    justify-content: start;
+    gap: $space-1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .historyCard {
+    transition: none;
+  }
+}
