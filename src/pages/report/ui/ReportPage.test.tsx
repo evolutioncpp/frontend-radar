@@ -14,6 +14,10 @@ vi.mock('react-i18next', () => ({
         'page.reportFallback.title': 'Report not found',
         'page.reportFallback.description':
           'This report is not available yet. Start a new analysis from the dashboard overview.',
+        'page.label': 'Repository analysis',
+        'page.title': 'Frontend project health overview',
+        'page.description':
+          'Analyze repository quality, tooling, testing, documentation and delivery readiness in a single dashboard.',
         'page.sections.repository': 'Repository summary',
         'page.sections.healthScore': 'Health score',
         'page.sections.metrics': 'Quality metrics',
@@ -59,6 +63,13 @@ vi.mock('react-i18next', () => ({
         'statuses.high': 'High',
         'statuses.medium': 'Medium',
         'statuses.low': 'Low',
+
+        'form.label': 'Repository',
+        'form.placeholder': 'https://github.com/owner/repo',
+        'form.hint': 'Paste a GitHub repository URL or owner/repo.',
+        'form.clear': 'Clear repository',
+        'form.submit': 'Analyze',
+        'form.errors.invalidRepository': 'Enter a valid GitHub repository.',
       };
 
       if (key === 'page.copySectionLink') {
@@ -109,6 +120,11 @@ describe('ReportPage', () => {
     renderReportPage('/dashboard/report/demo');
 
     expect(
+      screen.getByRole('heading', { name: 'Frontend project health overview' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Repository' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Analyze' })).toBeInTheDocument();
+    expect(
       screen.getByRole('heading', { name: /evolutioncpp\/frontend-radar/i }),
     ).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Overall project quality' })).toBeInTheDocument();
@@ -117,6 +133,11 @@ describe('ReportPage', () => {
   test('renders fallback for unknown report id', () => {
     renderReportPage('/dashboard/report/unknown');
 
+    expect(
+      screen.getByRole('heading', { name: 'Frontend project health overview' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Repository' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Analyze' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Report not found' })).toBeInTheDocument();
     expect(screen.getByText(/This report is not available yet/i)).toBeInTheDocument();
     expect(screen.queryByText(/evolutioncpp\/frontend-radar/i)).not.toBeInTheDocument();

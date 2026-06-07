@@ -1,5 +1,6 @@
 export { useDemoReport } from './model/demoReport';
 export { getScoreStatus } from './model/getScoreStatus';
+export { useProjectReport } from './model/useProjectReport';
 
 export type {
   CheckStatus,
@@ -12,6 +13,7 @@ export type {
   ScoreCategory,
   ScoreStatus,
 } from './model/types';
+export type { ProjectReportState } from './model/useProjectReport';
 
 export {
   getCheckStatusBadgeVariant,
