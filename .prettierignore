@@ -1,9 +1,18 @@
 dist
+**/dist
 build
+**/build
 coverage
+**/coverage
 storybook-static
+**/storybook-static
 playwright-report
+**/playwright-report
 test-results
+**/test-results
 node_modules
+**/node_modules
+.vite
+**/.vite
 
 package-lock.json
