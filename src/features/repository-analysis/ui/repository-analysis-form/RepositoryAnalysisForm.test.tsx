@@ -63,8 +63,9 @@ describe('RepositoryAnalysisForm', () => {
 
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledWith({
-        repository: 'owner/repo',
         normalizedUrl: 'https://github.com/owner/repo',
+        owner: 'owner',
+        repository: 'repo',
       });
     });
   });
@@ -79,8 +80,9 @@ describe('RepositoryAnalysisForm', () => {
 
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledWith({
-        repository: 'owner/repo',
         normalizedUrl: 'https://github.com/owner/repo',
+        owner: 'owner',
+        repository: 'repo',
       });
     });
   });

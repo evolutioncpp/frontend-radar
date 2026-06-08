@@ -1,3 +1,4 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { GitBranch, Search } from 'lucide-react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -6,13 +7,13 @@ import { Button } from '@/shared/ui/Button';
 import { TextInput } from '@/shared/ui/TextInput';
 
 import s from './RepositoryAnalysisForm.module.scss';
-import { normalizeRepositoryInput } from '../../model/normalizeRepositoryInput';
+import {
+  createRepositoryAnalysisFormSchema,
+  type RepositoryAnalysisFormSubmitResult,
+  type RepositoryAnalysisFormValues,
+} from '../../model/repositoryAnalysisSchema';
 
 import type { RepositoryAnalysisRequest } from '../../model/repositoryAnalysisTypes';
-
-interface RepositoryAnalysisFormValues {
-  repository: string;
-}
 
 interface RepositoryAnalysisFormProps {
   onSubmit: (request: RepositoryAnalysisRequest) => void;
@@ -27,10 +28,11 @@ export const RepositoryAnalysisForm = ({ onSubmit }: RepositoryAnalysisFormProps
     control,
     register,
     setValue,
-  } = useForm<RepositoryAnalysisFormValues>({
+  } = useForm<RepositoryAnalysisFormValues, unknown, RepositoryAnalysisFormSubmitResult>({
     defaultValues: {
       repository: '',
     },
+    resolver: zodResolver(createRepositoryAnalysisFormSchema(t('form.errors.invalidRepository'))),
   });
   const repositoryValue = useWatch({
     control,
@@ -38,20 +40,9 @@ export const RepositoryAnalysisForm = ({ onSubmit }: RepositoryAnalysisFormProps
   });
   const repositoryInputValue = repositoryValue ?? '';
 
-  const repositoryField = register('repository', {
-    validate: (value) => {
-      return Boolean(normalizeRepositoryInput(value)) || t('form.errors.invalidRepository');
-    },
-  });
-
-  const submitForm = handleSubmit(({ repository }) => {
-    const normalizedRepository = normalizeRepositoryInput(repository);
-
-    if (!normalizedRepository) {
-      return;
-    }
-
-    onSubmit(normalizedRepository);
+  const repositoryField = register('repository');
+  const submitForm = handleSubmit((request) => {
+    onSubmit(request);
   });
 
   const clearRepository = () => {
