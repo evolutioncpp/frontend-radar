@@ -22,6 +22,7 @@ export const scoreCategories = [
   'accessibility',
 ] as const;
 export const checkStatuses = ['passed', 'failed', 'warning'] as const;
+export const evidenceStatuses = ['found', 'missing', 'warning'] as const;
 export const recommendationSeverities = ['low', 'medium', 'high'] as const;
 
 export const reportAnalysisStatusSchema = z.enum(reportAnalysisStatuses);
@@ -58,6 +59,14 @@ export const reportRepositorySchema = z.object({
   license: z.string().nullable(),
 });
 
+export const reportEvidenceSchema = z.object({
+  id: z.string(),
+  status: z.enum(evidenceStatuses),
+  label: z.string(),
+  description: z.string().optional(),
+  source: z.string().optional(),
+});
+
 export const scoreBreakdownItemSchema = z.object({
   category: z.enum(scoreCategories),
   label: z.string(),
@@ -65,6 +74,7 @@ export const scoreBreakdownItemSchema = z.object({
   maxValue: z.number().int().positive(),
   status: z.enum(scoreStatuses),
   description: z.string(),
+  evidence: z.array(reportEvidenceSchema),
 });
 
 export const reportCheckSchema = z.object({

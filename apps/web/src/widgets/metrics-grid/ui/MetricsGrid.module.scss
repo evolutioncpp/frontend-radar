@@ -92,6 +92,10 @@ $metric-score-width: 4.5rem;
   min-width: 10rem;
 }
 
+.metricEvidence {
+  grid-column: 1 / -1;
+}
+
 @include media-max($breakpoint-md) {
   .metricRow {
     grid-template-columns: 1fr;

@@ -1,6 +1,6 @@
 /** @type {import('@rtk-query/codegen-openapi').ConfigFile} */
 const config = {
-  schemaFile: 'http://localhost:3001/openapi.json',
+  schemaFile: process.env.OPENAPI_SCHEMA_FILE ?? 'http://localhost:3001/openapi.json',
   apiFile: './src/shared/api/baseApi.ts',
   apiImport: 'baseApi',
   outputFile: './src/shared/api/generatedApi.ts',

@@ -9,12 +9,6 @@ export const AppRoutes = {
 
 export type AppRoute = (typeof AppRoutes)[keyof typeof AppRoutes];
 
-export const DEMO_REPORT_ID = 'demo';
-
-export const getDemoReportPath = () => {
-  return AppRoutes.REPORT.replace(':id', DEMO_REPORT_ID);
-};
-
 export const getReportPath = (reportId: string) => {
   return AppRoutes.REPORT.replace(':id', reportId);
 };

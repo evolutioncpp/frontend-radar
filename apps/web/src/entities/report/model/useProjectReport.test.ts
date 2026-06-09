@@ -37,6 +37,14 @@ const testReport: ProjectReport = {
       maxValue: 100,
       status: 'good',
       description: 'Documentation signals.',
+      evidence: [
+        {
+          id: 'readme',
+          label: 'README',
+          status: 'found',
+          source: 'README',
+        },
+      ],
     },
   ],
   checks: [

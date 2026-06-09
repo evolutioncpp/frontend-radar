@@ -16,7 +16,15 @@ vi.mock('react-i18next', () => ({
         'statuses.good': 'Good',
         'statuses.warning': 'Warning',
         'statuses.critical': 'Critical',
+        'evidence.title': 'Evidence',
+        'evidence.statuses.found': 'Found',
+        'evidence.statuses.missing': 'Missing',
+        'evidence.statuses.warning': 'Warning',
       };
+
+      if (key === 'evidence.source') {
+        return `Source: ${options?.source}`;
+      }
 
       if (key === 'metrics.counter') {
         return `${options?.count} ${options?.count === 1 ? 'metric' : 'metrics'}`;
@@ -43,6 +51,14 @@ const metrics: ScoreBreakdownItem[] = [
     maxValue: 100,
     status: 'good',
     description: 'README and setup documentation are mostly complete.',
+    evidence: [
+      {
+        id: 'readme',
+        label: 'README',
+        status: 'found',
+        source: 'README',
+      },
+    ],
   },
   {
     category: 'testing',
@@ -51,6 +67,14 @@ const metrics: ScoreBreakdownItem[] = [
     maxValue: 100,
     status: 'good',
     description: 'Unit and e2e testing foundation exists, but coverage can be improved.',
+    evidence: [
+      {
+        id: 'test-script',
+        label: 'Test script',
+        status: 'found',
+        source: 'package.json scripts.test',
+      },
+    ],
   },
   {
     category: 'ci',
@@ -59,6 +83,14 @@ const metrics: ScoreBreakdownItem[] = [
     maxValue: 100,
     status: 'excellent',
     description: 'Automated checks are configured for build and quality gates.',
+    evidence: [
+      {
+        id: 'github-actions',
+        label: 'GitHub Actions',
+        status: 'found',
+        source: '.github/workflows',
+      },
+    ],
   },
 ];
 
@@ -128,5 +160,13 @@ describe('MetricsGrid', () => {
 
     expect(screen.getAllByText('Good')).toHaveLength(2);
     expect(screen.getByText('Excellent')).toBeInTheDocument();
+  });
+
+  test('renders metric evidence disclosures', () => {
+    render(<MetricsGrid metrics={metrics} />);
+
+    expect(screen.getAllByText('Evidence')).toHaveLength(3);
+    expect(screen.getByText('Test script')).toBeInTheDocument();
+    expect(screen.getByText('Source: package.json scripts.test')).toBeInTheDocument();
   });
 });

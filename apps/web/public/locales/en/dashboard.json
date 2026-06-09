@@ -165,6 +165,15 @@
     "listAria": "Recommendations list",
     "empty": "No recommendations for now."
   },
+  "evidence": {
+    "title": "Evidence",
+    "source": "Source: {{source}}",
+    "statuses": {
+      "found": "Found",
+      "missing": "Missing",
+      "warning": "Warning"
+    }
+  },
   "statuses": {
     "excellent": "Excellent",
     "good": "Good",

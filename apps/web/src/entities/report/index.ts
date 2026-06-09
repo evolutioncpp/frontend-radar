@@ -1,4 +1,3 @@
-export { useDemoReport } from './model/demoReport';
 export { getScoreStatus } from './model/getScoreStatus';
 export {
   useGetReportAnalysisQuery,
@@ -13,12 +12,15 @@ export {
 } from './model/reportSelectors';
 export { useReportHistory } from './model/useReportHistory';
 export { useProjectReport } from './model/useProjectReport';
+export { ReportEvidenceList } from './ui/report-evidence-list/ReportEvidenceList';
 
 export type {
   CheckStatus,
   ProjectReport,
   RecommendationSeverity,
   ReportCheck,
+  ReportEvidence,
+  ReportEvidenceStatus,
   ReportRecommendation,
   ReportRepository,
   ScoreBreakdownItem,

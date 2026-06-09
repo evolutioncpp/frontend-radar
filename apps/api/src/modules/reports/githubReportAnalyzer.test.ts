@@ -122,6 +122,35 @@ describe('GithubReportAnalyzer', () => {
       },
     });
     expect(report.totalScore).toBeGreaterThan(80);
+    expect(report.scoreBreakdown).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          category: 'documentation',
+          evidence: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'readme',
+              source: 'README',
+              status: 'found',
+            }),
+            expect.objectContaining({
+              id: 'env-example',
+              source: '.env.example',
+              status: 'found',
+            }),
+          ]),
+        }),
+        expect.objectContaining({
+          category: 'accessibility',
+          evidence: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'a11y-tooling',
+              source: 'package.json',
+              status: 'missing',
+            }),
+          ]),
+        }),
+      ]),
+    );
     expect(report.checks).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

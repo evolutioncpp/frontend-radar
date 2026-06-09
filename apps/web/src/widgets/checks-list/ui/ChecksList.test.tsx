@@ -69,7 +69,9 @@ describe('ChecksList', () => {
   test('renders all checks as list items', () => {
     render(<ChecksList checks={checks} />);
 
-    expect(screen.getAllByRole('listitem')).toHaveLength(checks.length);
+    expect(screen.getByRole('list', { name: 'Project checks list' }).children).toHaveLength(
+      checks.length,
+    );
   });
 
   test('renders check labels', () => {
@@ -98,6 +100,13 @@ describe('ChecksList', () => {
     expect(screen.getByText('Passed')).toBeInTheDocument();
     expect(screen.getByText('Warning')).toBeInTheDocument();
     expect(screen.getByText('Failed')).toBeInTheDocument();
+  });
+
+  test('does not render check evidence disclosures', () => {
+    render(<ChecksList checks={checks} />);
+
+    expect(screen.queryByText('Evidence')).not.toBeInTheDocument();
+    expect(screen.queryByText('Source: .env.example')).not.toBeInTheDocument();
   });
 
   test('renders zero counter when checks list is empty', () => {

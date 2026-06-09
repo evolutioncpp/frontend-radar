@@ -13,6 +13,16 @@ export type RecommendationSeverity = 'low' | 'medium' | 'high';
 
 export type CheckStatus = 'passed' | 'failed' | 'warning';
 
+export type ReportEvidenceStatus = 'found' | 'missing' | 'warning';
+
+export type ReportEvidence = {
+  id: string;
+  status: ReportEvidenceStatus;
+  label: string;
+  description?: string;
+  source?: string;
+};
+
 export type ReportRepository = {
   owner: string;
   name: string;
@@ -33,6 +43,7 @@ export type ScoreBreakdownItem = {
   maxValue: number;
   status: ScoreStatus;
   description: string;
+  evidence: ReportEvidence[];
 };
 
 export type ReportCheck = {

@@ -109,6 +109,13 @@ export type GetReportAnalysisApiResponse =
           maxValue: number;
           status: 'excellent' | 'good' | 'warning' | 'critical';
           description: string;
+          evidence: {
+            id: string;
+            status: 'found' | 'missing' | 'warning';
+            label: string;
+            description?: string;
+            source?: string;
+          }[];
         }[];
         checks: {
           id: string;

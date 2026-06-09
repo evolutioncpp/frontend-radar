@@ -94,6 +94,10 @@ vi.mock('react-i18next', () => ({
         'statuses.high': 'High',
         'statuses.medium': 'Medium',
         'statuses.low': 'Low',
+        'evidence.title': 'Evidence',
+        'evidence.statuses.found': 'Found',
+        'evidence.statuses.missing': 'Missing',
+        'evidence.statuses.warning': 'Warning',
 
         'form.label': 'Repository',
         'form.placeholder': 'https://github.com/owner/repo',
@@ -114,6 +118,10 @@ vi.mock('react-i18next', () => ({
 
       if (key === 'page.copySectionLink') {
         return `Copy link to ${options?.section} section`;
+      }
+
+      if (key === 'evidence.source') {
+        return `Source: ${options?.source}`;
       }
 
       if (key === 'healthScore.scoreAria') {
@@ -169,6 +177,14 @@ const testReport: ProjectReport = {
       maxValue: 100,
       status: 'good',
       description: 'Documentation signals.',
+      evidence: [
+        {
+          id: 'readme',
+          label: 'README',
+          status: 'found',
+          source: 'README',
+        },
+      ],
     },
   ],
   checks: [

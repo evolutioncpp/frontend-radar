@@ -1,4 +1,5 @@
 import { scoreThresholds } from './reportAnalysisConfig.js';
+import { buildReportEvidenceMap, pickReportEvidence } from './reportEvidence.js';
 
 import type { RepositorySignals } from './reportSignals.js';
 
@@ -21,6 +22,7 @@ export const getStatusByScore = (score: number) => {
 };
 
 export const buildScoreBreakdown = (signals: RepositorySignals) => {
+  const evidenceMap = buildReportEvidenceMap(signals);
   const documentationScore = clampScore(
     (signals.hasReadme ? 70 : 0) + (signals.hasEnvExample ? 15 : 0) + 15,
   );
@@ -58,6 +60,7 @@ export const buildScoreBreakdown = (signals: RepositorySignals) => {
       maxValue: 100,
       status: getStatusByScore(documentationScore),
       description: 'README and environment documentation signals found in the repository.',
+      evidence: pickReportEvidence(evidenceMap, ['readme', 'env-example']),
     },
     {
       category: 'testing' as const,
@@ -66,6 +69,7 @@ export const buildScoreBreakdown = (signals: RepositorySignals) => {
       maxValue: 100,
       status: getStatusByScore(testingScore),
       description: 'Test scripts and common frontend testing dependencies.',
+      evidence: pickReportEvidence(evidenceMap, ['package-json', 'test-script', 'testing-library']),
     },
     {
       category: 'ci' as const,
@@ -74,6 +78,7 @@ export const buildScoreBreakdown = (signals: RepositorySignals) => {
       maxValue: 100,
       status: getStatusByScore(ciScore),
       description: 'Automated delivery checks from GitHub Actions and build scripts.',
+      evidence: pickReportEvidence(evidenceMap, ['github-actions', 'build-script']),
     },
     {
       category: 'dependencies' as const,
@@ -82,6 +87,7 @@ export const buildScoreBreakdown = (signals: RepositorySignals) => {
       maxValue: 100,
       status: getStatusByScore(dependenciesScore),
       description: 'Package metadata and lockfile consistency signals.',
+      evidence: pickReportEvidence(evidenceMap, ['package-json', 'lockfile']),
     },
     {
       category: 'maintainability' as const,
@@ -90,6 +96,7 @@ export const buildScoreBreakdown = (signals: RepositorySignals) => {
       maxValue: 100,
       status: getStatusByScore(maintainabilityScore),
       description: 'TypeScript, linting and project structure maintainability signals.',
+      evidence: pickReportEvidence(evidenceMap, ['typescript', 'lint-script', 'storybook']),
     },
     {
       category: 'performance' as const,
@@ -98,6 +105,7 @@ export const buildScoreBreakdown = (signals: RepositorySignals) => {
       maxValue: 100,
       status: getStatusByScore(performanceScore),
       description: 'Build tooling and frontend bundler readiness.',
+      evidence: pickReportEvidence(evidenceMap, ['build-script', 'bundler']),
     },
     {
       category: 'accessibility' as const,
@@ -106,6 +114,7 @@ export const buildScoreBreakdown = (signals: RepositorySignals) => {
       maxValue: 100,
       status: getStatusByScore(accessibilityScore),
       description: 'Accessibility linting, component review and testing signals.',
+      evidence: pickReportEvidence(evidenceMap, ['a11y-tooling', 'storybook', 'testing-library']),
     },
   ];
 };

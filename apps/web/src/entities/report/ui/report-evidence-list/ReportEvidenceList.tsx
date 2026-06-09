@@ -1,0 +1,59 @@
+import clsx from 'clsx';
+import { useTranslation } from 'react-i18next';
+
+import { Badge } from '@/shared/ui/Badge';
+
+import s from './ReportEvidenceList.module.scss';
+
+import type { ReportEvidence, ReportEvidenceStatus } from '../../model/types';
+
+interface ReportEvidenceListProps {
+  evidence: ReportEvidence[];
+  className?: string;
+}
+
+const evidenceStatusLabelKeys = {
+  found: 'evidence.statuses.found',
+  missing: 'evidence.statuses.missing',
+  warning: 'evidence.statuses.warning',
+} as const satisfies Record<ReportEvidenceStatus, string>;
+
+const evidenceStatusBadgeVariants = {
+  found: 'success',
+  missing: 'danger',
+  warning: 'warning',
+} as const satisfies Record<ReportEvidenceStatus, 'success' | 'danger' | 'warning'>;
+
+export const ReportEvidenceList = ({ className, evidence }: ReportEvidenceListProps) => {
+  const { t } = useTranslation('dashboard');
+
+  if (evidence.length === 0) {
+    return null;
+  }
+
+  return (
+    <details className={clsx(s.reportEvidenceList, className)}>
+      <summary className={s.summary}>{t('evidence.title')}</summary>
+
+      <ul className={s.list}>
+        {evidence.map((item) => (
+          <li className={s.item} key={item.id}>
+            <Badge className={s.status} variant={evidenceStatusBadgeVariants[item.status]}>
+              {t(evidenceStatusLabelKeys[item.status])}
+            </Badge>
+
+            <div className={s.content}>
+              <p className={s.label}>{item.label}</p>
+
+              {item.description ? <p className={s.description}>{item.description}</p> : null}
+
+              {item.source ? (
+                <p className={s.source}>{t('evidence.source', { source: item.source })}</p>
+              ) : null}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
+};

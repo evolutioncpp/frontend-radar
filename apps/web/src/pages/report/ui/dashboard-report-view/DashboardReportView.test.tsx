@@ -56,10 +56,18 @@ vi.mock('react-i18next', () => ({
         'statuses.high': 'High',
         'statuses.medium': 'Medium',
         'statuses.low': 'Low',
+        'evidence.title': 'Evidence',
+        'evidence.statuses.found': 'Found',
+        'evidence.statuses.missing': 'Missing',
+        'evidence.statuses.warning': 'Warning',
       };
 
       if (key === 'page.copySectionLink') {
         return `Copy link to ${options?.section} section`;
+      }
+
+      if (key === 'evidence.source') {
+        return `Source: ${options?.source}`;
       }
 
       if (key === 'healthScore.scoreAria') {
@@ -115,6 +123,14 @@ const customReport: ProjectReport = {
       maxValue: 100,
       status: 'warning',
       description: 'Custom testing description',
+      evidence: [
+        {
+          id: 'test-script',
+          label: 'Custom evidence label',
+          status: 'found',
+          source: 'package.json scripts.test',
+        },
+      ],
     },
   ],
   checks: [

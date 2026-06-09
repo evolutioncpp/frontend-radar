@@ -42,6 +42,21 @@ const createTestReport = (
       maxValue: 100,
       status: 'excellent',
       description: 'Documentation is present.',
+      evidence: [
+        {
+          id: 'readme',
+          label: 'README',
+          status: 'found',
+          source: 'README',
+        },
+        {
+          id: 'env-example',
+          label: 'Environment example',
+          status: 'missing',
+          description: 'No environment example file was found.',
+          source: '.env.example',
+        },
+      ],
     },
   ],
   checks: [
@@ -203,6 +218,15 @@ describe('reports routes', () => {
           scoreBreakdown: [
             expect.objectContaining({
               category: 'documentation',
+              evidence: expect.arrayContaining([
+                expect.objectContaining({
+                  id: 'env-example',
+                  status: 'missing',
+                  label: expect.not.stringMatching(/^Environment example$/),
+                  description: expect.not.stringMatching(/^No environment example file/),
+                  source: '.env.example',
+                }),
+              ]),
               label: 'Документация',
               description: 'Сигналы README и документации окружения, найденные в репозитории.',
             }),

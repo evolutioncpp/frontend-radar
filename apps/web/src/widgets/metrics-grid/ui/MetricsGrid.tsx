@@ -1,6 +1,10 @@
 import { useTranslation } from 'react-i18next';
 
-import { getScoreStatusBadgeVariant, type ScoreBreakdownItem } from '@/entities/report';
+import {
+  getScoreStatusBadgeVariant,
+  ReportEvidenceList,
+  type ScoreBreakdownItem,
+} from '@/entities/report';
 import { normalizeScore } from '@/shared/lib/format-score';
 import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
@@ -76,6 +80,8 @@ export const MetricsGrid = ({ headerAction, metrics }: MetricsGridProps) => {
                 max={metric.maxValue}
                 value={metric.value}
               />
+
+              <ReportEvidenceList className={s.metricEvidence} evidence={metric.evidence} />
             </li>
           );
         })}

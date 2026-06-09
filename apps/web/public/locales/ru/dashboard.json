@@ -171,6 +171,15 @@
     "listAria": "Список рекомендаций",
     "empty": "Пока рекомендаций нет."
   },
+  "evidence": {
+    "title": "Что найдено",
+    "source": "Источник: {{source}}",
+    "statuses": {
+      "found": "Найдено",
+      "missing": "Не найдено",
+      "warning": "Внимание"
+    }
+  },
   "statuses": {
     "excellent": "Отлично",
     "good": "Хорошо",

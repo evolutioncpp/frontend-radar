@@ -1,13 +1,24 @@
 import { normalizeSupportedLanguage } from '@frontend-radar/localization';
 
+import { reportEvidenceIds } from './reportEvidence.js';
+
 import type { ProjectReport, ReportAnalysisErrorCode } from './reportSchemas.js';
+import type { ReportEvidenceId } from './reportEvidence.js';
 import type { SupportedLanguage } from '@frontend-radar/localization';
 
 type ScoreCategory = ProjectReport['scoreBreakdown'][number]['category'];
+type EvidenceStatus = ProjectReport['scoreBreakdown'][number]['evidence'][number]['status'];
 
 type ReportLocalizationCatalog = {
   checks: Record<string, { label: string; description?: string }>;
   errors: Record<ReportAnalysisErrorCode, string>;
+  evidence: Record<
+    ReportEvidenceId,
+    {
+      label: string;
+      descriptions: Partial<Record<EvidenceStatus, string>>;
+    }
+  >;
   metrics: Record<ScoreCategory, { label: string; description: string }>;
   recommendations: Record<string, { title: string; description: string }>;
   reportNotFound: string;
@@ -56,6 +67,99 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
       repository_forbidden: 'GitHub repository is private or access is forbidden.',
       repository_not_found: 'GitHub repository not found',
       repository_verification_failed: 'GitHub repository could not be verified.',
+    },
+    evidence: {
+      'a11y-tooling': {
+        label: 'Accessibility tooling',
+        descriptions: {
+          found: 'Accessibility-focused tooling was found in dependencies.',
+          missing: 'No accessibility-focused dependency was found.',
+        },
+      },
+      'build-script': {
+        label: 'Build script',
+        descriptions: {
+          found: 'package.json exposes a build script.',
+          missing: 'package.json does not expose a build script.',
+        },
+      },
+      bundler: {
+        label: 'Frontend bundler',
+        descriptions: {
+          found: 'A common frontend bundler dependency was found.',
+          missing: 'No common frontend bundler dependency was found.',
+        },
+      },
+      'env-example': {
+        label: 'Environment example',
+        descriptions: {
+          found: 'An environment example file was found.',
+          missing: 'No environment example file was found.',
+        },
+      },
+      'github-actions': {
+        label: 'GitHub Actions workflow',
+        descriptions: {
+          found: 'A GitHub Actions workflow directory was found.',
+          missing: 'No GitHub Actions workflow was found.',
+        },
+      },
+      'lint-script': {
+        label: 'Lint script',
+        descriptions: {
+          found: 'package.json exposes a lint script.',
+          missing: 'package.json does not expose a lint script.',
+        },
+      },
+      lockfile: {
+        label: 'Package lockfile',
+        descriptions: {
+          found: 'A package lockfile was found.',
+          missing: 'No package lockfile was found.',
+        },
+      },
+      'package-json': {
+        label: 'package.json',
+        descriptions: {
+          found: 'package.json was found.',
+          missing: 'package.json was not found.',
+        },
+      },
+      readme: {
+        label: 'README',
+        descriptions: {
+          found: 'README file was found.',
+          missing: 'README file was not found.',
+        },
+      },
+      storybook: {
+        label: 'Storybook',
+        descriptions: {
+          found: 'Storybook configuration or dependency was found.',
+          missing: 'Storybook configuration or dependency was not found.',
+        },
+      },
+      'test-script': {
+        label: 'Test script',
+        descriptions: {
+          found: 'package.json exposes a test script.',
+          missing: 'package.json does not expose a test script.',
+        },
+      },
+      'testing-library': {
+        label: 'Testing Library',
+        descriptions: {
+          found: 'A common frontend testing dependency was found.',
+          missing: 'No common frontend testing dependency was found.',
+        },
+      },
+      typescript: {
+        label: 'TypeScript',
+        descriptions: {
+          found: 'TypeScript configuration or dependency was found.',
+          missing: 'TypeScript configuration or dependency was not found.',
+        },
+      },
     },
     metrics: {
       accessibility: {
@@ -159,6 +263,99 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
       repository_not_found: 'Репозиторий GitHub не найден.',
       repository_verification_failed: 'Не удалось проверить репозиторий GitHub.',
     },
+    evidence: {
+      'a11y-tooling': {
+        label: 'Инструменты доступности',
+        descriptions: {
+          found: 'Найдены зависимости для проверки доступности.',
+          missing: 'Зависимости для проверки доступности не найдены.',
+        },
+      },
+      'build-script': {
+        label: 'Build-скрипт',
+        descriptions: {
+          found: 'В package.json есть build-скрипт.',
+          missing: 'В package.json нет build-скрипта.',
+        },
+      },
+      bundler: {
+        label: 'Frontend bundler',
+        descriptions: {
+          found: 'Найдена распространённая зависимость frontend bundler.',
+          missing: 'Распространённая зависимость frontend bundler не найдена.',
+        },
+      },
+      'env-example': {
+        label: 'Пример окружения',
+        descriptions: {
+          found: 'Файл с примером переменных окружения найден.',
+          missing: 'Файл с примером переменных окружения не найден.',
+        },
+      },
+      'github-actions': {
+        label: 'Workflow GitHub Actions',
+        descriptions: {
+          found: 'Найдена директория workflow GitHub Actions.',
+          missing: 'Workflow GitHub Actions не найден.',
+        },
+      },
+      'lint-script': {
+        label: 'Lint-скрипт',
+        descriptions: {
+          found: 'В package.json есть lint-скрипт.',
+          missing: 'В package.json нет lint-скрипта.',
+        },
+      },
+      lockfile: {
+        label: 'Package lockfile',
+        descriptions: {
+          found: 'Package lockfile найден.',
+          missing: 'Package lockfile не найден.',
+        },
+      },
+      'package-json': {
+        label: 'package.json',
+        descriptions: {
+          found: 'package.json найден.',
+          missing: 'package.json не найден.',
+        },
+      },
+      readme: {
+        label: 'README',
+        descriptions: {
+          found: 'README-файл найден.',
+          missing: 'README-файл не найден.',
+        },
+      },
+      storybook: {
+        label: 'Storybook',
+        descriptions: {
+          found: 'Конфигурация или зависимость Storybook найдена.',
+          missing: 'Конфигурация или зависимость Storybook не найдена.',
+        },
+      },
+      'test-script': {
+        label: 'Test-скрипт',
+        descriptions: {
+          found: 'В package.json есть test-скрипт.',
+          missing: 'В package.json нет test-скрипта.',
+        },
+      },
+      'testing-library': {
+        label: 'Testing Library',
+        descriptions: {
+          found: 'Найдена распространённая frontend-зависимость для тестов.',
+          missing: 'Распространённая frontend-зависимость для тестов не найдена.',
+        },
+      },
+      typescript: {
+        label: 'TypeScript',
+        descriptions: {
+          found: 'Конфигурация или зависимость TypeScript найдена.',
+          missing: 'Конфигурация или зависимость TypeScript не найдена.',
+        },
+      },
+    },
     metrics: {
       accessibility: {
         label: 'Доступность',
@@ -228,6 +425,10 @@ const getCatalog = (language: SupportedLanguage) => {
   return reportLocalizationCatalogs[normalizeSupportedLanguage(language)];
 };
 
+const isReportEvidenceId = (id: string): id is ReportEvidenceId => {
+  return (reportEvidenceIds as readonly string[]).includes(id);
+};
+
 export const getLocalizedReportErrorMessage = (
   code: ReportAnalysisErrorCode,
   language: SupportedLanguage,
@@ -237,6 +438,22 @@ export const getLocalizedReportErrorMessage = (
 
 export const getLocalizedReportNotFoundMessage = (language: SupportedLanguage) => {
   return getCatalog(language).reportNotFound;
+};
+
+const localizeEvidence = (
+  evidence: ProjectReport['scoreBreakdown'][number]['evidence'],
+  catalog: ReportLocalizationCatalog,
+) => {
+  return evidence.map((item) => {
+    const translation = isReportEvidenceId(item.id) ? catalog.evidence[item.id] : undefined;
+    const description = translation?.descriptions[item.status] ?? item.description;
+
+    return {
+      ...item,
+      label: translation?.label ?? item.label,
+      ...(description ? { description } : {}),
+    };
+  });
 };
 
 export const localizeProjectReport = (
@@ -273,6 +490,7 @@ export const localizeProjectReport = (
 
       return {
         ...metric,
+        evidence: localizeEvidence(metric.evidence, catalog),
         label: translation?.label ?? metric.label,
         description: translation?.description ?? metric.description,
       };
