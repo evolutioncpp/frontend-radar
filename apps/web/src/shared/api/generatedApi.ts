@@ -38,6 +38,7 @@ export type CreateReportAnalysisApiResponse =
   /** status 200 Default Response */
   {
     id: string;
+    reuseReason: ('completed' | 'active' | 'retried') | null;
     status: 'queued' | 'running' | 'completed';
   };
 /** status 201 Default Response */

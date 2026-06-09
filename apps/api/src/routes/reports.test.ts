@@ -108,6 +108,7 @@ describe('reports routes', () => {
       expect(response.statusCode).toBe(201);
       expect(response.json()).toEqual({
         id: expect.any(String),
+        reuseReason: null,
         status: 'queued',
       });
     } finally {
@@ -206,6 +207,7 @@ describe('reports routes', () => {
       expect(secondCreateResponse.statusCode).toBe(200);
       expect(secondCreateResponse.json()).toEqual({
         id: firstCreateBody.id,
+        reuseReason: 'completed',
         status: 'completed',
       });
       expect(analyzeCallsCount).toBe(1);
@@ -275,6 +277,7 @@ describe('reports routes', () => {
       expect(secondCreateResponse.statusCode).toBe(200);
       expect(secondCreateResponse.json()).toEqual({
         id: firstCreateBody.id,
+        reuseReason: 'active',
         status: expect.stringMatching(/queued|running/),
       });
     } finally {
@@ -321,6 +324,7 @@ describe('reports routes', () => {
       expect(response.statusCode).toBe(200);
       expect(response.json()).toEqual({
         id: queuedAnalysis.id,
+        reuseReason: 'completed',
         status: 'completed',
       });
     } finally {
@@ -369,6 +373,7 @@ describe('reports routes', () => {
       expect(secondCreateResponse.statusCode).toBe(200);
       expect(secondCreateResponse.json()).toEqual({
         id: firstCreateBody.id,
+        reuseReason: 'active',
         status: expect.stringMatching(/queued|running/),
       });
     } finally {
@@ -508,6 +513,7 @@ describe('reports routes', () => {
       expect(retryResponse.statusCode).toBe(200);
       expect(retryResponse.json()).toEqual({
         id,
+        reuseReason: 'retried',
         status: 'queued',
       });
 

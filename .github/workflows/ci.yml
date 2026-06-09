@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: frontend_radar
+          POSTGRES_PASSWORD: frontend_radar
+          POSTGRES_USER: frontend_radar
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U frontend_radar -d frontend_radar"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://frontend_radar:frontend_radar@localhost:5432/frontend_radar?schema=public
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+
+      - name: Generate Prisma client
+        run: npm run db:generate -w apps/api
+
+      - name: Apply database migrations
+        run: npm run db:deploy -w apps/api
+
+      - name: Check SCSS types
+        run: npm run scss:types:check
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm run test
+
+      - name: E2E
+        run: npm run e2e

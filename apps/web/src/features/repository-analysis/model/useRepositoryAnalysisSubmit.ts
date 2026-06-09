@@ -5,7 +5,14 @@ import { getReportPath } from '@/shared/config/routes/appRoutes';
 
 import { useCreateReportAnalysisMutation } from './reportAnalysisApi';
 
+import type { CreateReportAnalysisApiResponse } from './reportAnalysisApi';
 import type { RepositoryAnalysisRequest } from './repositoryAnalysisTypes';
+
+export type ReportAnalysisReuseReason = CreateReportAnalysisApiResponse['reuseReason'];
+
+export interface ReportAnalysisNavigationState {
+  reportAnalysisReuseReason?: ReportAnalysisReuseReason;
+}
 
 export type RepositoryAnalysisSubmitError =
   | 'repositoryNotFound'
@@ -76,6 +83,12 @@ const getRepositoryAnalysisSubmitError = (error: unknown): RepositoryAnalysisSub
   return 'unknown';
 };
 
+const getReportAnalysisReuseReason = (analysis: {
+  reuseReason?: ReportAnalysisReuseReason;
+}): ReportAnalysisReuseReason => {
+  return analysis.reuseReason ?? null;
+};
+
 export const useRepositoryAnalysisSubmit = () => {
   const navigate = useNavigate();
   const [submitError, setSubmitError] = useState<RepositoryAnalysisSubmitError>(null);
@@ -94,7 +107,15 @@ export const useRepositoryAnalysisSubmit = () => {
       })
         .unwrap()
         .then((analysis) => {
-          void navigate(getReportPath(analysis.id));
+          const reuseReason = getReportAnalysisReuseReason(analysis);
+
+          void navigate(getReportPath(analysis.id), {
+            state: reuseReason
+              ? {
+                  reportAnalysisReuseReason: reuseReason,
+                }
+              : undefined,
+          });
         })
         .catch((error: unknown) => {
           setSubmitError(getRepositoryAnalysisSubmitError(error));

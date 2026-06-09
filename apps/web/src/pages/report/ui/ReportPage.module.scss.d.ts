@@ -7,6 +7,9 @@ export type Styles = {
   fallbackDescription: string;
   fallbackTitle: string;
   reportPage: string;
+  reuseNotice: string;
+  reuseNoticeDescription: string;
+  reuseNoticeTitle: string;
   section: string;
 };
 

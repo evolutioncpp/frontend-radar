@@ -133,6 +133,7 @@ export const createReportRoutes = ({
             if (refreshedAnalysis.status === 'completed') {
               return reply.code(200).send({
                 id: refreshedAnalysis.id,
+                reuseReason: 'completed',
                 status: 'completed',
               });
             }
@@ -140,6 +141,7 @@ export const createReportRoutes = ({
             if (refreshedAnalysis.status === 'queued' || refreshedAnalysis.status === 'running') {
               return reply.code(200).send({
                 id: refreshedAnalysis.id,
+                reuseReason: 'active',
                 status: refreshedAnalysis.status,
               });
             }
@@ -153,6 +155,7 @@ export const createReportRoutes = ({
 
           return reply.code(200).send({
             id: retriedAnalysis.id,
+            reuseReason: 'retried',
             status: 'queued',
           });
         };
@@ -188,6 +191,7 @@ export const createReportRoutes = ({
 
         return reply.code(201).send({
           id: analysis.id,
+          reuseReason: null,
           status: 'queued',
         });
       },

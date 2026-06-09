@@ -7,4 +7,8 @@ export type {
   CreateReportAnalysisApiResponse,
 } from './model/reportAnalysisApi';
 export type { RepositoryAnalysisRequest } from './model/repositoryAnalysisTypes';
-export type { RepositoryAnalysisSubmitError } from './model/useRepositoryAnalysisSubmit';
+export type {
+  ReportAnalysisNavigationState,
+  ReportAnalysisReuseReason,
+  RepositoryAnalysisSubmitError,
+} from './model/useRepositoryAnalysisSubmit';

@@ -97,6 +97,20 @@
       "title": "Analysis failed",
       "description": "Repository analysis failed. Try starting a new analysis."
     },
+    "reportReuse": {
+      "completed": {
+        "title": "Using the current report",
+        "description": "The repository has not changed since the latest completed analysis, so Frontend Radar reused the existing report."
+      },
+      "active": {
+        "title": "Analysis already in progress",
+        "description": "An analysis for this repository commit is already running, so Frontend Radar opened the existing run."
+      },
+      "retried": {
+        "title": "Retrying analysis",
+        "description": "The previous attempt for this repository commit failed, so Frontend Radar restarted the analysis."
+      }
+    },
     "sections": {
       "repository": "Repository summary",
       "healthScore": "Health score",

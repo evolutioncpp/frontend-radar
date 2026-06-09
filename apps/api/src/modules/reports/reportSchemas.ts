@@ -35,6 +35,7 @@ export const createReportAnalysisRequestSchema = z.object({
 
 export const createReportAnalysisResponseSchema = z.object({
   id: z.string(),
+  reuseReason: z.enum(['completed', 'active', 'retried']).nullable(),
   status: z.enum(['queued', 'running', 'completed']),
 });
 

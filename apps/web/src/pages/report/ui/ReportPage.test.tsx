@@ -36,6 +36,15 @@ vi.mock('react-i18next', () => ({
           'The report could not be loaded. Try starting a new analysis.',
         'page.reportFailed.title': 'Analysis failed',
         'page.reportFailed.description': 'Repository analysis failed. Try starting a new analysis.',
+        'page.reportReuse.completed.title': 'Using the current report',
+        'page.reportReuse.completed.description':
+          'The repository has not changed since the latest completed analysis, so Frontend Radar reused the existing report.',
+        'page.reportReuse.active.title': 'Analysis already in progress',
+        'page.reportReuse.active.description':
+          'An analysis for this repository commit is already running, so Frontend Radar opened the existing run.',
+        'page.reportReuse.retried.title': 'Retrying analysis',
+        'page.reportReuse.retried.description':
+          'The previous attempt for this repository commit failed, so Frontend Radar restarted the analysis.',
         'page.label': 'Repository analysis',
         'page.title': 'Frontend project health overview',
         'page.description':
@@ -172,7 +181,7 @@ const testReport: ProjectReport = {
   recommendations: [],
 };
 
-const renderReportPage = (initialEntry: string) => {
+const renderReportPage = (initialEntry: string | { pathname: string; state?: unknown }) => {
   return render(
     <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
@@ -210,6 +219,18 @@ describe('ReportPage', () => {
       screen.getByRole('heading', { name: /evolutioncpp\/frontend-radar/i }),
     ).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Overall project quality' })).toBeInTheDocument();
+  });
+
+  test('renders completed reuse notice from navigation state', () => {
+    renderReportPage({
+      pathname: '/dashboard/report/analysis-id',
+      state: {
+        reportAnalysisReuseReason: 'completed',
+      },
+    });
+
+    expect(screen.getByRole('status')).toHaveTextContent('Using the current report');
+    expect(screen.getByText(/reused the existing report/i)).toBeInTheDocument();
   });
 
   test('renders loading state', () => {

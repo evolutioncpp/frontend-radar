@@ -1,17 +1,44 @@
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 
 import { useProjectReport } from '@/entities/report';
-import { useRepositoryAnalysisSubmit } from '@/features/repository-analysis';
+import {
+  type ReportAnalysisNavigationState,
+  useRepositoryAnalysisSubmit,
+} from '@/features/repository-analysis';
 import { Card } from '@/shared/ui/Card';
 import { RepositoryAnalysisPanel } from '@/widgets/repository-analysis-panel';
 
 import { DashboardReportView } from './dashboard-report-view/DashboardReportView';
 import s from './ReportPage.module.scss';
 
+const reportAnalysisReuseReasons = ['completed', 'active', 'retried'] as const;
+
+const isReportAnalysisReuseReason = (
+  value: unknown,
+): value is NonNullable<ReportAnalysisNavigationState['reportAnalysisReuseReason']> => {
+  return (
+    typeof value === 'string' && (reportAnalysisReuseReasons as readonly string[]).includes(value)
+  );
+};
+
+const getReportAnalysisReuseReason = (state: unknown) => {
+  if (typeof state === 'object' && state !== null && 'reportAnalysisReuseReason' in state) {
+    const reuseReason = state.reportAnalysisReuseReason;
+
+    if (isReportAnalysisReuseReason(reuseReason)) {
+      return reuseReason;
+    }
+  }
+
+  return null;
+};
+
 export const ReportPage = () => {
   const { t } = useTranslation('dashboard');
   const { id } = useParams();
+  const location = useLocation();
+  const reuseReason = getReportAnalysisReuseReason(location.state);
   const reportState = useProjectReport(id);
   const repositoryAnalysisSubmit = useRepositoryAnalysisSubmit();
 
@@ -23,6 +50,13 @@ export const ReportPage = () => {
         onSubmit={repositoryAnalysisSubmit.submitRepositoryAnalysis}
         submitError={repositoryAnalysisSubmit.submitError}
       />
+
+      {reuseReason ? (
+        <ReportReuseNotice
+          description={t(`page.reportReuse.${reuseReason}.description`)}
+          title={t(`page.reportReuse.${reuseReason}.title`)}
+        />
+      ) : null}
 
       {reportState.status === 'ready' ? (
         <DashboardReportView report={reportState.report} />
@@ -52,6 +86,20 @@ export const ReportPage = () => {
           title={t('page.reportFallback.title')}
         />
       )}
+    </div>
+  );
+};
+
+interface ReportReuseNoticeProps {
+  description: string;
+  title: string;
+}
+
+const ReportReuseNotice = ({ description, title }: ReportReuseNoticeProps) => {
+  return (
+    <div className={s.reuseNotice} role="status">
+      <strong className={s.reuseNoticeTitle}>{title}</strong>
+      <span className={s.reuseNoticeDescription}>{description}</span>
     </div>
   );
 };
