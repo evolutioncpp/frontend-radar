@@ -21,6 +21,7 @@ export type ReportRepository = {
   stars: number;
   forks: number;
   defaultBranch: string;
+  latestCommitSha: string | null;
   latestCommitDate: string | null;
   license: string | null;
 };

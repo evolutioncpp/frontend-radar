@@ -5,8 +5,15 @@
     "hint": "Paste a GitHub repository URL or owner/repo.",
     "clear": "Clear repository",
     "submit": "Analyze",
+    "submitLoading": "Checking...",
     "errors": {
-      "invalidRepository": "Enter a valid GitHub repository."
+      "invalidRepository": "Enter a valid GitHub repository.",
+      "repositoryNotFound": "Repository was not found on GitHub.",
+      "repositoryForbidden": "This repository is private or GitHub access is forbidden.",
+      "githubRateLimited": "GitHub rate limit was reached. Try again later.",
+      "githubUnavailable": "GitHub is unavailable right now. Try again later.",
+      "repositoryVerificationFailed": "GitHub could not verify this repository. Try again in a moment.",
+      "unknown": "Could not start repository analysis. Try again."
     }
   }
 }

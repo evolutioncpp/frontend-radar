@@ -32,6 +32,7 @@ const repository: ReportRepository = {
   stars: 128,
   forks: 14,
   defaultBranch: 'main',
+  latestCommitSha: 'abc123',
   latestCommitDate: '2026-06-02T00:00:00.000Z',
   license: 'MIT',
 };

@@ -1,17 +1,112 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { getDemoReportPath } from '@/shared/config/routes/appRoutes';
+import { getReportPath } from '@/shared/config/routes/appRoutes';
+
+import { useCreateReportAnalysisMutation } from './reportAnalysisApi';
 
 import type { RepositoryAnalysisRequest } from './repositoryAnalysisTypes';
 
+export type RepositoryAnalysisSubmitError =
+  | 'repositoryNotFound'
+  | 'repositoryForbidden'
+  | 'githubRateLimited'
+  | 'githubUnavailable'
+  | 'repositoryVerificationFailed'
+  | 'unknown'
+  | null;
+
+const getErrorCode = (error: unknown) => {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'data' in error &&
+    typeof error.data === 'object' &&
+    error.data !== null &&
+    'code' in error.data &&
+    typeof error.data.code === 'string'
+  ) {
+    return error.data.code;
+  }
+
+  return null;
+};
+
+const getRepositoryAnalysisSubmitError = (error: unknown): RepositoryAnalysisSubmitError => {
+  const errorCode = getErrorCode(error);
+
+  if (errorCode === 'repository_not_found') {
+    return 'repositoryNotFound';
+  }
+
+  if (errorCode === 'repository_forbidden') {
+    return 'repositoryForbidden';
+  }
+
+  if (errorCode === 'github_rate_limited') {
+    return 'githubRateLimited';
+  }
+
+  if (errorCode === 'github_unavailable') {
+    return 'githubUnavailable';
+  }
+
+  if (errorCode === 'repository_verification_failed') {
+    return 'repositoryVerificationFailed';
+  }
+
+  if (typeof error === 'object' && error !== null && 'status' in error) {
+    if (error.status === 404) {
+      return 'repositoryNotFound';
+    }
+
+    if (error.status === 403) {
+      return 'repositoryForbidden';
+    }
+
+    if (error.status === 429) {
+      return 'githubRateLimited';
+    }
+
+    if (error.status === 502) {
+      return 'repositoryVerificationFailed';
+    }
+  }
+
+  return 'unknown';
+};
+
 export const useRepositoryAnalysisSubmit = () => {
   const navigate = useNavigate();
+  const [submitError, setSubmitError] = useState<RepositoryAnalysisSubmitError>(null);
+  const [createReportAnalysis, { isLoading: isSubmitting }] = useCreateReportAnalysisMutation();
 
-  return useCallback(
-    (_request: RepositoryAnalysisRequest) => {
-      void navigate(getDemoReportPath());
+  const clearSubmitError = useCallback(() => {
+    setSubmitError(null);
+  }, []);
+
+  const submitRepositoryAnalysis = useCallback(
+    (request: RepositoryAnalysisRequest) => {
+      setSubmitError(null);
+
+      void createReportAnalysis({
+        body: request,
+      })
+        .unwrap()
+        .then((analysis) => {
+          void navigate(getReportPath(analysis.id));
+        })
+        .catch((error: unknown) => {
+          setSubmitError(getRepositoryAnalysisSubmitError(error));
+        });
     },
-    [navigate],
+    [createReportAnalysis, navigate],
   );
+
+  return {
+    clearSubmitError,
+    isSubmitting,
+    submitError,
+    submitRepositoryAnalysis,
+  };
 };

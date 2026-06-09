@@ -103,6 +103,7 @@ const customReport: ProjectReport = {
     stars: 42,
     forks: 7,
     defaultBranch: 'develop',
+    latestCommitSha: 'abc123',
     latestCommitDate: '2026-06-06T00:00:00.000Z',
     license: 'Apache-2.0',
   },

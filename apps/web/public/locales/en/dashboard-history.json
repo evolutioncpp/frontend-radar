@@ -1,15 +1,25 @@
 {
   "page": {
     "title": "History",
-    "description": "Review repository analysis results and reopen reports when you need to revisit project health.",
+    "description": "Review repository analysis runs and reopen reports when you need to revisit project health.",
+    "loadingTitle": "Loading analysis history",
+    "loadingDescription": "Frontend Radar is checking recent repository analysis runs.",
+    "errorTitle": "History is unavailable",
+    "errorDescription": "The analysis history could not be loaded. Try again in a moment.",
     "emptyTitle": "No analysis history yet",
     "emptyDescription": "Start a repository analysis from the dashboard overview."
   },
   "card": {
-    "label": "Latest analysis",
-    "analyzedAt": "Analyzed {{date}}",
+    "label": "Analysis run",
+    "analyzedAt": "Last activity {{date}}",
     "openReportAria": "Open report for {{repository}}",
     "scoreLabel": "Health score",
+    "statuses": {
+      "queued": "Queued",
+      "running": "Running",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
     "summary": {
       "metrics": "Metrics",
       "checks": "Checks",

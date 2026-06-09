@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 import {
   RepositoryAnalysisForm,
+  type RepositoryAnalysisSubmitError,
   type RepositoryAnalysisRequest,
 } from '@/features/repository-analysis';
 import { Card } from '@/shared/ui/Card';
@@ -9,10 +10,18 @@ import { Card } from '@/shared/ui/Card';
 import s from './RepositoryAnalysisPanel.module.scss';
 
 interface RepositoryAnalysisPanelProps {
+  isSubmitting?: boolean;
+  onChange?: () => void;
   onSubmit: (request: RepositoryAnalysisRequest) => void;
+  submitError?: RepositoryAnalysisSubmitError;
 }
 
-export const RepositoryAnalysisPanel = ({ onSubmit }: RepositoryAnalysisPanelProps) => {
+export const RepositoryAnalysisPanel = ({
+  isSubmitting = false,
+  onChange,
+  onSubmit,
+  submitError = null,
+}: RepositoryAnalysisPanelProps) => {
   const { t } = useTranslation('dashboard');
 
   return (
@@ -25,7 +34,12 @@ export const RepositoryAnalysisPanel = ({ onSubmit }: RepositoryAnalysisPanelPro
         <p className={s.description}>{t('page.description')}</p>
       </section>
 
-      <RepositoryAnalysisForm onSubmit={onSubmit} />
+      <RepositoryAnalysisForm
+        isSubmitting={isSubmitting}
+        onChange={onChange}
+        onSubmit={onSubmit}
+        submitError={submitError}
+      />
     </Card>
   );
 };

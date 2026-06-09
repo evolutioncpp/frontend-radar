@@ -18,6 +18,7 @@ const createDemoReport = (t: DemoReportT): ProjectReport => ({
     stars: 128,
     forks: 14,
     defaultBranch: 'main',
+    latestCommitSha: 'demo-commit-sha',
     latestCommitDate: '2026-06-02T00:00:00.000Z',
     license: 'MIT',
   },

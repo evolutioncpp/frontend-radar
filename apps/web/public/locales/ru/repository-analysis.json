@@ -5,8 +5,15 @@
     "hint": "Вставьте ссылку на GitHub-репозиторий или owner/repo.",
     "clear": "Очистить репозиторий",
     "submit": "Анализировать",
+    "submitLoading": "Проверяем...",
     "errors": {
-      "invalidRepository": "Введите корректный GitHub-репозиторий."
+      "invalidRepository": "Введите корректный GitHub-репозиторий.",
+      "repositoryNotFound": "Репозиторий не найден на GitHub.",
+      "repositoryForbidden": "Этот репозиторий приватный или GitHub запретил доступ.",
+      "githubRateLimited": "Достигнут лимит GitHub API. Попробуйте позже.",
+      "githubUnavailable": "GitHub сейчас недоступен. Попробуйте позже.",
+      "repositoryVerificationFailed": "GitHub не смог проверить этот репозиторий. Попробуйте чуть позже.",
+      "unknown": "Не удалось запустить анализ репозитория. Попробуйте еще раз."
     }
   }
 }

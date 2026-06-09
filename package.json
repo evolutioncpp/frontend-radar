@@ -6,12 +6,25 @@
   ],
   "scripts": {
     "dev:web": "npm run dev -w apps/web",
-    "build": "npm run build -w apps/web",
-    "test": "npm run test -w apps/web",
-    "lint": "npm run lint -w apps/web",
+    "dev:api": "npm run dev -w apps/api",
+    "build:web": "npm run build -w apps/web",
+    "build:api": "npm run build -w apps/api",
+    "build": "npm run build:web && npm run build:api",
+    "test:shared": "npm run test -w packages/github-repository",
+    "test:web": "npm run test -w apps/web",
+    "test:api": "npm run test -w apps/api",
+    "test": "npm run test:shared && npm run test:web && npm run test:api",
+    "lint:web": "npm run lint -w apps/web",
+    "lint:api": "npm run lint -w apps/api",
+    "lint": "npm run lint:web && npm run lint:api",
     "scss:types:check": "npm run scss:types:check -w apps/web",
-    "format:check": "npm run format:check -w apps/web",
+    "format:check:web": "npm run format:check -w apps/web",
+    "format:check:api": "npm run format:check -w apps/api",
+    "format:check": "npm run format:check:web && npm run format:check:api",
     "e2e": "npm run e2e -w apps/web",
     "check": "npm run scss:types:check && npm run format:check && npm run lint && npm run build && npm run test"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
   }
 }

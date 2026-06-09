@@ -14,12 +14,22 @@ import {
 } from '../../model/repositoryAnalysisSchema';
 
 import type { RepositoryAnalysisRequest } from '../../model/repositoryAnalysisTypes';
+import type { RepositoryAnalysisSubmitError } from '../../model/useRepositoryAnalysisSubmit';
+import type { ChangeEventHandler } from 'react';
 
 interface RepositoryAnalysisFormProps {
+  isSubmitting?: boolean;
+  onChange?: () => void;
   onSubmit: (request: RepositoryAnalysisRequest) => void;
+  submitError?: RepositoryAnalysisSubmitError;
 }
 
-export const RepositoryAnalysisForm = ({ onSubmit }: RepositoryAnalysisFormProps) => {
+export const RepositoryAnalysisForm = ({
+  isSubmitting = false,
+  onChange,
+  onSubmit,
+  submitError = null,
+}: RepositoryAnalysisFormProps) => {
   const { t } = useTranslation('repository-analysis');
   const {
     clearErrors,
@@ -41,9 +51,14 @@ export const RepositoryAnalysisForm = ({ onSubmit }: RepositoryAnalysisFormProps
   const repositoryInputValue = repositoryValue ?? '';
 
   const repositoryField = register('repository');
-  const submitForm = handleSubmit((request) => {
-    onSubmit(request);
-  });
+  const submitForm = handleSubmit((request) => onSubmit(request));
+  const submitErrorMessage = submitError ? t(`form.errors.${submitError}`) : undefined;
+  const repositoryError = errors.repository?.message ?? submitErrorMessage;
+
+  const handleRepositoryChange: ChangeEventHandler<HTMLInputElement> = (event) => {
+    void repositoryField.onChange(event);
+    onChange?.();
+  };
 
   const clearRepository = () => {
     setValue('repository', '', {
@@ -51,6 +66,7 @@ export const RepositoryAnalysisForm = ({ onSubmit }: RepositoryAnalysisFormProps
       shouldTouch: true,
     });
     clearErrors('repository');
+    onChange?.();
   };
 
   return (
@@ -59,10 +75,11 @@ export const RepositoryAnalysisForm = ({ onSubmit }: RepositoryAnalysisFormProps
         {...repositoryField}
         autoComplete="url"
         clearButtonLabel={t('form.clear')}
-        error={errors.repository?.message}
+        error={repositoryError}
         hint={t('form.hint')}
         label={t('form.label')}
         leftIcon={<GitBranch aria-hidden="true" strokeWidth={2} />}
+        onChange={handleRepositoryChange}
         onClear={clearRepository}
         placeholder={t('form.placeholder')}
         type="text"
@@ -70,9 +87,9 @@ export const RepositoryAnalysisForm = ({ onSubmit }: RepositoryAnalysisFormProps
         wrapperClassName={s.input}
       />
 
-      <Button className={s.submitButton} type="submit">
+      <Button className={s.submitButton} disabled={isSubmitting} type="submit">
         <Search aria-hidden="true" strokeWidth={2} />
-        <span>{t('form.submit')}</span>
+        <span>{isSubmitting ? t('form.submitLoading') : t('form.submit')}</span>
       </Button>
     </form>
   );

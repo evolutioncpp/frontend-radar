@@ -1,10 +1,18 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { AppRoutes } from '@/shared/config/routes/appRoutes';
 
 import { DashboardPage } from './DashboardPage';
+
+const apiMocks = vi.hoisted(() => ({
+  createReportAnalysis: vi.fn(),
+}));
+
+vi.mock('@/shared/api/generatedApi', () => ({
+  useCreateReportAnalysisMutation: () => [apiMocks.createReportAnalysis, { isLoading: false }],
+}));
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -55,7 +63,16 @@ vi.mock('react-i18next', () => ({
         'form.hint': 'Paste a GitHub repository URL or owner/repo.',
         'form.clear': 'Clear repository',
         'form.submit': 'Analyze',
+        'form.submitLoading': 'Checking...',
         'form.errors.invalidRepository': 'Enter a valid GitHub repository.',
+        'form.errors.repositoryNotFound': 'Repository was not found on GitHub.',
+        'form.errors.repositoryForbidden':
+          'This repository is private or GitHub access is forbidden.',
+        'form.errors.githubRateLimited': 'GitHub rate limit was reached. Try again later.',
+        'form.errors.githubUnavailable': 'GitHub is unavailable right now. Try again later.',
+        'form.errors.repositoryVerificationFailed':
+          'GitHub could not verify this repository. Try again in a moment.',
+        'form.errors.unknown': 'Could not start repository analysis. Try again.',
       };
 
       return translations[key] ?? key;
@@ -75,6 +92,12 @@ const renderDashboardPage = (initialEntry = AppRoutes.DASHBOARD) => {
 };
 
 describe('DashboardPage', () => {
+  beforeEach(() => {
+    apiMocks.createReportAnalysis.mockReturnValue({
+      unwrap: () => Promise.resolve({ id: 'analysis-id', status: 'queued' }),
+    });
+  });
+
   test('renders analysis form and info card', () => {
     renderDashboardPage();
 
@@ -96,7 +119,7 @@ describe('DashboardPage', () => {
     expect(screen.queryByText(/Frontend Health Score/i)).not.toBeInTheDocument();
   });
 
-  test('navigates to demo report after valid submit', async () => {
+  test('creates analysis and navigates to report after valid submit', async () => {
     renderDashboardPage();
 
     fireEvent.change(screen.getByLabelText('Repository'), {
@@ -109,5 +132,63 @@ describe('DashboardPage', () => {
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: 'Demo report route' })).toBeInTheDocument();
     });
+    expect(apiMocks.createReportAnalysis).toHaveBeenCalledWith({
+      body: {
+        owner: 'evolutioncpp',
+        repository: 'frontend-radar',
+        normalizedUrl: 'https://github.com/evolutioncpp/frontend-radar',
+      },
+    });
+  });
+
+  test('shows repository not found error without navigating', async () => {
+    const repositoryNotFoundError = Object.assign(new Error('Repository was not found'), {
+      status: 404,
+    });
+
+    apiMocks.createReportAnalysis.mockReturnValue({
+      unwrap: () => Promise.reject(repositoryNotFoundError),
+    });
+    renderDashboardPage();
+
+    fireEvent.change(screen.getByLabelText('Repository'), {
+      target: {
+        value: 'https://github.com/facebook/missing-repo',
+      },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Analyze' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Repository was not found on GitHub.')).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('heading', { name: 'Demo report route' })).not.toBeInTheDocument();
+  });
+
+  test('shows rate limit error from backend code without navigating', async () => {
+    const rateLimitError = Object.assign(new Error('Rate limited'), {
+      data: {
+        code: 'github_rate_limited',
+      },
+      status: 429,
+    });
+
+    apiMocks.createReportAnalysis.mockReturnValue({
+      unwrap: () => Promise.reject(rateLimitError),
+    });
+    renderDashboardPage();
+
+    fireEvent.change(screen.getByLabelText('Repository'), {
+      target: {
+        value: 'https://github.com/facebook/react',
+      },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Analyze' }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('GitHub rate limit was reached. Try again later.'),
+      ).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('heading', { name: 'Demo report route' })).not.toBeInTheDocument();
   });
 });

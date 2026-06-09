@@ -81,6 +81,22 @@
       "title": "Report not found",
       "description": "This report is not available yet. Start a new analysis from the dashboard overview."
     },
+    "reportLoading": {
+      "title": "Loading report",
+      "description": "Frontend Radar is checking the analysis status."
+    },
+    "reportProcessing": {
+      "title": "Analysis in progress",
+      "description": "The report is being assembled from GitHub repository signals."
+    },
+    "reportError": {
+      "title": "Analysis failed",
+      "description": "The report could not be loaded. Try starting a new analysis."
+    },
+    "reportFailed": {
+      "title": "Analysis failed",
+      "description": "Repository analysis failed. Try starting a new analysis."
+    },
     "sections": {
       "repository": "Repository summary",
       "healthScore": "Health score",

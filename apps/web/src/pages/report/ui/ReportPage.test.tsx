@@ -1,10 +1,22 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { AppRoutes } from '@/shared/config/routes/appRoutes';
 
 import { ReportPage } from './ReportPage';
+
+import type { ProjectReport } from '@/entities/report';
+
+const apiMocks = vi.hoisted(() => ({
+  createReportAnalysis: vi.fn(),
+  getReportAnalysis: vi.fn(),
+}));
+
+vi.mock('@/shared/api/generatedApi', () => ({
+  useCreateReportAnalysisMutation: () => [apiMocks.createReportAnalysis, { isLoading: false }],
+  useGetReportAnalysisQuery: (...args: unknown[]) => apiMocks.getReportAnalysis(...args),
+}));
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -14,6 +26,16 @@ vi.mock('react-i18next', () => ({
         'page.reportFallback.title': 'Report not found',
         'page.reportFallback.description':
           'This report is not available yet. Start a new analysis from the dashboard overview.',
+        'page.reportLoading.title': 'Loading report',
+        'page.reportLoading.description': 'Frontend Radar is checking the analysis status.',
+        'page.reportProcessing.title': 'Analysis in progress',
+        'page.reportProcessing.description':
+          'The report is being assembled from GitHub repository signals.',
+        'page.reportError.title': 'Analysis failed',
+        'page.reportError.description':
+          'The report could not be loaded. Try starting a new analysis.',
+        'page.reportFailed.title': 'Analysis failed',
+        'page.reportFailed.description': 'Repository analysis failed. Try starting a new analysis.',
         'page.label': 'Repository analysis',
         'page.title': 'Frontend project health overview',
         'page.description':
@@ -69,7 +91,16 @@ vi.mock('react-i18next', () => ({
         'form.hint': 'Paste a GitHub repository URL or owner/repo.',
         'form.clear': 'Clear repository',
         'form.submit': 'Analyze',
+        'form.submitLoading': 'Checking...',
         'form.errors.invalidRepository': 'Enter a valid GitHub repository.',
+        'form.errors.repositoryNotFound': 'Repository was not found on GitHub.',
+        'form.errors.repositoryForbidden':
+          'This repository is private or GitHub access is forbidden.',
+        'form.errors.githubRateLimited': 'GitHub rate limit was reached. Try again later.',
+        'form.errors.githubUnavailable': 'GitHub is unavailable right now. Try again later.',
+        'form.errors.repositoryVerificationFailed':
+          'GitHub could not verify this repository. Try again in a moment.',
+        'form.errors.unknown': 'Could not start repository analysis. Try again.',
       };
 
       if (key === 'page.copySectionLink') {
@@ -105,6 +136,42 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+const testReport: ProjectReport = {
+  id: 'analysis-id',
+  createdAt: '2026-06-09T00:00:00.000Z',
+  totalScore: 82,
+  repository: {
+    owner: 'evolutioncpp',
+    name: 'frontend-radar',
+    url: 'https://github.com/evolutioncpp/frontend-radar',
+    description: 'Frontend dashboard',
+    stars: 128,
+    forks: 14,
+    defaultBranch: 'main',
+    latestCommitSha: 'abc123',
+    latestCommitDate: '2026-06-09T00:00:00.000Z',
+    license: 'MIT',
+  },
+  scoreBreakdown: [
+    {
+      category: 'documentation',
+      label: 'Documentation',
+      value: 82,
+      maxValue: 100,
+      status: 'good',
+      description: 'Documentation signals.',
+    },
+  ],
+  checks: [
+    {
+      id: 'readme-exists',
+      label: 'README exists',
+      status: 'passed',
+    },
+  ],
+  recommendations: [],
+};
+
 const renderReportPage = (initialEntry: string) => {
   return render(
     <MemoryRouter initialEntries={[initialEntry]}>
@@ -116,8 +183,23 @@ const renderReportPage = (initialEntry: string) => {
 };
 
 describe('ReportPage', () => {
-  test('renders demo report for demo id', () => {
-    renderReportPage('/dashboard/report/demo');
+  beforeEach(() => {
+    apiMocks.createReportAnalysis.mockReturnValue({
+      unwrap: () => Promise.resolve({ id: 'next-analysis-id', status: 'queued' }),
+    });
+    apiMocks.getReportAnalysis.mockReturnValue({
+      data: {
+        id: 'analysis-id',
+        report: testReport,
+        status: 'completed',
+      },
+      isError: false,
+      isLoading: false,
+    });
+  });
+
+  test('renders completed report', () => {
+    renderReportPage('/dashboard/report/analysis-id');
 
     expect(
       screen.getByRole('heading', { name: 'Frontend project health overview' }),
@@ -130,7 +212,44 @@ describe('ReportPage', () => {
     expect(screen.getByRole('heading', { name: 'Overall project quality' })).toBeInTheDocument();
   });
 
+  test('renders loading state', () => {
+    apiMocks.getReportAnalysis.mockReturnValue({
+      data: undefined,
+      isError: false,
+      isLoading: true,
+    });
+
+    renderReportPage('/dashboard/report/analysis-id');
+
+    expect(screen.getByRole('heading', { name: 'Loading report' })).toBeInTheDocument();
+    expect(screen.getByText(/checking the analysis status/i)).toBeInTheDocument();
+  });
+
+  test('renders processing state', () => {
+    apiMocks.getReportAnalysis.mockReturnValue({
+      data: {
+        id: 'analysis-id',
+        status: 'running',
+      },
+      isError: false,
+      isLoading: false,
+    });
+
+    renderReportPage('/dashboard/report/analysis-id');
+
+    expect(screen.getByRole('heading', { name: 'Analysis in progress' })).toBeInTheDocument();
+    expect(screen.getByText(/being assembled/i)).toBeInTheDocument();
+  });
+
   test('renders fallback for unknown report id', () => {
+    apiMocks.getReportAnalysis.mockReturnValue({
+      error: {
+        status: 404,
+      },
+      isError: true,
+      isLoading: false,
+    });
+
     renderReportPage('/dashboard/report/unknown');
 
     expect(
@@ -141,5 +260,38 @@ describe('ReportPage', () => {
     expect(screen.getByRole('heading', { name: 'Report not found' })).toBeInTheDocument();
     expect(screen.getByText(/This report is not available yet/i)).toBeInTheDocument();
     expect(screen.queryByText(/evolutioncpp\/frontend-radar/i)).not.toBeInTheDocument();
+  });
+
+  test('renders error state', () => {
+    apiMocks.getReportAnalysis.mockReturnValue({
+      error: {
+        status: 500,
+      },
+      isError: true,
+      isLoading: false,
+    });
+
+    renderReportPage('/dashboard/report/analysis-id');
+
+    expect(screen.getByRole('heading', { name: 'Analysis failed' })).toBeInTheDocument();
+    expect(screen.getByText(/could not be loaded/i)).toBeInTheDocument();
+  });
+
+  test('renders failed analysis state', () => {
+    apiMocks.getReportAnalysis.mockReturnValue({
+      data: {
+        id: 'analysis-id',
+        status: 'failed',
+        errorCode: 'github_unavailable',
+        errorMessage: 'GitHub is unavailable right now. Try again later.',
+      },
+      isError: false,
+      isLoading: false,
+    });
+
+    renderReportPage('/dashboard/report/analysis-id');
+
+    expect(screen.getByRole('heading', { name: 'Analysis failed' })).toBeInTheDocument();
+    expect(screen.getByText(/GitHub is unavailable/i)).toBeInTheDocument();
   });
 });

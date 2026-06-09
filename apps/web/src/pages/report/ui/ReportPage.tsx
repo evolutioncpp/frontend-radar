@@ -10,30 +10,62 @@ import { DashboardReportView } from './dashboard-report-view/DashboardReportView
 import s from './ReportPage.module.scss';
 
 export const ReportPage = () => {
+  const { t } = useTranslation('dashboard');
   const { id } = useParams();
   const reportState = useProjectReport(id);
-  const analyzeRepository = useRepositoryAnalysisSubmit();
+  const repositoryAnalysisSubmit = useRepositoryAnalysisSubmit();
 
   return (
     <div className={s.reportPage}>
-      <RepositoryAnalysisPanel onSubmit={analyzeRepository} />
+      <RepositoryAnalysisPanel
+        isSubmitting={repositoryAnalysisSubmit.isSubmitting}
+        onChange={repositoryAnalysisSubmit.clearSubmitError}
+        onSubmit={repositoryAnalysisSubmit.submitRepositoryAnalysis}
+        submitError={repositoryAnalysisSubmit.submitError}
+      />
 
       {reportState.status === 'ready' ? (
         <DashboardReportView report={reportState.report} />
+      ) : reportState.status === 'loading' ? (
+        <ReportStatusCard
+          description={t('page.reportLoading.description')}
+          title={t('page.reportLoading.title')}
+        />
+      ) : reportState.status === 'processing' ? (
+        <ReportStatusCard
+          description={t('page.reportProcessing.description')}
+          title={t('page.reportProcessing.title')}
+        />
+      ) : reportState.status === 'error' ? (
+        <ReportStatusCard
+          description={t('page.reportError.description')}
+          title={t('page.reportError.title')}
+        />
+      ) : reportState.status === 'failed' ? (
+        <ReportStatusCard
+          description={reportState.errorMessage || t('page.reportFailed.description')}
+          title={t('page.reportFailed.title')}
+        />
       ) : (
-        <ReportFallback />
+        <ReportStatusCard
+          description={t('page.reportFallback.description')}
+          title={t('page.reportFallback.title')}
+        />
       )}
     </div>
   );
 };
 
-const ReportFallback = () => {
-  const { t } = useTranslation('dashboard');
+interface ReportStatusCardProps {
+  description: string;
+  title: string;
+}
 
+const ReportStatusCard = ({ description, title }: ReportStatusCardProps) => {
   return (
     <Card className={s.fallbackCard}>
-      <h1 className={s.fallbackTitle}>{t('page.reportFallback.title')}</h1>
-      <p className={s.fallbackDescription}>{t('page.reportFallback.description')}</p>
+      <h1 className={s.fallbackTitle}>{title}</h1>
+      <p className={s.fallbackDescription}>{description}</p>
     </Card>
   );
 };

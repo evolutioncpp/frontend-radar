@@ -13,11 +13,13 @@ export type Styles = {
   header: string;
   historyCard: string;
   meta: string;
+  metaSeparator: string;
   repository: string;
   repositoryName: string;
   score: string;
   scoreLabel: string;
   scoreMax: string;
+  scorePending: string;
   scoreValue: string;
   scoreValueWrapper: string;
   summaryItem: string;
