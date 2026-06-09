@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@frontend-radar/github-repository": "file:../../packages/github-repository",
+    "@frontend-radar/localization": "file:../../packages/localization",
     "@hookform/resolvers": "^5.4.0",
     "@reduxjs/toolkit": "^2.12.0",
     "clsx": "^2.1.1",

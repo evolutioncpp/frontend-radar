@@ -11,7 +11,10 @@ const config = {
     {
       pattern: () => true,
       parameterFilter: (parameterName, parameterDefinition) =>
-        !(parameterDefinition.in === 'header' && parameterName.toLowerCase() === 'authorization'),
+        !(
+          parameterDefinition.in === 'header' &&
+          ['accept-language', 'authorization'].includes(parameterName.toLowerCase())
+        ),
     },
   ],
 };

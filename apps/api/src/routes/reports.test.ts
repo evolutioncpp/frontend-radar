@@ -163,6 +163,63 @@ describe('reports routes', () => {
     }
   });
 
+  it('localizes completed report by accept-language header', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const app = buildApp(
+      {},
+      {
+        reportAnalysisRepository: repository,
+        reportAnalyzer: createAnalyzer(),
+      },
+    );
+
+    try {
+      const createResponse = await app.inject({
+        method: 'POST',
+        url: '/reports/analyze',
+        payload: {
+          owner: 'owner',
+          repository: 'repo',
+          normalizedUrl: 'https://github.com/owner/repo',
+        },
+      });
+      const { id } = createResponse.json<{ id: string }>();
+
+      await waitForQueuedWorker();
+
+      const response = await app.inject({
+        headers: {
+          'accept-language': 'ru-RU,ru;q=0.9,en;q=0.8',
+        },
+        method: 'GET',
+        url: `/reports/${id}`,
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toMatchObject({
+        id,
+        status: 'completed',
+        report: {
+          scoreBreakdown: [
+            expect.objectContaining({
+              category: 'documentation',
+              label: 'Документация',
+              description: 'Сигналы README и документации окружения, найденные в репозитории.',
+            }),
+          ],
+          checks: [
+            expect.objectContaining({
+              id: 'readme-exists',
+              label: 'README найден',
+            }),
+          ],
+        },
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
   it('reuses latest completed report when repository latest commit is unchanged', async () => {
     const repository = new InMemoryReportAnalysisRepository();
     let analyzeCallsCount = 0;
@@ -195,6 +252,9 @@ describe('reports routes', () => {
       await waitForQueuedWorker();
 
       const secondCreateResponse = await app.inject({
+        headers: {
+          'accept-language': 'ru',
+        },
         method: 'POST',
         url: '/reports/analyze',
         payload: {
@@ -577,6 +637,44 @@ describe('reports routes', () => {
     }
   });
 
+  it('localizes repository not found submit error', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const app = buildApp(
+      {},
+      {
+        reportAnalysisRepository: repository,
+        reportAnalyzer: createAnalyzer({
+          getRepositorySnapshot: async () => {
+            throw new GithubRepositoryNotFoundError();
+          },
+        }),
+      },
+    );
+
+    try {
+      const createResponse = await app.inject({
+        headers: {
+          'accept-language': 'ru',
+        },
+        method: 'POST',
+        url: '/reports/analyze',
+        payload: {
+          owner: 'owner',
+          repository: 'missing-repo',
+          normalizedUrl: 'https://github.com/owner/missing-repo',
+        },
+      });
+
+      expect(createResponse.statusCode).toBe(404);
+      expect(createResponse.json()).toEqual({
+        code: 'repository_not_found',
+        message: 'Репозиторий GitHub не найден.',
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
   it('stores failed analysis and hides it from history', async () => {
     const repository = new InMemoryReportAnalysisRepository();
     const app = buildApp(
@@ -606,6 +704,9 @@ describe('reports routes', () => {
       await waitForQueuedWorker();
 
       const response = await app.inject({
+        headers: {
+          'accept-language': 'ru',
+        },
         method: 'GET',
         url: `/reports/${id}`,
       });
@@ -615,7 +716,7 @@ describe('reports routes', () => {
         id,
         status: 'failed',
         errorCode: 'analysis_failed',
-        errorMessage: 'Repository analysis failed.',
+        errorMessage: 'Не удалось проанализировать репозиторий.',
       });
 
       const historyResponse = await app.inject({

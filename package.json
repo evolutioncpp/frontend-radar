@@ -10,7 +10,7 @@
     "build:web": "npm run build -w apps/web",
     "build:api": "npm run build -w apps/api",
     "build": "npm run build:web && npm run build:api",
-    "test:shared": "npm run test -w packages/github-repository",
+    "test:shared": "npm run test -w packages/github-repository && npm run test -w packages/localization",
     "test:web": "npm run test -w apps/web",
     "test:api": "npm run test -w apps/api",
     "test": "npm run test:shared && npm run test:web && npm run test:api",

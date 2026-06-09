@@ -20,6 +20,7 @@
     "@fastify/swagger": "^9.7.0",
     "@fastify/swagger-ui": "^5.2.6",
     "@frontend-radar/github-repository": "file:../../packages/github-repository",
+    "@frontend-radar/localization": "file:../../packages/localization",
     "@prisma/client": "^6.19.3",
     "fastify": "^5.6.2",
     "fastify-type-provider-zod": "^6.1.0",

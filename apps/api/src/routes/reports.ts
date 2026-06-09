@@ -2,6 +2,7 @@ import { getGithubRepositoryKey } from '@frontend-radar/github-repository';
 
 import { startReportAnalysis } from '../modules/reports/reportAnalysisWorker.js';
 import {
+  acceptLanguageHeadersSchema,
   createReportAnalysisRequestSchema,
   createReportAnalysisResponseSchema,
   errorResponseSchema,
@@ -15,6 +16,12 @@ import {
   reportHistoryLimit,
 } from '../modules/reports/reportAnalysisConfig.js';
 import { createReportAnalysisSnapshotKey } from '../modules/reports/reportAnalysisSnapshot.js';
+import { getReportLanguage } from '../modules/reports/reportLanguage.js';
+import {
+  getLocalizedReportErrorMessage,
+  getLocalizedReportNotFoundMessage,
+  localizeProjectReport,
+} from '../modules/reports/reportLocalization.js';
 
 import type { ReportAnalyzer } from '../modules/reports/githubReportAnalyzer.js';
 import type {
@@ -71,6 +78,7 @@ export const createReportRoutes = ({
           tags: ['Reports'],
           operationId: 'createReportAnalysis',
           body: createReportAnalysisRequestSchema,
+          headers: acceptLanguageHeadersSchema,
           response: {
             200: createReportAnalysisResponseSchema,
             201: createReportAnalysisResponseSchema,
@@ -82,6 +90,7 @@ export const createReportRoutes = ({
         },
       },
       async (request, reply) => {
+        const language = getReportLanguage(request.headers['accept-language']);
         const repositoryKey = getGithubRepositoryKey(request.body.owner, request.body.repository);
         let latestCommitDate: string | null = null;
         let latestCommitSha: string | null = null;
@@ -98,7 +107,7 @@ export const createReportRoutes = ({
           if (isGithubApiError(error)) {
             return reply.code(getGithubErrorHttpStatus(error.code)).send({
               code: error.code,
-              message: error.userMessage,
+              message: getLocalizedReportErrorMessage(error.code, language),
             });
           }
 
@@ -113,7 +122,7 @@ export const createReportRoutes = ({
 
           return reply.code(502).send({
             code: 'repository_verification_failed',
-            message: 'GitHub repository could not be verified',
+            message: getLocalizedReportErrorMessage('repository_verification_failed', language),
           });
         }
 
@@ -203,6 +212,7 @@ export const createReportRoutes = ({
         schema: {
           tags: ['Reports'],
           operationId: 'listReportAnalyses',
+          headers: acceptLanguageHeadersSchema,
           response: {
             200: listReportAnalysesResponseSchema,
           },
@@ -241,6 +251,7 @@ export const createReportRoutes = ({
         schema: {
           tags: ['Reports'],
           operationId: 'getReportAnalysis',
+          headers: acceptLanguageHeadersSchema,
           params: reportAnalysisParamsSchema,
           response: {
             200: getReportAnalysisResponseSchema,
@@ -249,24 +260,25 @@ export const createReportRoutes = ({
         },
       },
       async (request, reply) => {
+        const language = getReportLanguage(request.headers['accept-language']);
         const analysis = await repository.findById(request.params.id);
 
         if (!analysis) {
           return reply.code(404).send({
-            message: 'Report analysis not found',
+            message: getLocalizedReportNotFoundMessage(language),
           });
         }
 
         if (analysis.status === 'completed') {
           if (!analysis.report) {
             return reply.code(404).send({
-              message: 'Report analysis not found',
+              message: getLocalizedReportNotFoundMessage(language),
             });
           }
 
           return {
             id: analysis.id,
-            report: analysis.report,
+            report: localizeProjectReport(analysis.report, language),
             status: 'completed' as const,
           };
         }
@@ -276,7 +288,10 @@ export const createReportRoutes = ({
             id: analysis.id,
             status: 'failed' as const,
             errorCode: analysis.errorCode ?? 'analysis_failed',
-            errorMessage: analysis.errorMessage ?? 'Repository analysis failed.',
+            errorMessage: getLocalizedReportErrorMessage(
+              analysis.errorCode ?? 'analysis_failed',
+              language,
+            ),
           };
         }
 

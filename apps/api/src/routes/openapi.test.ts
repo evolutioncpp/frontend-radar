@@ -88,6 +88,9 @@ describe('GET /openapi.json', () => {
       expect(body.paths['/health'].get.operationId).toBe('getHealth');
       expect(body.paths['/reports/analyze']).toBeDefined();
       expect(body.paths['/reports/analyze'].post.operationId).toBe('createReportAnalysis');
+      expect(JSON.stringify(body.paths['/reports/analyze'].post.parameters)).toContain(
+        'accept-language',
+      );
       expect(body.paths['/reports/analyze'].post.responses['403']).toBeDefined();
       expect(body.paths['/reports/analyze'].post.responses['404']).toBeDefined();
       expect(body.paths['/reports/analyze'].post.responses['429']).toBeDefined();
@@ -96,6 +99,9 @@ describe('GET /openapi.json', () => {
       expect(body.paths['/reports'].get.operationId).toBe('listReportAnalyses');
       expect(body.paths['/reports/{id}']).toBeDefined();
       expect(body.paths['/reports/{id}'].get.operationId).toBe('getReportAnalysis');
+      expect(JSON.stringify(body.paths['/reports/{id}'].get.parameters)).toContain(
+        'accept-language',
+      );
       expect(
         findFailedResponseSchema(
           body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,

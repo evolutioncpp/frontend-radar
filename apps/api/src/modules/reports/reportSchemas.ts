@@ -27,6 +27,12 @@ export const recommendationSeverities = ['low', 'medium', 'high'] as const;
 export const reportAnalysisStatusSchema = z.enum(reportAnalysisStatuses);
 export const reportAnalysisErrorCodeSchema = z.enum(reportAnalysisErrorCodes);
 
+export const acceptLanguageHeadersSchema = z
+  .object({
+    'accept-language': z.string().optional(),
+  })
+  .passthrough();
+
 export const createReportAnalysisRequestSchema = z.object({
   owner: z.string().regex(githubOwnerPattern),
   repository: z.string().regex(githubRepositoryPattern),

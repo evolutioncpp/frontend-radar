@@ -1,9 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { render, waitFor } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
+import { setLanguage } from '@/features/app-settings';
 import { appSettingsReducer } from '@/features/app-settings/model/appSettingsSlice';
+import { baseApi } from '@/shared/api';
+import { generatedApi } from '@/shared/api/generatedApi';
 import { StorageKeys } from '@/shared/config/storage';
 
 import { I18nProvider } from './i18n-provider';
@@ -38,8 +41,10 @@ const createTestStore = (language: AppLanguage = 'en') => {
 
   return configureStore({
     reducer: {
+      [baseApi.reducerPath]: baseApi.reducer,
       appSettings: appSettingsReducer,
     },
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(baseApi.middleware),
     preloadedState,
   });
 };
@@ -95,6 +100,32 @@ describe('I18nProvider', () => {
 
     await waitFor(() => {
       expect(i18nMock.changeLanguage).toHaveBeenCalledWith('ru');
+    });
+  });
+
+  test('invalidates reports cache when language changes', async () => {
+    localStorage.setItem(
+      StorageKeys.APP_SETTINGS,
+      JSON.stringify({
+        theme: 'dark',
+        language: 'en',
+        isDashboardSidebarCollapsed: false,
+      }),
+    );
+    const { store } = renderI18nProvider('en');
+    const dispatchSpy = vi.spyOn(store, 'dispatch');
+
+    act(() => {
+      store.dispatch(setLanguage('ru'));
+    });
+
+    await waitFor(() => {
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: ['Reports'],
+          type: `${generatedApi.reducerPath}/invalidateTags`,
+        }),
+      );
     });
   });
 });
