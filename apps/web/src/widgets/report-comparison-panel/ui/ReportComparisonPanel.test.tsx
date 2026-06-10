@@ -13,11 +13,20 @@ vi.mock('react-i18next', () => ({
         'comparison.title': 'Changes since previous report',
         'comparison.description': 'Compare current and previous reports.',
         'comparison.totalScore': 'Total score',
+        'comparison.noDelta': 'No change',
         'comparison.metricsTitle': 'Metric changes',
+        'comparison.noMetricChanges': 'No metric changes',
         'comparison.changedChecksTitle': 'Changed checks',
         'comparison.recommendationsTitle': 'Recommendations',
         'comparison.noChangedChecks': 'No checks changed between reports.',
         'comparison.emptyRecommendations': 'No recommendation changes.',
+        'comparison.improvedTitle': 'Improved',
+        'comparison.worsenedTitle': 'Needs attention',
+        'comparison.noImprovedItems': 'No improvements detected.',
+        'comparison.noWorsenedItems': 'No regressions detected.',
+        'comparison.noChangesTitle': 'No changes since previous report',
+        'comparison.noChangesDescription':
+          'Score, metrics, checks and recommendations match the previous completed report.',
         'comparison.resolvedBadge': 'Resolved',
 
         'statuses.excellent': 'Excellent',
@@ -37,6 +46,22 @@ vi.mock('react-i18next', () => ({
 
       if (key === 'comparison.addedRecommendations') {
         return `${options?.count} added`;
+      }
+
+      if (key === 'comparison.improvedMetrics') {
+        return `${options?.count} improved`;
+      }
+
+      if (key === 'comparison.worsenedMetrics') {
+        return `${options?.count} regressed`;
+      }
+
+      if (key === 'comparison.unchangedMetrics') {
+        return `${options?.count} unchanged metrics`;
+      }
+
+      if (key === 'comparison.groupItems') {
+        return `${options?.count} changes`;
       }
 
       if (key === 'comparison.resolvedRecommendations') {
@@ -71,6 +96,24 @@ const comparison: Extract<GetReportComparisonApiResponse, { status: 'available' 
       currentStatus: 'good',
       previousStatus: 'warning',
     },
+    {
+      category: 'ci',
+      label: 'CI/CD',
+      currentValue: 65,
+      previousValue: 80,
+      delta: -15,
+      currentStatus: 'warning',
+      previousStatus: 'good',
+    },
+    {
+      category: 'testing',
+      label: 'Testing',
+      currentValue: 100,
+      previousValue: 100,
+      delta: 0,
+      currentStatus: 'excellent',
+      previousStatus: 'excellent',
+    },
   ],
   checks: [
     {
@@ -79,9 +122,22 @@ const comparison: Extract<GetReportComparisonApiResponse, { status: 'available' 
       previousStatus: 'failed',
       currentStatus: 'passed',
     },
+    {
+      id: 'github-actions-exists',
+      label: 'GitHub Actions workflow exists',
+      previousStatus: 'passed',
+      currentStatus: 'failed',
+    },
   ],
   recommendations: {
-    added: [],
+    added: [
+      {
+        id: 'restore-ci',
+        severity: 'high',
+        title: 'Restore CI workflows',
+        description: 'Bring CI coverage back.',
+      },
+    ],
     resolved: [
       {
         id: 'add-test-script',
@@ -95,16 +151,58 @@ const comparison: Extract<GetReportComparisonApiResponse, { status: 'available' 
 };
 
 describe('ReportComparisonPanel', () => {
-  test('renders score, metric, check and recommendation deltas', () => {
+  test('groups score, metric, check and recommendation changes by meaning', () => {
     render(<ReportComparisonPanel comparison={comparison} />);
 
     expect(
       screen.getByRole('heading', { name: 'Changes since previous report' }),
     ).toBeInTheDocument();
     expect(screen.getByLabelText('Total score delta +12')).toHaveTextContent('+12');
+    expect(screen.getByText('1 improved')).toBeInTheDocument();
+    expect(screen.getByText('1 regressed')).toBeInTheDocument();
+    expect(screen.getByText('1 unchanged metrics')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Improved' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Needs attention' })).toBeInTheDocument();
     expect(screen.getByText('Documentation')).toBeInTheDocument();
+    expect(screen.getByText('CI/CD')).toBeInTheDocument();
     expect(screen.getByText('README exists')).toBeInTheDocument();
+    expect(screen.getByText('GitHub Actions workflow exists')).toBeInTheDocument();
     expect(screen.getByText('Add an automated test script')).toBeInTheDocument();
+    expect(screen.getByText('Restore CI workflows')).toBeInTheDocument();
     expect(screen.getByText('1 persistent')).toBeInTheDocument();
+  });
+
+  test('renders a compact unchanged state without standalone zero deltas', () => {
+    render(
+      <ReportComparisonPanel
+        comparison={{
+          ...comparison,
+          totalScore: {
+            current: 82,
+            previous: 82,
+            delta: 0,
+          },
+          metrics: comparison.metrics.map((metric) => ({
+            ...metric,
+            currentValue: metric.previousValue,
+            delta: 0,
+          })),
+          checks: [],
+          recommendations: {
+            added: [],
+            resolved: [],
+            persistentCount: 2,
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByLabelText('Total score delta No change')).toHaveTextContent('No change');
+    expect(screen.getByText('No metric changes')).toBeInTheDocument();
+    expect(screen.getByText('3 unchanged metrics')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'No changes since previous report' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/^0$/u)).not.toBeInTheDocument();
   });
 });

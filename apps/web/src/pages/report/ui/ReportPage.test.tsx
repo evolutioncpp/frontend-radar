@@ -107,11 +107,20 @@ vi.mock('react-i18next', () => ({
         'comparison.description':
           'Compare the current completed report with the previous completed report for the same repository.',
         'comparison.totalScore': 'Total score',
+        'comparison.noDelta': 'No change',
         'comparison.metricsTitle': 'Metric changes',
+        'comparison.noMetricChanges': 'No metric changes',
         'comparison.changedChecksTitle': 'Changed checks',
         'comparison.recommendationsTitle': 'Recommendations',
         'comparison.noChangedChecks': 'No checks changed between reports.',
         'comparison.emptyRecommendations': 'No recommendation changes.',
+        'comparison.improvedTitle': 'Improved',
+        'comparison.worsenedTitle': 'Needs attention',
+        'comparison.noImprovedItems': 'No improvements detected.',
+        'comparison.noWorsenedItems': 'No regressions detected.',
+        'comparison.noChangesTitle': 'No changes since previous report',
+        'comparison.noChangesDescription':
+          'Score, metrics, checks and recommendations match the previous completed report.',
         'comparison.resolvedBadge': 'Resolved',
 
         'statuses.excellent': 'Excellent',
@@ -164,6 +173,22 @@ vi.mock('react-i18next', () => ({
 
       if (key === 'comparison.addedRecommendations') {
         return `${options?.count} added`;
+      }
+
+      if (key === 'comparison.improvedMetrics') {
+        return `${options?.count} improved`;
+      }
+
+      if (key === 'comparison.worsenedMetrics') {
+        return `${options?.count} regressed`;
+      }
+
+      if (key === 'comparison.unchangedMetrics') {
+        return `${options?.count} unchanged metrics`;
+      }
+
+      if (key === 'comparison.groupItems') {
+        return `${options?.count} changes`;
       }
 
       if (key === 'comparison.resolvedRecommendations') {
