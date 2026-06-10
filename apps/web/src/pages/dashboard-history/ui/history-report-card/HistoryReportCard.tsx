@@ -14,6 +14,7 @@ import type { ReactNode } from 'react';
 interface HistoryReportCardProps {
   activityAt: string;
   activityLabel: string;
+  branch: string;
   children?: ReactNode;
   checksCount: number;
   commitTitle?: string | null;
@@ -36,6 +37,7 @@ const scoreStatusClassMap: Record<ScoreStatus, string> = {
 export const HistoryReportCard = ({
   activityAt,
   activityLabel,
+  branch,
   children,
   checksCount,
   commitTitle,
@@ -87,6 +89,8 @@ export const HistoryReportCard = ({
               </time>
               <span className={s.metaSeparator}>/</span>
               <span>{t(`card.statuses.${status}`)}</span>
+              <span className={s.metaSeparator}>/</span>
+              <span className={s.metaCode}>{branch}</span>
               {projectPath ? (
                 <>
                   <span className={s.metaSeparator}>/</span>

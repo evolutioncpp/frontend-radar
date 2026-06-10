@@ -1,4 +1,5 @@
 export type Styles = {
+  branchSelect: string;
   fields: string;
   input: string;
   projectPathInput: string;

@@ -203,13 +203,26 @@ describe('GET /openapi.json', () => {
       expect(JSON.stringify(body.paths['/reports/analyze'].post.parameters)).toContain(
         'accept-language',
       );
+      expect(JSON.stringify(body.paths['/reports/analyze'].post.requestBody)).toContain('branch');
       expect(JSON.stringify(body.paths['/reports/analyze'].post.requestBody)).toContain(
         'projectPathSource',
       );
       expect(body.paths['/reports/analyze'].post.responses['403']).toBeDefined();
       expect(body.paths['/reports/analyze'].post.responses['404']).toBeDefined();
       expect(body.paths['/reports/analyze'].post.responses['429']).toBeDefined();
+      expect(body.paths['/reports/analyze'].post.responses['422']).toBeDefined();
       expect(body.paths['/reports/analyze'].post.responses['502']).toBeDefined();
+      expect(body.paths['/repositories/{owner}/{repository}/branches']).toBeDefined();
+      expect(body.paths['/repositories/{owner}/{repository}/branches'].get.operationId).toBe(
+        'listRepositoryBranches',
+      );
+      expect(
+        JSON.stringify(
+          body.paths['/repositories/{owner}/{repository}/branches'].get.responses['200'].content[
+            'application/json'
+          ].schema,
+        ),
+      ).toContain('defaultBranch');
       expect(body.paths['/reports']).toBeDefined();
       expect(body.paths['/reports'].get.operationId).toBe('listReportAnalyses');
       expect(body.paths['/reports/{id}']).toBeDefined();
@@ -246,9 +259,19 @@ describe('GET /openapi.json', () => {
       ).toContain('latestCommitTitle');
       expect(
         JSON.stringify(
+          body.paths['/reports'].get.responses['200'].content['application/json'].schema,
+        ),
+      ).toContain('branch');
+      expect(
+        JSON.stringify(
           body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,
         ),
       ).toContain('latestCommitTitle');
+      expect(
+        JSON.stringify(
+          body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,
+        ),
+      ).toContain('branch');
       expect(
         JSON.stringify(
           body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,

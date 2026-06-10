@@ -1,4 +1,4 @@
-import { isGithubRepositoryNotFoundError } from './githubErrors.js';
+import { GithubBranchNotFoundError, isGithubRepositoryNotFoundError } from './githubErrors.js';
 
 import type { GithubClient } from './githubClient.js';
 
@@ -15,10 +15,20 @@ export interface GithubRepositoryMetadata {
 }
 
 export interface RepositorySnapshot {
+  branch: string;
   defaultBranch?: string;
   latestCommitDate: string | null;
   latestCommitSha: string | null;
   latestCommitTitle: string | null;
+}
+
+export interface RepositoryBranches {
+  branches: Array<{
+    isDefault: boolean;
+    name: string;
+  }>;
+  defaultBranch: string;
+  isTruncated: boolean;
 }
 
 export type PackageJson = {
@@ -125,20 +135,69 @@ const toPackageJson = (value: unknown): PackageJson | null => {
 export class GithubRepositoryReader {
   constructor(private readonly client: GithubClient) {}
 
-  async getRepositorySnapshot(owner: string, repository: string) {
+  async getRepositorySnapshot(owner: string, repository: string, branch?: string | null) {
     const repositoryMetadata = await this.fetchRepositoryMetadata(owner, repository);
-    const latestCommit = await this.fetchLatestCommit(
-      owner,
-      repository,
-      repositoryMetadata.defaultBranch,
-    );
+    const targetBranch = branch || repositoryMetadata.defaultBranch;
+    const latestCommit = await this.fetchLatestCommit(owner, repository, targetBranch, {
+      throwOnNotFound: Boolean(branch),
+    });
 
     return {
+      branch: targetBranch,
       defaultBranch: repositoryMetadata.defaultBranch,
       latestCommitDate: latestCommit?.date ?? repositoryMetadata.pushedAt,
       latestCommitSha: latestCommit?.sha ?? null,
       latestCommitTitle: latestCommit?.title ?? null,
     } satisfies RepositorySnapshot;
+  }
+
+  async listBranches(owner: string, repository: string, limit = 500): Promise<RepositoryBranches> {
+    const repositoryMetadata = await this.fetchRepositoryMetadata(owner, repository);
+    const branchNames: string[] = [];
+    let page = 1;
+    let isTruncated = false;
+
+    while (branchNames.length < limit) {
+      const body = await this.client.requestJson(
+        `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/branches?per_page=100&page=${page}`,
+      );
+
+      if (!Array.isArray(body) || body.length === 0) {
+        break;
+      }
+
+      for (const branch of body) {
+        const name = getStringField(branch, 'name');
+
+        if (name) {
+          branchNames.push(name);
+        }
+
+        if (branchNames.length >= limit) {
+          isTruncated = body.length === 100;
+          break;
+        }
+      }
+
+      if (body.length < 100 || isTruncated) {
+        break;
+      }
+
+      page += 1;
+    }
+
+    if (!branchNames.includes(repositoryMetadata.defaultBranch)) {
+      branchNames.unshift(repositoryMetadata.defaultBranch);
+    }
+
+    return {
+      defaultBranch: repositoryMetadata.defaultBranch,
+      branches: branchNames.map((name) => ({
+        isDefault: name === repositoryMetadata.defaultBranch,
+        name,
+      })),
+      isTruncated,
+    };
   }
 
   async fetchRepositoryMetadata(owner: string, repository: string) {
@@ -161,7 +220,12 @@ export class GithubRepositoryReader {
     } satisfies GithubRepositoryMetadata;
   }
 
-  async fetchLatestCommit(owner: string, repository: string, branch: string) {
+  async fetchLatestCommit(
+    owner: string,
+    repository: string,
+    branch: string,
+    options: { throwOnNotFound?: boolean } = {},
+  ) {
     try {
       const body = await this.client.requestJson(
         `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/commits/${encodeURIComponent(branch)}`,
@@ -183,6 +247,10 @@ export class GithubRepositoryReader {
       };
     } catch (error) {
       if (isGithubRepositoryNotFoundError(error)) {
+        if (options.throwOnNotFound) {
+          throw new GithubBranchNotFoundError(branch);
+        }
+
         return null;
       }
 

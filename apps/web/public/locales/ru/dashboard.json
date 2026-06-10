@@ -147,6 +147,11 @@
     },
     "tooling": {
       "title": "Стек проекта",
+      "sourcesTitle": "Источники",
+      "sourcesCounter_one": "{{count}} источник",
+      "sourcesCounter_few": "{{count}} источника",
+      "sourcesCounter_many": "{{count}} источников",
+      "sourcesCounter_other": "{{count}} источника",
       "groups": {
         "packageManager": "Package manager",
         "frameworks": "Фреймворк",

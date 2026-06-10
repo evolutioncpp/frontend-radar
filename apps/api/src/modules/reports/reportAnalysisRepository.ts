@@ -12,9 +12,10 @@ import type { CreateReportAnalysisRequest } from './reportSchemas.js';
 
 export interface CreateReportAnalysisRecordInput extends Omit<
   CreateReportAnalysisRequest,
-  'projectPath' | 'projectPathSource'
+  'branch' | 'projectPath' | 'projectPathSource'
 > {
   analysisVersion: number;
+  branch: string;
   latestCommitDate: string | null;
   latestCommitSha: string | null;
   latestCommitTitle: string | null;
@@ -26,6 +27,7 @@ export interface CreateReportAnalysisRecordInput extends Omit<
 
 export interface ReportAnalysisSnapshotLookup {
   analysisVersion: number;
+  branch: string;
   projectPath: string;
   repositoryKey: string;
   snapshotKey: string;
@@ -41,6 +43,7 @@ export interface ReportAnalysisEntity {
   owner: string;
   repository: string;
   repositoryKey: string;
+  branch: string;
   projectPath: string;
   projectPathSource: ReportProjectPathSource;
   snapshotKey: string;
@@ -96,6 +99,7 @@ const parseReportAnalysisErrorCode = (value: string | null): ReportAnalysisError
     value === 'repository_forbidden' ||
     value === 'github_rate_limited' ||
     value === 'github_unavailable' ||
+    value === 'branch_not_found' ||
     value === 'project_path_not_found' ||
     value === 'repository_verification_failed' ||
     value === 'analysis_failed'
@@ -122,6 +126,7 @@ const mapPrismaReportAnalysis = (
     owner: analysis.owner,
     repository: analysis.repository,
     repositoryKey: analysis.repositoryKey,
+    branch: analysis.branch,
     projectPath: analysis.projectPath,
     projectPathSource: parseReportProjectPathSource(analysis.projectPathSource),
     snapshotKey: analysis.snapshotKey,
@@ -143,12 +148,14 @@ const mapPrismaReportAnalysis = (
 
 const createSnapshotWhere = ({
   analysisVersion,
+  branch,
   projectPath,
   repositoryKey,
   snapshotKey,
 }: ReportAnalysisSnapshotLookup): Prisma.ReportAnalysisWhereInput => {
   return {
     analysisVersion,
+    branch,
     projectPath,
     repositoryKey,
     snapshotKey,
@@ -256,6 +263,7 @@ export class PrismaReportAnalysisRepository implements ReportAnalysisRepository 
         },
         repositoryKey: analysis.repositoryKey,
         projectPath: analysis.projectPath,
+        branch: analysis.branch,
         status: 'completed',
       },
     });

@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { buildApp } from '../app.js';
 import {
   GithubApiError,
+  GithubBranchNotFoundError,
   GithubRepositoryNotFoundError,
 } from '../modules/reports/githubReportAnalyzer.js';
 import { InMemoryReportAnalysisRepository } from '../modules/reports/inMemoryReportAnalysisRepository.js';
@@ -18,6 +19,7 @@ import type { ProjectReport } from '../modules/reports/reportSchemas.js';
 const DEFAULT_COMMIT_DATE = '2026-06-09T00:00:00.000Z';
 const DEFAULT_COMMIT_SHA = 'abc123';
 const DEFAULT_COMMIT_TITLE = 'Initial frontend quality pass';
+const DEFAULT_BRANCH = 'main';
 
 const emptyTooling: ProjectReport['tooling'] = {
   accessibility: [],
@@ -37,6 +39,7 @@ const createTestReport = (
   latestCommitSha: string | null = DEFAULT_COMMIT_SHA,
   projectPath: string | null = null,
   latestCommitTitle: string | null = DEFAULT_COMMIT_TITLE,
+  branch = DEFAULT_BRANCH,
 ): ProjectReport => ({
   analysisSources: [],
   id,
@@ -49,7 +52,8 @@ const createTestReport = (
     description: 'Test repository',
     stars: 1,
     forks: 0,
-    defaultBranch: 'main',
+    defaultBranch: DEFAULT_BRANCH,
+    branch,
     projectPath,
     projectDetection: {
       source: projectPath ? 'manual' : 'autodetect',
@@ -110,6 +114,7 @@ const createTestRecordInput = (
   overrides: Partial<CreateReportAnalysisRecordInput> = {},
 ): CreateReportAnalysisRecordInput => ({
   analysisVersion: REPORT_ANALYSIS_VERSION,
+  branch: DEFAULT_BRANCH,
   latestCommitDate: DEFAULT_COMMIT_DATE,
   latestCommitSha: DEFAULT_COMMIT_SHA,
   latestCommitTitle: DEFAULT_COMMIT_TITLE,
@@ -134,12 +139,24 @@ const createAnalyzer = (overrides: Partial<ReportAnalyzer> = {}): ReportAnalyzer
       input.latestCommitSha,
       input.projectPath || null,
       input.latestCommitTitle,
+      input.branch,
     ),
   getRepositorySnapshot: async () => ({
-    defaultBranch: 'main',
+    branch: DEFAULT_BRANCH,
+    defaultBranch: DEFAULT_BRANCH,
     latestCommitDate: DEFAULT_COMMIT_DATE,
     latestCommitSha: DEFAULT_COMMIT_SHA,
     latestCommitTitle: DEFAULT_COMMIT_TITLE,
+  }),
+  listRepositoryBranches: async () => ({
+    defaultBranch: DEFAULT_BRANCH,
+    branches: [
+      {
+        isDefault: true,
+        name: DEFAULT_BRANCH,
+      },
+    ],
+    isTruncated: false,
   }),
   resolveProjectPath: async (_owner, _repository, _ref, projectPath) => projectPath ?? '',
   ...overrides,
@@ -150,6 +167,57 @@ const waitForQueuedWorker = () => new Promise((resolve) => setTimeout(resolve, 0
 const waitForClockTick = () => new Promise((resolve) => setTimeout(resolve, 1));
 
 describe('reports routes', () => {
+  it('lists repository branches for branch selector', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const app = buildApp(
+      {},
+      {
+        reportAnalysisRepository: repository,
+        reportAnalyzer: createAnalyzer({
+          listRepositoryBranches: async () => ({
+            defaultBranch: 'main',
+            branches: [
+              {
+                isDefault: true,
+                name: 'main',
+              },
+              {
+                isDefault: false,
+                name: 'feature/dashboard',
+              },
+            ],
+            isTruncated: false,
+          }),
+        }),
+      },
+    );
+
+    try {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/repositories/owner/repo/branches',
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toEqual({
+        defaultBranch: 'main',
+        branches: [
+          {
+            isDefault: true,
+            name: 'main',
+          },
+          {
+            isDefault: false,
+            name: 'feature/dashboard',
+          },
+        ],
+        isTruncated: false,
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
   it('creates report analysis job and returns queued status', async () => {
     const repository = new InMemoryReportAnalysisRepository();
     const app = buildApp(
@@ -264,6 +332,58 @@ describe('reports routes', () => {
         payload: {
           owner: 'owner',
           projectPath: 'apps/admin',
+          repository: 'repo',
+          normalizedUrl: 'https://github.com/owner/repo',
+        },
+      });
+
+      expect(firstResponse.statusCode).toBe(201);
+      expect(secondResponse.statusCode).toBe(201);
+      expect(firstResponse.json<{ id: string }>().id).not.toBe(
+        secondResponse.json<{ id: string }>().id,
+      );
+      await expect(repository.findLatest(10)).resolves.toHaveLength(2);
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('creates separate analyses for the same commit and different branches', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const app = buildApp(
+      {},
+      {
+        reportAnalysisRepository: repository,
+        reportAnalyzer: createAnalyzer({
+          getRepositorySnapshot: async (_owner, _repository, branch) => ({
+            branch: branch ?? DEFAULT_BRANCH,
+            defaultBranch: DEFAULT_BRANCH,
+            latestCommitDate: DEFAULT_COMMIT_DATE,
+            latestCommitSha: DEFAULT_COMMIT_SHA,
+            latestCommitTitle: DEFAULT_COMMIT_TITLE,
+          }),
+        }),
+        startReportAnalysis: () => undefined,
+      },
+    );
+
+    try {
+      const firstResponse = await app.inject({
+        method: 'POST',
+        url: '/reports/analyze',
+        payload: {
+          branch: 'main',
+          owner: 'owner',
+          repository: 'repo',
+          normalizedUrl: 'https://github.com/owner/repo',
+        },
+      });
+      const secondResponse = await app.inject({
+        method: 'POST',
+        url: '/reports/analyze',
+        payload: {
+          branch: 'feature/dashboard',
+          owner: 'owner',
           repository: 'repo',
           normalizedUrl: 'https://github.com/owner/repo',
         },
@@ -611,6 +731,7 @@ describe('reports routes', () => {
         reportAnalyzer: createAnalyzer({
           analyze: async () => new Promise<ProjectReport>(() => undefined),
           getRepositorySnapshot: async () => ({
+            branch: DEFAULT_BRANCH,
             latestCommitDate: DEFAULT_COMMIT_DATE,
             latestCommitSha: null,
             latestCommitTitle: DEFAULT_COMMIT_TITLE,
@@ -670,6 +791,7 @@ describe('reports routes', () => {
               input.latestCommitTitle,
             ),
           getRepositorySnapshot: async () => ({
+            branch: DEFAULT_BRANCH,
             latestCommitDate,
             latestCommitSha,
             latestCommitTitle: DEFAULT_COMMIT_TITLE,
@@ -802,6 +924,7 @@ describe('reports routes', () => {
               input.latestCommitTitle,
             ),
           getRepositorySnapshot: async () => ({
+            branch: DEFAULT_BRANCH,
             latestCommitDate,
             latestCommitSha,
             latestCommitTitle: DEFAULT_COMMIT_TITLE,
@@ -885,6 +1008,7 @@ describe('reports routes', () => {
         reportAnalysisRepository: repository,
         reportAnalyzer: createAnalyzer({
           getRepositorySnapshot: async () => ({
+            branch: DEFAULT_BRANCH,
             defaultBranch: 'main',
             latestCommitDate,
             latestCommitSha,
@@ -946,6 +1070,7 @@ describe('reports routes', () => {
         reportAnalysisRepository: repository,
         reportAnalyzer: createAnalyzer({
           getRepositorySnapshot: async () => ({
+            branch: DEFAULT_BRANCH,
             latestCommitDate,
             latestCommitSha,
             latestCommitTitle: DEFAULT_COMMIT_TITLE,
@@ -1168,6 +1293,51 @@ describe('reports routes', () => {
       expect(createResponse.json()).toEqual({
         code: 'repository_not_found',
         message: 'GitHub repository not found',
+      });
+
+      const historyResponse = await app.inject({
+        method: 'GET',
+        url: '/reports',
+      });
+
+      expect(historyResponse.json()).toEqual({
+        items: [],
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('returns branch not found error without creating analysis run', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const app = buildApp(
+      {},
+      {
+        reportAnalysisRepository: repository,
+        reportAnalyzer: createAnalyzer({
+          getRepositorySnapshot: async () => {
+            throw new GithubBranchNotFoundError('missing-branch');
+          },
+        }),
+      },
+    );
+
+    try {
+      const createResponse = await app.inject({
+        method: 'POST',
+        url: '/reports/analyze',
+        payload: {
+          branch: 'missing-branch',
+          owner: 'owner',
+          repository: 'repo',
+          normalizedUrl: 'https://github.com/owner/repo',
+        },
+      });
+
+      expect(createResponse.statusCode).toBe(422);
+      expect(createResponse.json()).toEqual({
+        code: 'branch_not_found',
+        message: 'GitHub branch not found.',
       });
 
       const historyResponse = await app.inject({
@@ -1570,6 +1740,13 @@ describe('reports routes', () => {
         projectPath: 'apps/docs',
       }),
     );
+    const otherBranchAnalysis = await repository.create(
+      createTestRecordInput({
+        branch: 'develop',
+        latestCommitDate: '2026-06-12T00:00:00.000Z',
+        latestCommitSha: 'other-branch-sha',
+      }),
+    );
 
     await repository.complete(currentAnalysis.id, createTestReport(currentAnalysis.id));
     await repository.complete(
@@ -1579,6 +1756,17 @@ describe('reports routes', () => {
         otherProjectAnalysis.latestCommitDate,
         otherProjectAnalysis.latestCommitSha,
         'apps/docs',
+      ),
+    );
+    await repository.complete(
+      otherBranchAnalysis.id,
+      createTestReport(
+        otherBranchAnalysis.id,
+        otherBranchAnalysis.latestCommitDate,
+        otherBranchAnalysis.latestCommitSha,
+        null,
+        otherBranchAnalysis.latestCommitTitle,
+        'develop',
       ),
     );
 
@@ -1595,6 +1783,7 @@ describe('reports routes', () => {
         currentAnalysis.id,
         queuedAnalysis.id,
         otherProjectAnalysis.id,
+        otherBranchAnalysis.id,
         'missing-analysis-id',
       ]) {
         const response = await app.inject({

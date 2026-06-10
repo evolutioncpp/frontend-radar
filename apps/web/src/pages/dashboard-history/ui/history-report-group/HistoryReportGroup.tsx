@@ -87,6 +87,7 @@ export const HistoryReportGroup = ({ group }: HistoryReportGroupProps) => {
       <HistoryReportCard
         activityAt={group.latestRun.activityAt}
         activityLabel={group.latestRun.activityLabel}
+        branch={group.branch}
         checksCount={group.latestRun.checksCount}
         commitTitle={group.latestRun.commitTitle}
         metricsCount={group.latestRun.metricsCount}

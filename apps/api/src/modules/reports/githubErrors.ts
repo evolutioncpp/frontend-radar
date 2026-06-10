@@ -24,6 +24,18 @@ export class GithubRepositoryNotFoundError extends GithubApiError {
   }
 }
 
+export class GithubBranchNotFoundError extends GithubApiError {
+  constructor(branch: string) {
+    super(
+      `GitHub branch ${branch} was not found`,
+      'branch_not_found',
+      'GitHub branch not found',
+      404,
+    );
+    this.name = 'GithubBranchNotFoundError';
+  }
+}
+
 export const isGithubApiError = (error: unknown): error is GithubApiError => {
   return error instanceof GithubApiError;
 };
@@ -32,6 +44,10 @@ export const isGithubRepositoryNotFoundError = (
   error: unknown,
 ): error is GithubRepositoryNotFoundError => {
   return error instanceof GithubRepositoryNotFoundError;
+};
+
+export const isGithubBranchNotFoundError = (error: unknown): error is GithubBranchNotFoundError => {
+  return error instanceof GithubBranchNotFoundError;
 };
 
 const githubRateLimitMessagePatterns = ['rate limit', 'secondary rate limit', 'abuse detection'];

@@ -2,12 +2,15 @@ import { describe, expect, test } from 'vitest';
 
 import {
   getGithubRepositoryKey,
+  isGithubBranchName,
   isGithubOwnerName,
   isGithubProjectPath,
   isGithubRepositoryName,
+  normalizeGithubBranchName,
   normalizeGithubProjectPath,
   normalizeGithubRepository,
   parseGithubRepositoryInput,
+  resolveGithubTreePath,
 } from './index.js';
 
 describe('github repository helpers', () => {
@@ -19,7 +22,6 @@ describe('github repository helpers', () => {
     ['https://github.com/owner/repo.git', 'owner', 'repo'],
     ['https://github.com/owner/repo?tab=readme', 'owner', 'repo'],
     ['https://github.com/owner/repo#readme', 'owner', 'repo'],
-    ['https://github.com/owner/repo/tree/main', 'owner', 'repo'],
     [' https://github.com/owner/repo/ ', 'owner', 'repo'],
     ['Owner/repo.name-1', 'Owner', 'repo.name-1'],
   ])('parses %s', (value, owner, repository) => {
@@ -33,19 +35,6 @@ describe('github repository helpers', () => {
 
   test.each([
     ['owner/repo/apps/web', 'owner', 'repo', 'apps/web'],
-    ['https://github.com/owner/repo/tree/main/apps/web', 'owner', 'repo', 'apps/web'],
-    [
-      'https://github.com/owner/repo/tree/main/apps/web/package.json',
-      'owner',
-      'repo',
-      'apps/web',
-    ],
-    [
-      'https://github.com/owner/repo/tree/feature/foo/apps/web',
-      'owner',
-      'repo',
-      'foo/apps/web',
-    ],
     ['Owner/repo.name-1/frontend', 'Owner', 'repo.name-1', 'frontend'],
   ])('parses %s with project path', (value, owner, repository, projectPath) => {
     expect(parseGithubRepositoryInput(value)).toEqual({
@@ -54,6 +43,21 @@ describe('github repository helpers', () => {
       projectPath,
       repository,
       repositoryKey: `${owner.toLowerCase()}/${repository.toLowerCase()}`,
+    });
+  });
+
+  test.each([
+    ['https://github.com/owner/repo/tree/main', 'main'],
+    ['https://github.com/owner/repo/tree/main/apps/web', 'main/apps/web'],
+    ['https://github.com/owner/repo/tree/main/apps/web/package.json', 'main/apps/web/package.json'],
+    ['https://github.com/owner/repo/tree/feature/foo/apps/web', 'feature/foo/apps/web'],
+  ])('parses %s with tree path', (value, treePath) => {
+    expect(parseGithubRepositoryInput(value)).toEqual({
+      normalizedUrl: 'https://github.com/owner/repo',
+      owner: 'owner',
+      repository: 'repo',
+      repositoryKey: 'owner/repo',
+      treePath,
     });
   });
 
@@ -93,6 +97,36 @@ describe('github repository helpers', () => {
       expect(normalizeGithubProjectPath(value)).toBeNull();
     },
   );
+
+  test.each([
+    ['main', 'main'],
+    ['feature/foo', 'feature/foo'],
+    [' release/v1/ ', 'release/v1'],
+  ])('normalizes branch %s', (value, expectedBranch) => {
+    expect(isGithubBranchName(value)).toBe(true);
+    expect(normalizeGithubBranchName(value)).toBe(expectedBranch);
+  });
+
+  test.each(['', '/main', 'main..next', 'feature//foo', 'feature/foo.lock', 'feature/foo.', 'bad:ref'])(
+    'rejects invalid branch %s',
+    (value) => {
+      expect(isGithubBranchName(value)).toBe(false);
+      expect(normalizeGithubBranchName(value)).toBeNull();
+    },
+  );
+
+  test('resolves tree path with the longest matching branch prefix', () => {
+    expect(resolveGithubTreePath('feature/foo/apps/web', ['main', 'feature/foo'])).toEqual({
+      branch: 'feature/foo',
+      projectPath: 'apps/web',
+    });
+  });
+
+  test('resolves tree path without project path', () => {
+    expect(resolveGithubTreePath('main', ['main'])).toEqual({
+      branch: 'main',
+    });
+  });
 
   test('normalizes owner and repository names into canonical key', () => {
     expect(isGithubOwnerName('Owner-1')).toBe(true);

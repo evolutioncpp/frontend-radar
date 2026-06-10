@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { GithubRepositoryReader } from './githubRepositoryReader.js';
+import { GithubBranchNotFoundError } from './githubErrors.js';
 
 import type { GithubClient } from './githubClient.js';
 
@@ -101,10 +102,114 @@ describe('GithubRepositoryReader', () => {
     const reader = new GithubRepositoryReader(client as GithubClient);
 
     await expect(reader.getRepositorySnapshot('owner', 'repo')).resolves.toEqual({
+      branch: 'main',
       defaultBranch: 'main',
       latestCommitDate: '2026-06-09T00:00:00.000Z',
       latestCommitSha: 'abc123',
       latestCommitTitle: 'Add frontend dashboard',
+    });
+  });
+
+  it('returns latest commit snapshot for selected branch', async () => {
+    const requestedPaths: string[] = [];
+    const client = {
+      requestJson: async (path: string) => {
+        requestedPaths.push(path);
+
+        if (path === '/repos/owner/repo') {
+          return {
+            default_branch: 'main',
+            pushed_at: '2026-06-08T00:00:00.000Z',
+          };
+        }
+
+        if (path === '/repos/owner/repo/commits/feature%2Fdashboard') {
+          return {
+            sha: 'def456',
+            commit: {
+              author: {
+                date: '2026-06-10T00:00:00.000Z',
+              },
+              message: 'Update dashboard',
+            },
+          };
+        }
+
+        return null;
+      },
+    } satisfies Pick<GithubClient, 'requestJson'>;
+    const reader = new GithubRepositoryReader(client as GithubClient);
+
+    await expect(
+      reader.getRepositorySnapshot('owner', 'repo', 'feature/dashboard'),
+    ).resolves.toEqual({
+      branch: 'feature/dashboard',
+      defaultBranch: 'main',
+      latestCommitDate: '2026-06-10T00:00:00.000Z',
+      latestCommitSha: 'def456',
+      latestCommitTitle: 'Update dashboard',
+    });
+    expect(requestedPaths).toContain('/repos/owner/repo/commits/feature%2Fdashboard');
+  });
+
+  it('throws branch_not_found when selected branch commit is missing', async () => {
+    const client = {
+      requestJson: async (path: string) => {
+        if (path === '/repos/owner/repo') {
+          return {
+            default_branch: 'main',
+            pushed_at: '2026-06-08T00:00:00.000Z',
+          };
+        }
+
+        throw new GithubBranchNotFoundError('missing');
+      },
+    } satisfies Pick<GithubClient, 'requestJson'>;
+    const reader = new GithubRepositoryReader(client as GithubClient);
+
+    await expect(reader.getRepositorySnapshot('owner', 'repo', 'missing')).rejects.toMatchObject({
+      code: 'branch_not_found',
+    });
+  });
+
+  it('lists repository branches with default branch marker', async () => {
+    const client = {
+      requestJson: async (path: string) => {
+        if (path === '/repos/owner/repo') {
+          return {
+            default_branch: 'main',
+          };
+        }
+
+        if (path === '/repos/owner/repo/branches?per_page=100&page=1') {
+          return [
+            {
+              name: 'main',
+            },
+            {
+              name: 'feature/dashboard',
+            },
+          ];
+        }
+
+        return [];
+      },
+    } satisfies Pick<GithubClient, 'requestJson'>;
+    const reader = new GithubRepositoryReader(client as GithubClient);
+
+    await expect(reader.listBranches('owner', 'repo')).resolves.toEqual({
+      defaultBranch: 'main',
+      branches: [
+        {
+          isDefault: true,
+          name: 'main',
+        },
+        {
+          isDefault: false,
+          name: 'feature/dashboard',
+        },
+      ],
+      isTruncated: false,
     });
   });
 

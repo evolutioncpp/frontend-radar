@@ -1,4 +1,7 @@
-import { normalizeGithubProjectPath } from '@frontend-radar/github-repository';
+import {
+  normalizeGithubBranchName,
+  normalizeGithubProjectPath,
+} from '@frontend-radar/github-repository';
 import { z } from 'zod';
 
 import { parseRepositoryInput } from './parseRepositoryInput';
@@ -6,9 +9,11 @@ import { parseRepositoryInput } from './parseRepositoryInput';
 export const createRepositoryAnalysisFormSchema = (
   invalidRepositoryMessage: string,
   invalidProjectPathMessage: string,
+  invalidBranchMessage: string,
 ) => {
   return z
     .object({
+      branch: z.string(),
       projectPath: z.string(),
       projectPathSource: z.union([z.enum(['url', 'manual']), z.literal('')]).optional(),
       repository: z.string(),
@@ -28,7 +33,20 @@ export const createRepositoryAnalysisFormSchema = (
       }
 
       if (!values.useProjectPath) {
+        const normalizedBranch = values.branch ? normalizeGithubBranchName(values.branch) : null;
+
+        if (values.branch && !normalizedBranch) {
+          ctx.addIssue({
+            code: 'custom',
+            message: invalidBranchMessage,
+            path: ['branch'],
+          });
+
+          return z.NEVER;
+        }
+
         return {
+          ...(normalizedBranch ? { branch: normalizedBranch } : {}),
           normalizedUrl: parsedRepository.normalizedUrl,
           owner: parsedRepository.owner,
           repository: parsedRepository.repository,
@@ -36,6 +54,17 @@ export const createRepositoryAnalysisFormSchema = (
       }
 
       const normalizedProjectPath = normalizeGithubProjectPath(values.projectPath);
+      const normalizedBranch = values.branch ? normalizeGithubBranchName(values.branch) : null;
+
+      if (values.branch && !normalizedBranch) {
+        ctx.addIssue({
+          code: 'custom',
+          message: invalidBranchMessage,
+          path: ['branch'],
+        });
+
+        return z.NEVER;
+      }
 
       if (!normalizedProjectPath) {
         ctx.addIssue({
@@ -51,9 +80,12 @@ export const createRepositoryAnalysisFormSchema = (
         values.projectPathSource === 'url' ? ('url' as const) : ('manual' as const);
 
       return {
-        ...parsedRepository,
+        ...(normalizedBranch ? { branch: normalizedBranch } : {}),
+        normalizedUrl: parsedRepository.normalizedUrl,
+        owner: parsedRepository.owner,
         projectPath: normalizedProjectPath,
         projectPathSource,
+        repository: parsedRepository.repository,
       };
     });
 };

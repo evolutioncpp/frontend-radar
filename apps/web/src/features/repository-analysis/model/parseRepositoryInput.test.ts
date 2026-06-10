@@ -11,7 +11,6 @@ describe('parseRepositoryInput', () => {
     ['https://github.com/owner/repo.git', 'owner', 'repo'],
     ['https://github.com/owner/repo?tab=readme', 'owner', 'repo'],
     ['https://github.com/owner/repo#readme', 'owner', 'repo'],
-    ['https://github.com/owner/repo/tree/main', 'owner', 'repo'],
     [' https://github.com/owner/repo/ ', 'owner', 'repo'],
   ])('parses %s', (value, owner, repository) => {
     expect(parseRepositoryInput(value)).toEqual({
@@ -21,16 +20,29 @@ describe('parseRepositoryInput', () => {
     });
   });
 
+  test.each([['owner/repo/apps/web', 'owner', 'repo', 'apps/web']])(
+    'parses %s with project path',
+    (value, owner, repository, projectPath) => {
+      expect(parseRepositoryInput(value)).toEqual({
+        normalizedUrl: `https://github.com/${owner}/${repository}`,
+        owner,
+        projectPath,
+        projectPathSource: 'url',
+        repository,
+      });
+    },
+  );
+
   test.each([
-    ['owner/repo/apps/web', 'owner', 'repo', 'apps/web'],
-    ['https://github.com/owner/repo/tree/main/apps/web', 'owner', 'repo', 'apps/web'],
-  ])('parses %s with project path', (value, owner, repository, projectPath) => {
+    ['https://github.com/owner/repo/tree/main', 'main'],
+    ['https://github.com/owner/repo/tree/main/apps/web', 'main/apps/web'],
+    ['https://github.com/owner/repo/tree/feature/foo/apps/web', 'feature/foo/apps/web'],
+  ])('parses %s with tree path', (value, treePath) => {
     expect(parseRepositoryInput(value)).toEqual({
-      normalizedUrl: `https://github.com/${owner}/${repository}`,
-      owner,
-      projectPath,
-      projectPathSource: 'url',
-      repository,
+      normalizedUrl: 'https://github.com/owner/repo',
+      owner: 'owner',
+      repository: 'repo',
+      treePath,
     });
   });
 

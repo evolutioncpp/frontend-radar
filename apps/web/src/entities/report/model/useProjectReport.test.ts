@@ -47,6 +47,7 @@ const testReport: ProjectReport = {
     stars: 128,
     forks: 14,
     defaultBranch: 'main',
+    branch: 'main',
     projectPath: null,
     projectDetection: {
       source: 'autodetect',

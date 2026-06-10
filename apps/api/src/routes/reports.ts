@@ -9,8 +9,10 @@ import {
   getReportComparisonQuerySchema,
   getReportComparisonResponseSchema,
   getReportAnalysisResponseSchema,
+  listRepositoryBranchesResponseSchema,
   listReportAnalysesResponseSchema,
   reportAnalysisParamsSchema,
+  repositoryBranchesParamsSchema,
   refreshReportAnalysisResponseSchema,
 } from '../modules/reports/reportSchemas.js';
 import { isGithubApiError } from '../modules/reports/githubReportAnalyzer.js';
@@ -52,6 +54,10 @@ const getGithubErrorHttpStatus = (code: string) => {
     return 429;
   }
 
+  if (code === 'branch_not_found') {
+    return 422;
+  }
+
   return 502;
 };
 
@@ -63,12 +69,14 @@ interface ReportRoutesOptions {
 
 const createSnapshotLookup = (
   repositoryKey: string,
+  branch: string,
   projectPath: string,
   latestCommitDate: string | null,
   latestCommitSha: string | null,
 ): ReportAnalysisSnapshotLookup => {
   return {
     analysisVersion: REPORT_ANALYSIS_VERSION,
+    branch,
     projectPath,
     repositoryKey,
     snapshotKey: createReportAnalysisSnapshotKey({
@@ -106,6 +114,57 @@ export const createReportRoutes = ({
         });
       });
 
+    app.get(
+      '/repositories/:owner/:repository/branches',
+      {
+        schema: {
+          tags: ['Repositories'],
+          operationId: 'listRepositoryBranches',
+          headers: acceptLanguageHeadersSchema,
+          params: repositoryBranchesParamsSchema,
+          response: {
+            200: listRepositoryBranchesResponseSchema,
+            403: errorResponseSchema,
+            404: errorResponseSchema,
+            429: errorResponseSchema,
+            422: errorResponseSchema,
+            502: errorResponseSchema,
+          },
+        },
+      },
+      async (request, reply) => {
+        const language = getReportLanguage(request.headers['accept-language']);
+
+        try {
+          return await analyzer.listRepositoryBranches(
+            request.params.owner,
+            request.params.repository,
+          );
+        } catch (error) {
+          if (isGithubApiError(error)) {
+            return reply.code(getGithubErrorHttpStatus(error.code)).send({
+              code: error.code,
+              message: getLocalizedReportErrorMessage(error.code, language),
+            });
+          }
+
+          request.log.warn(
+            {
+              error,
+              owner: request.params.owner,
+              repository: request.params.repository,
+            },
+            'Failed to load repository branches',
+          );
+
+          return reply.code(502).send({
+            code: 'repository_verification_failed',
+            message: getLocalizedReportErrorMessage('repository_verification_failed', language),
+          });
+        }
+      },
+    );
+
     app.post(
       '/reports/analyze',
       {
@@ -131,6 +190,7 @@ export const createReportRoutes = ({
         let latestCommitDate: string | null = null;
         let latestCommitSha: string | null = null;
         let latestCommitTitle: string | null = null;
+        let branch = '';
         let projectPath = '';
         const projectPathSource = getProjectPathSource(request.body);
         let analysisRef = 'main';
@@ -139,12 +199,14 @@ export const createReportRoutes = ({
           const snapshot = await analyzer.getRepositorySnapshot(
             request.body.owner,
             request.body.repository,
+            request.body.branch,
           );
 
+          branch = snapshot.branch;
           latestCommitDate = snapshot.latestCommitDate;
           latestCommitSha = snapshot.latestCommitSha;
           latestCommitTitle = snapshot.latestCommitTitle;
-          analysisRef = latestCommitSha ?? snapshot.defaultBranch ?? analysisRef;
+          analysisRef = latestCommitSha ?? snapshot.branch;
           projectPath = await analyzer.resolveProjectPath(
             request.body.owner,
             request.body.repository,
@@ -184,6 +246,7 @@ export const createReportRoutes = ({
 
         const snapshotLookup = createSnapshotLookup(
           repositoryKey,
+          branch,
           projectPath,
           latestCommitDate,
           latestCommitSha,
@@ -235,6 +298,7 @@ export const createReportRoutes = ({
           analysis = await repository.create({
             ...request.body,
             ...snapshotLookup,
+            branch,
             latestCommitDate,
             latestCommitSha,
             latestCommitTitle,
@@ -284,6 +348,7 @@ export const createReportRoutes = ({
             owner: analysis.owner,
             repository: analysis.repository,
             normalizedUrl: analysis.normalizedUrl,
+            branch: analysis.branch,
             status: analysis.status,
             projectPath: analysis.projectPath || null,
             latestCommitDate: analysis.latestCommitDate,
@@ -343,18 +408,21 @@ export const createReportRoutes = ({
         let latestCommitDate: string | null = null;
         let latestCommitSha: string | null = null;
         let latestCommitTitle: string | null = null;
-        let analysisRef = 'main';
+        let branch = currentAnalysis.branch;
+        let analysisRef = currentAnalysis.branch || 'main';
 
         try {
           const snapshot = await analyzer.getRepositorySnapshot(
             currentAnalysis.owner,
             currentAnalysis.repository,
+            currentAnalysis.branch,
           );
 
+          branch = snapshot.branch;
           latestCommitDate = snapshot.latestCommitDate;
           latestCommitSha = snapshot.latestCommitSha;
           latestCommitTitle = snapshot.latestCommitTitle;
-          analysisRef = latestCommitSha ?? snapshot.defaultBranch ?? analysisRef;
+          analysisRef = latestCommitSha ?? snapshot.branch;
 
           await analyzer.resolveProjectPath(
             currentAnalysis.owner,
@@ -396,6 +464,7 @@ export const createReportRoutes = ({
 
         const snapshotLookup = createSnapshotLookup(
           currentAnalysis.repositoryKey,
+          branch,
           currentAnalysis.projectPath,
           latestCommitDate,
           latestCommitSha,
@@ -459,6 +528,7 @@ export const createReportRoutes = ({
             latestCommitTitle,
             normalizedUrl: currentAnalysis.normalizedUrl,
             owner: currentAnalysis.owner,
+            branch,
             projectPath: currentAnalysis.projectPath,
             projectPathSource: currentAnalysis.projectPathSource,
             repository: currentAnalysis.repository,
@@ -521,6 +591,7 @@ export const createReportRoutes = ({
           previousAnalysis.id === analysis.id ||
           previousAnalysis.repositoryKey !== analysis.repositoryKey ||
           previousAnalysis.projectPath !== analysis.projectPath ||
+          previousAnalysis.branch !== analysis.branch ||
           previousAnalysis.status !== 'completed'
         ) {
           return {

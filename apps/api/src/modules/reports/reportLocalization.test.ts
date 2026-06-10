@@ -23,6 +23,7 @@ const createReport = (recommendations: ProjectReport['recommendations']): Projec
   id: 'report-id',
   recommendations,
   repository: {
+    branch: 'main',
     defaultBranch: 'main',
     description: null,
     forks: 0,

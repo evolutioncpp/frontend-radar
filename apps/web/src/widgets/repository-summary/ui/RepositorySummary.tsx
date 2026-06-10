@@ -90,7 +90,7 @@ export const RepositorySummary = ({
       id: 'branch',
       icon: GitBranch,
       label: t('repository.metadata.branch'),
-      value: repository.defaultBranch,
+      value: repository.branch || repository.defaultBranch,
       isCode: true,
     },
     ...(repository.projectPath

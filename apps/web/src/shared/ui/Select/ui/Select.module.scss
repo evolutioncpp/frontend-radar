@@ -1,0 +1,247 @@
+@use 'app/styles/helpers' as *;
+
+.selectField {
+  display: grid;
+  gap: $space-2;
+  min-width: 0;
+}
+
+.label {
+  color: var(--color-text-secondary);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+}
+
+.control {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-width: 0;
+}
+
+.nativeInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.trigger {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 3.125rem;
+  border: 1px solid var(--color-border-primary);
+  border-radius: $radius-md;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font: inherit;
+  font-size: $font-size-md;
+  gap: $space-3;
+  line-height: $line-height-md;
+  padding: $space-3 $space-4;
+  text-align: left;
+  transition:
+    border-color $transition-base,
+    box-shadow $transition-base,
+    background-color $transition-base;
+
+  @include focus-visible;
+
+  &:hover {
+    border-color: var(--color-border-secondary);
+    background: var(--color-bg-surface);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
+}
+
+.controlOpen .trigger {
+  border-color: var(--color-accent);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-focus);
+}
+
+.controlInvalid .trigger {
+  border-color: var(--color-danger);
+}
+
+.controlInvalid.controlOpen .trigger {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 22%, transparent);
+}
+
+.value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placeholder {
+  color: var(--color-text-muted);
+}
+
+.icon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--color-text-muted);
+  flex: 0 0 auto;
+  transition: transform $transition-base;
+}
+
+.iconOpen {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + #{$space-2});
+  left: 0;
+  display: grid;
+  gap: $space-2;
+  width: 100%;
+  border: 1px solid var(--color-border-primary);
+  border-radius: $radius-md;
+  background: var(--color-bg-surface);
+  box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 35%);
+  padding: $space-2;
+}
+
+.search {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  border: 1px solid var(--color-border-primary);
+  border-radius: $radius-sm;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+  gap: $space-2;
+  padding: 0 $space-3;
+}
+
+.searchIcon {
+  width: 0.95rem;
+  height: 0.95rem;
+  color: currentcolor;
+  flex: 0 0 auto;
+}
+
+.searchInput {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: $font-size-sm;
+  line-height: $line-height-md;
+  padding: $space-2 0;
+
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  &::-webkit-search-cancel-button {
+    appearance: none;
+  }
+}
+
+.optionsList {
+  display: grid;
+  max-height: min(18rem, 38vh);
+  overflow-y: auto;
+}
+
+.option {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  border-radius: $radius-sm;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: $font-size-sm;
+  gap: $space-3;
+  line-height: $line-height-md;
+  padding: $space-2 $space-3;
+  text-align: left;
+  transition:
+    background-color $transition-base,
+    color $transition-base;
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    color: var(--color-text-primary);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.optionActive {
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  color: var(--color-text-primary);
+}
+
+.optionSelected {
+  color: var(--color-text-primary);
+  font-weight: $font-weight-semibold;
+}
+
+.optionDisabled {
+  color: var(--color-text-muted);
+  opacity: 0.72;
+}
+
+.optionLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.optionIcon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--color-accent);
+  flex: 0 0 auto;
+}
+
+.hint,
+.error {
+  margin: 0;
+  font-size: $font-size-sm;
+  line-height: $line-height-md;
+}
+
+.hint {
+  color: var(--color-text-muted);
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trigger,
+  .icon,
+  .option {
+    transition: none;
+  }
+}

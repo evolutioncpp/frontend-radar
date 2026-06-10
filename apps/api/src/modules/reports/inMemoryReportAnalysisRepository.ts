@@ -23,11 +23,18 @@ const getReusableRank = (status: ReportAnalysisStatus) => {
 
 const matchesSnapshot = (
   analysis: ReportAnalysisEntity,
-  { analysisVersion, projectPath, repositoryKey, snapshotKey }: ReportAnalysisSnapshotLookup,
+  {
+    analysisVersion,
+    branch,
+    projectPath,
+    repositoryKey,
+    snapshotKey,
+  }: ReportAnalysisSnapshotLookup,
 ) => {
   if (
     analysis.repositoryKey !== repositoryKey ||
     analysis.projectPath !== projectPath ||
+    analysis.branch !== branch ||
     analysis.analysisVersion !== analysisVersion
   ) {
     return false;
@@ -86,6 +93,7 @@ export class InMemoryReportAnalysisRepository implements ReportAnalysisRepositor
             candidate.id !== analysis.id &&
             candidate.repositoryKey === analysis.repositoryKey &&
             candidate.projectPath === analysis.projectPath &&
+            candidate.branch === analysis.branch &&
             candidate.status === 'completed' &&
             candidate.completedAt !== null &&
             candidate.completedAt.getTime() <= completedBefore.getTime(),

@@ -1,6 +1,6 @@
 import { baseApi as api } from './baseApi';
 
-export const addTagTypes = ['System', 'Reports'] as const;
+export const addTagTypes = ['System', 'Repositories', 'Reports'] as const;
 const injectedRtkApi = api
   .enhanceEndpoints({
     addTagTypes,
@@ -10,6 +10,15 @@ const injectedRtkApi = api
       getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
         query: () => ({ url: `/health` }),
         providesTags: ['System'],
+      }),
+      listRepositoryBranches: build.query<
+        ListRepositoryBranchesApiResponse,
+        ListRepositoryBranchesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/repositories/${queryArg.owner}/${queryArg.repository}/branches`,
+        }),
+        providesTags: ['Repositories'],
       }),
       createReportAnalysis: build.mutation<
         CreateReportAnalysisApiResponse,
@@ -50,6 +59,18 @@ export type GetHealthApiResponse = /** status 200 Default Response */ {
   status: 'ok';
 };
 export type GetHealthApiArg = void;
+export type ListRepositoryBranchesApiResponse = /** status 200 Default Response */ {
+  defaultBranch: string;
+  branches: {
+    name: string;
+    isDefault: boolean;
+  }[];
+  isTruncated: boolean;
+};
+export type ListRepositoryBranchesApiArg = {
+  owner: string;
+  repository: string;
+};
 export type CreateReportAnalysisApiResponse =
   /** status 200 Default Response */
   {
@@ -63,6 +84,7 @@ export type CreateReportAnalysisApiArg = {
     owner: string;
     repository: string;
     normalizedUrl: string;
+    branch?: string | null;
     projectPath?: string | null;
     projectPathSource?: 'url' | 'manual';
   };
@@ -73,6 +95,7 @@ export type ListReportAnalysesApiResponse = /** status 200 Default Response */ {
     owner: string;
     repository: string;
     normalizedUrl: string;
+    branch: string;
     projectPath: string | null;
     status: 'queued' | 'running' | 'completed' | 'failed';
     latestCommitDate: string | null;
@@ -177,6 +200,7 @@ export type GetReportAnalysisApiResponse =
           stars: number;
           forks: number;
           defaultBranch: string;
+          branch: string;
           projectPath: string | null;
           projectDetection: {
             source: 'autodetect' | 'url' | 'manual';
@@ -314,6 +338,7 @@ export type GetReportAnalysisApiResponse =
         | 'repository_forbidden'
         | 'github_rate_limited'
         | 'github_unavailable'
+        | 'branch_not_found'
         | 'project_path_not_found'
         | 'repository_verification_failed'
         | 'analysis_failed';
@@ -325,6 +350,8 @@ export type GetReportAnalysisApiArg = {
 export const {
   useGetHealthQuery,
   useLazyGetHealthQuery,
+  useListRepositoryBranchesQuery,
+  useLazyListRepositoryBranchesQuery,
   useCreateReportAnalysisMutation,
   useListReportAnalysesQuery,
   useLazyListReportAnalysesQuery,

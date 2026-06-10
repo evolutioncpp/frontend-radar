@@ -128,6 +128,7 @@ describe('GithubReportAnalyzer', () => {
       owner: 'owner',
       repository: 'repo',
       normalizedUrl: 'https://github.com/owner/repo',
+      branch: 'main',
       projectPath: '',
       projectPathSource: 'autodetect',
       createdAt: new Date('2026-06-09T00:00:00.000Z'),
@@ -145,6 +146,7 @@ describe('GithubReportAnalyzer', () => {
         stars: 12,
         forks: 3,
         defaultBranch: 'main',
+        branch: 'main',
         projectDetection: {
           source: 'autodetect',
           packageJsonPath: 'package.json',
@@ -275,6 +277,7 @@ describe('GithubReportAnalyzer', () => {
       owner: 'owner',
       repository: 'repo',
       normalizedUrl: 'https://github.com/owner/repo',
+      branch: 'develop',
       projectPath: '',
       projectPathSource: 'autodetect',
       createdAt: new Date('2026-06-09T00:00:00.000Z'),
@@ -284,12 +287,13 @@ describe('GithubReportAnalyzer', () => {
     });
 
     expect(report.repository).toMatchObject({
+      branch: 'develop',
       latestCommitSha: null,
       latestCommitDate: '2026-06-08T00:00:00.000Z',
       latestCommitTitle: null,
     });
     expect(contentRefs.length).toBeGreaterThan(0);
-    expect(contentRefs.every((ref) => ref === 'main')).toBe(true);
+    expect(contentRefs.every((ref) => ref === 'develop')).toBe(true);
   });
 
   it('analyzes frontend signals from a nested workspace package', async () => {
@@ -427,6 +431,7 @@ describe('GithubReportAnalyzer', () => {
       owner: 'owner',
       repository: 'repo',
       normalizedUrl: 'https://github.com/owner/repo',
+      branch: 'main',
       projectPath: 'apps/web',
       projectPathSource: 'manual',
       createdAt: new Date('2026-06-09T00:00:00.000Z'),

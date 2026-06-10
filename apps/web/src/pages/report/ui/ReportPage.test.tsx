@@ -27,6 +27,17 @@ const apiMocks = vi.hoisted(() => ({
   getReportAnalysis: vi.fn(),
 }));
 
+const repositoryBranchesResponse = vi.hoisted(() => ({
+  defaultBranch: 'main',
+  branches: [
+    {
+      isDefault: true,
+      name: 'main',
+    },
+  ],
+  isTruncated: false,
+}));
+
 vi.mock('@/shared/api/generatedApi', () => ({
   useCreateReportAnalysisMutation: () => [apiMocks.createReportAnalysis, { isLoading: false }],
   useForceRefreshReportAnalysisMutation: () => [
@@ -35,6 +46,14 @@ vi.mock('@/shared/api/generatedApi', () => ({
   ],
   useGetReportComparisonQuery: (...args: unknown[]) => apiMocks.getReportComparison(...args),
   useGetReportAnalysisQuery: (...args: unknown[]) => apiMocks.getReportAnalysis(...args),
+  useLazyListRepositoryBranchesQuery: () => [
+    vi.fn(() => ({
+      unwrap: () => Promise.resolve(repositoryBranchesResponse),
+    })),
+    {
+      data: repositoryBranchesResponse,
+    },
+  ],
 }));
 
 vi.mock('react-i18next', () => ({
@@ -314,6 +333,7 @@ const testReport: ProjectReport = {
     stars: 128,
     forks: 14,
     defaultBranch: 'main',
+    branch: 'main',
     projectPath: null,
     projectDetection: {
       source: 'autodetect',

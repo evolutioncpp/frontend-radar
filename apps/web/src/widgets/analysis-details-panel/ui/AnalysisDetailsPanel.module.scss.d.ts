@@ -19,7 +19,17 @@ export type Styles = {
   toolingItem: string;
   toolingName: string;
   toolingSection: string;
-  toolingSource: string;
+  toolingSourceDetail: string;
+  toolingSourceItem: string;
+  toolingSourceLabel: string;
+  toolingSourcePreview: string;
+  toolingSourcePreviewLabel: string;
+  toolingSourcesDisclosure: string;
+  toolingSourcesList: string;
+  toolingSourcesSummary: string;
+  toolingSourcesSummaryIcon: string;
+  toolingSourcesSummaryMeta: string;
+  toolingTitleRow: string;
 };
 
 export type ClassNames = keyof Styles;

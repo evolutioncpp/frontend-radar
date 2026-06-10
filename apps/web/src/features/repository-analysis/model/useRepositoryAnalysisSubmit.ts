@@ -16,6 +16,7 @@ export interface ReportAnalysisNavigationState {
 
 export type RepositoryAnalysisSubmitError =
   | 'repositoryNotFound'
+  | 'branchNotFound'
   | 'repositoryForbidden'
   | 'githubRateLimited'
   | 'githubUnavailable'
@@ -45,6 +46,10 @@ const getRepositoryAnalysisSubmitError = (error: unknown): RepositoryAnalysisSub
 
   if (errorCode === 'repository_not_found') {
     return 'repositoryNotFound';
+  }
+
+  if (errorCode === 'branch_not_found') {
+    return 'branchNotFound';
   }
 
   if (errorCode === 'repository_forbidden') {

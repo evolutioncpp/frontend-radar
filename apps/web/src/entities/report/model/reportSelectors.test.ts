@@ -8,6 +8,7 @@ type ReportHistoryItem = ListReportAnalysesApiResponse['items'][number];
 
 const createHistoryItem = (overrides: Partial<ReportHistoryItem> = {}): ReportHistoryItem => ({
   createdAt: '2026-06-09T00:00:00.000Z',
+  branch: 'main',
   id: 'analysis-id',
   latestCommitDate: '2026-06-09T00:00:00.000Z',
   latestCommitSha: 'abc123',
@@ -63,6 +64,27 @@ describe('reportSelectors', () => {
 
     expect(groups).toHaveLength(2);
     expect(groups.map((group) => group.projectPath)).toEqual(['apps/web', 'apps/docs']);
+  });
+
+  test('keeps different branches in separate groups', () => {
+    const groups = getReportHistoryGroupsViewModel(
+      [
+        createHistoryItem({
+          branch: 'main',
+          id: 'main',
+          projectPath: 'apps/web',
+        }),
+        createHistoryItem({
+          branch: 'develop',
+          id: 'develop',
+          projectPath: 'apps/web',
+        }),
+      ],
+      'en',
+    );
+
+    expect(groups).toHaveLength(2);
+    expect(groups.map((group) => group.branch)).toEqual(['main', 'develop']);
   });
 
   test('treats null and empty project paths as the root group', () => {

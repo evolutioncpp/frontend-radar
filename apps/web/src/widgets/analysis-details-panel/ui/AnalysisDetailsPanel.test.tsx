@@ -29,6 +29,7 @@ vi.mock('react-i18next', () => ({
         'analysisDetails.tooling.groups.testing': 'Testing',
         'analysisDetails.tooling.groups.typing': 'Typing',
         'analysisDetails.tooling.groups.uiReview': 'UI review',
+        'analysisDetails.tooling.sourcesTitle': 'Sources',
         'analysisDetails.tooling.title': 'Project stack',
       };
 
@@ -38,6 +39,10 @@ vi.mock('react-i18next', () => ({
 
       if (key === 'analysisDetails.sources.source') {
         return `Source: ${options?.source}`;
+      }
+
+      if (key === 'analysisDetails.tooling.sourcesCounter') {
+        return `${options?.count} sources`;
       }
 
       return translations[key] ?? key;
@@ -106,8 +111,12 @@ const tooling: ProjectReport['tooling'] = {
     {
       id: 'eslint',
       label: 'ESLint',
-      sources: ['package.json devDependencies.eslint'],
-      status: 'warning',
+      sources: [
+        'apps/web/eslint.config.js',
+        'apps/web/package.json devDependencies.eslint',
+        'apps/web/package.json devDependencies.@eslint/js',
+      ],
+      status: 'found',
     },
   ],
 };
@@ -120,7 +129,20 @@ describe('AnalysisDetailsPanel', () => {
     expect(screen.getByText('React')).toBeInTheDocument();
     expect(screen.getByText('Vite')).toBeInTheDocument();
     expect(screen.getByText('ESLint')).toBeInTheDocument();
-    expect(screen.getByText('apps/web/package.json dependencies.react')).toBeInTheDocument();
+    expect(screen.getAllByText('apps/web/eslint.config.js').length).toBeGreaterThan(0);
+    expect(screen.queryByText('+2 more')).not.toBeInTheDocument();
+  });
+
+  test('reveals parsed tooling sources inside card disclosure', () => {
+    render(<AnalysisDetailsPanel analysisSources={analysisSources} tooling={tooling} />);
+
+    fireEvent.click(screen.getByText('Sources'));
+
+    expect(screen.getByText('eslint')).toBeInTheDocument();
+    expect(screen.getByText('@eslint/js')).toBeInTheDocument();
+    expect(screen.getAllByText('apps/web/package.json / devDependencies').length).toBeGreaterThan(
+      0,
+    );
   });
 
   test('renders grouped analysis sources inside disclosure', () => {

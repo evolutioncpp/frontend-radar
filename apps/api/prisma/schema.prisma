@@ -25,6 +25,7 @@ model ReportAnalysis {
   owner             String
   repository        String
   repositoryKey     String
+  branch            String               @default("")
   projectPath       String               @default("")
   projectPathSource ReportProjectPathSource @default(autodetect)
   normalizedUrl     String
@@ -42,8 +43,8 @@ model ReportAnalysis {
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
 
-  @@unique([repositoryKey, projectPath, snapshotKey, analysisVersion])
+  @@unique([repositoryKey, projectPath, branch, snapshotKey, analysisVersion], map: "ReportAnalysis_dedupe_branch_key")
   @@index([createdAt])
   @@index([updatedAt])
-  @@index([repositoryKey, projectPath, status, updatedAt])
+  @@index([repositoryKey, projectPath, branch, status, updatedAt], map: "ReportAnalysis_history_branch_idx")
 }

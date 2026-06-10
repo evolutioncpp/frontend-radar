@@ -2,7 +2,9 @@ import { z } from 'zod/v4';
 import {
   githubOwnerPattern,
   githubRepositoryPattern,
+  isGithubBranchName,
   isGithubProjectPath,
+  normalizeGithubBranchName,
   normalizeGithubProjectPath,
 } from '@frontend-radar/github-repository';
 
@@ -14,6 +16,7 @@ export const reportAnalysisErrorCodes = [
   'repository_forbidden',
   'github_rate_limited',
   'github_unavailable',
+  'branch_not_found',
   'project_path_not_found',
   'repository_verification_failed',
   'analysis_failed',
@@ -68,6 +71,11 @@ export const createReportAnalysisRequestSchema = z.object({
   owner: z.string().regex(githubOwnerPattern),
   repository: z.string().regex(githubRepositoryPattern),
   normalizedUrl: z.string().url(),
+  branch: z
+    .string()
+    .refine(isGithubBranchName)
+    .transform((value) => normalizeGithubBranchName(value) ?? value)
+    .nullish(),
   projectPath: z
     .string()
     .refine(isGithubProjectPath)
@@ -112,6 +120,7 @@ export const reportRepositorySchema = z.object({
   stars: z.number().int().nonnegative(),
   forks: z.number().int().nonnegative(),
   defaultBranch: z.string(),
+  branch: z.string().default(''),
   projectPath: z.string().nullable().default(null),
   projectDetection: projectDetectionSchema,
   latestCommitSha: z.string().nullable().default(null),
@@ -223,6 +232,7 @@ export const reportAnalysisListItemSchema = z.object({
   owner: z.string(),
   repository: z.string(),
   normalizedUrl: z.string().url(),
+  branch: z.string(),
   projectPath: z.string().nullable(),
   status: reportAnalysisStatusSchema,
   latestCommitDate: z.string().nullable(),
@@ -238,6 +248,22 @@ export const reportAnalysisListItemSchema = z.object({
 
 export const listReportAnalysesResponseSchema = z.object({
   items: z.array(reportAnalysisListItemSchema),
+});
+
+export const repositoryBranchesParamsSchema = z.object({
+  owner: z.string().regex(githubOwnerPattern),
+  repository: z.string().regex(githubRepositoryPattern),
+});
+
+export const repositoryBranchSchema = z.object({
+  name: z.string(),
+  isDefault: z.boolean(),
+});
+
+export const listRepositoryBranchesResponseSchema = z.object({
+  defaultBranch: z.string(),
+  branches: z.array(repositoryBranchSchema),
+  isTruncated: z.boolean(),
 });
 
 export const reportComparisonValueSchema = z.object({

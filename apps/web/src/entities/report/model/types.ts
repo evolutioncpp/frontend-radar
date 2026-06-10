@@ -83,6 +83,7 @@ export type ReportRepository = {
   stars: number;
   forks: number;
   defaultBranch: string;
+  branch: string;
   projectPath: string | null;
   projectDetection: ProjectDetection;
   latestCommitSha: string | null;

@@ -10,6 +10,7 @@ export interface ReportHistoryItemViewModel {
   activityAt: string;
   activityLabel: string;
   checksCount: number;
+  branch: string;
   commitTitle: string | null;
   id: string;
   metricsCount: number;
@@ -24,6 +25,7 @@ export interface ReportHistoryGroupViewModel {
   id: string;
   latestRun: ReportHistoryItemViewModel;
   previousRuns: ReportHistoryItemViewModel[];
+  branch: string;
   projectPath: string | null;
   repositoryName: string;
   runCount: number;
@@ -38,7 +40,7 @@ export const isReportTerminal = (status: ReportAnalysisStatus) => {
 };
 
 const getHistoryGroupKey = (item: ReportHistoryItemViewModel) => {
-  return `${item.repositoryName}::${item.projectPath ?? 'root'}`;
+  return `${item.repositoryName}::${item.branch}::${item.projectPath ?? 'root'}`;
 };
 
 const sortHistoryItems = (items: ReportHistoryItemViewModel[]) => {
@@ -66,6 +68,7 @@ export const getReportHistoryItemViewModel = (
   return {
     activityAt: item.updatedAt,
     activityLabel: formatDate(item.updatedAt, language),
+    branch: item.branch,
     checksCount: item.checksCount ?? 0,
     commitTitle: normalizeCommitTitle(item.latestCommitTitle),
     id: item.id,
@@ -106,6 +109,7 @@ export const getReportHistoryGroupsViewModel = (
 
       return {
         id,
+        branch: latestRun.branch,
         latestRun,
         previousRuns: sortedGroupItems.slice(1),
         projectPath: latestRun.projectPath,

@@ -42,7 +42,8 @@
 .toolingItem {
   display: grid;
   min-width: 0;
-  gap: $space-2;
+  align-content: start;
+  gap: $space-3;
   padding: $space-3;
   border: 1px solid var(--color-border-secondary);
   border-radius: $radius-sm;
@@ -56,13 +57,19 @@
   }
 
   dd {
-    display: flex;
+    display: grid;
     min-width: 0;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: $space-2;
+    gap: $space-3;
     margin: 0;
   }
+}
+
+.toolingTitleRow {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2;
 }
 
 .toolingName {
@@ -74,8 +81,98 @@
   overflow-wrap: anywhere;
 }
 
-.toolingSource {
-  width: 100%;
+.toolingSourcePreview {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: $space-2;
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  line-height: $line-height-sm;
+}
+
+.toolingSourcePreviewLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toolingSourcesDisclosure {
+  display: grid;
+  gap: $space-2;
+}
+
+.toolingSourcesSummary {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: $space-1;
+  border-radius: $radius-sm;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+  list-style: none;
+  user-select: none;
+
+  @include focus-visible;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &::marker {
+    content: '';
+  }
+}
+
+.toolingSourcesSummaryIcon {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: 0 0 auto;
+  transition: transform $transition-base;
+}
+
+.toolingSourcesDisclosure[open] .toolingSourcesSummaryIcon {
+  transform: rotate(180deg);
+}
+
+.toolingSourcesSummaryMeta {
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  line-height: $line-height-sm;
+}
+
+.toolingSourcesList {
+  display: grid;
+  gap: $space-2;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toolingSourceItem {
+  display: grid;
+  min-width: 0;
+  gap: 0.125rem;
+  padding-left: $space-3;
+  border-left: 1px solid var(--color-border-secondary);
+}
+
+.toolingSourceLabel {
+  min-width: 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+  overflow-wrap: anywhere;
+}
+
+.toolingSourceDetail {
+  min-width: 0;
   color: var(--color-text-muted);
   font-size: $font-size-xs;
   line-height: $line-height-sm;
@@ -222,6 +319,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .sourcesSummaryIcon {
+    transition: none;
+  }
+
+  .toolingSourcesSummaryIcon {
     transition: none;
   }
 }

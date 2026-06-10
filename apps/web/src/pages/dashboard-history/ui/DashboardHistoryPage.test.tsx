@@ -83,6 +83,7 @@ const completedHistoryItem = {
   owner: 'evolutioncpp',
   repository: 'frontend-radar',
   normalizedUrl: 'https://github.com/evolutioncpp/frontend-radar',
+  branch: 'main',
   projectPath: null as string | null,
   status: 'completed' as const,
   latestCommitDate: '2026-06-09T00:00:00.000Z',
@@ -101,6 +102,7 @@ const queuedHistoryItem = {
   owner: 'evolutioncpp',
   repository: 'frontend-radar',
   normalizedUrl: 'https://github.com/evolutioncpp/frontend-radar',
+  branch: 'main',
   projectPath: null as string | null,
   status: 'queued' as const,
   latestCommitDate: '2026-06-09T00:01:00.000Z',
@@ -202,6 +204,7 @@ describe('DashboardHistoryPage', () => {
     expectSummaryItem('Recommendations', '0');
     expect(screen.getByText(/Last activity/i)).toBeInTheDocument();
     expect(screen.getByText('Completed')).toBeInTheDocument();
+    expect(screen.getByText('main')).toBeInTheDocument();
     expect(screen.getByText('Add frontend radar dashboard')).toBeInTheDocument();
   });
 
@@ -285,6 +288,26 @@ describe('DashboardHistoryPage', () => {
     expect(screen.getAllByRole('heading', { name: 'evolutioncpp/frontend-radar' })).toHaveLength(2);
     expect(screen.getByText('apps/docs')).toBeInTheDocument();
     expect(screen.getByText('apps/web')).toBeInTheDocument();
+  });
+
+  test('renders different branches as separate groups', () => {
+    apiMocks.listReportAnalyses.mockReturnValue(
+      createHistoryResponse([
+        completedHistoryItem,
+        {
+          ...completedHistoryItem,
+          branch: 'develop',
+          id: 'develop-analysis-id',
+          updatedAt: '2026-06-09T00:04:00.000Z',
+        },
+      ]),
+    );
+
+    renderDashboardHistoryPage();
+
+    expect(screen.getAllByRole('heading', { name: 'evolutioncpp/frontend-radar' })).toHaveLength(2);
+    expect(screen.getByText('main')).toBeInTheDocument();
+    expect(screen.getByText('develop')).toBeInTheDocument();
   });
 
   test('renders queued analysis run without score', () => {

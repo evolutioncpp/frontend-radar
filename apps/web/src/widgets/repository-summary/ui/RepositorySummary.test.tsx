@@ -47,6 +47,7 @@ const repository: ReportRepository = {
   stars: 128,
   forks: 14,
   defaultBranch: 'main',
+  branch: 'develop',
   projectPath: null,
   projectDetection: {
     source: 'autodetect',
@@ -111,7 +112,7 @@ describe('RepositorySummary', () => {
     expect(screen.getByText('14')).toBeInTheDocument();
 
     expect(screen.getByText('Branch')).toBeInTheDocument();
-    expect(screen.getByText('main')).toBeInTheDocument();
+    expect(screen.getByText('develop')).toBeInTheDocument();
 
     expect(screen.getByText('License')).toBeInTheDocument();
     expect(screen.getByText('MIT')).toBeInTheDocument();

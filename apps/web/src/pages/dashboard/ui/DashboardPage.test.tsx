@@ -10,8 +10,27 @@ const apiMocks = vi.hoisted(() => ({
   createReportAnalysis: vi.fn(),
 }));
 
+const repositoryBranchesResponse = vi.hoisted(() => ({
+  defaultBranch: 'main',
+  branches: [
+    {
+      isDefault: true,
+      name: 'main',
+    },
+  ],
+  isTruncated: false,
+}));
+
 vi.mock('@/shared/api/generatedApi', () => ({
   useCreateReportAnalysisMutation: () => [apiMocks.createReportAnalysis, { isLoading: false }],
+  useLazyListRepositoryBranchesQuery: () => [
+    vi.fn(() => ({
+      unwrap: () => Promise.resolve(repositoryBranchesResponse),
+    })),
+    {
+      data: repositoryBranchesResponse,
+    },
+  ],
 }));
 
 vi.mock('react-i18next', () => ({

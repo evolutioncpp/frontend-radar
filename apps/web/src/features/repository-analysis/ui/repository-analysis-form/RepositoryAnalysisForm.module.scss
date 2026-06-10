@@ -21,7 +21,8 @@ $repository-analysis-submit-offset: calc($font-size-sm * $line-height-sm + $spac
 }
 
 .projectPathToggle,
-.projectPathInput {
+.projectPathInput,
+.branchSelect {
   min-width: 0;
 }
 

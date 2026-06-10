@@ -179,6 +179,9 @@
     },
     "tooling": {
       "title": "Project stack",
+      "sourcesTitle": "Sources",
+      "sourcesCounter_one": "{{count}} source",
+      "sourcesCounter_other": "{{count}} sources",
       "groups": {
         "packageManager": "Package manager",
         "frameworks": "Framework",

@@ -180,6 +180,7 @@ const customReport: ProjectReport = {
     stars: 42,
     forks: 7,
     defaultBranch: 'develop',
+    branch: 'develop',
     projectPath: null,
     projectDetection: {
       source: 'autodetect',

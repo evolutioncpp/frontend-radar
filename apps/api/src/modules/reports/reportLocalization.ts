@@ -225,6 +225,7 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
     },
     errors: {
       analysis_failed: 'Repository analysis failed.',
+      branch_not_found: 'GitHub branch not found.',
       github_rate_limited: 'GitHub API rate limit exceeded. Try again later.',
       github_unavailable: 'GitHub is unavailable right now. Try again later.',
       project_path_not_found: 'Frontend package.json was not found in the selected path.',
@@ -656,6 +657,7 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
     },
     errors: {
       analysis_failed: 'Не удалось проанализировать репозиторий.',
+      branch_not_found: 'Ветка GitHub не найдена.',
       github_rate_limited: 'Превышен лимит запросов к GitHub. Попробуйте позже.',
       github_unavailable: 'GitHub сейчас недоступен. Попробуйте позже.',
       project_path_not_found: 'В указанной папке frontend не найден package.json.',

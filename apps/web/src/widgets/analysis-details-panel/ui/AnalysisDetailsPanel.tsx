@@ -62,6 +62,37 @@ const getPrimaryToolingItem = (items: ToolingItem[]) => {
   );
 };
 
+const parseToolingSource = (source: string) => {
+  const packageJsonSource = source.match(
+    /^(.+?package\.json)\s+(dependencies|devDependencies|optionalDependencies|peerDependencies)\.(.+)$/u,
+  );
+
+  if (packageJsonSource) {
+    const [, path, section, dependencyName] = packageJsonSource;
+
+    return {
+      detail: `${path} / ${section}`,
+      label: dependencyName,
+    };
+  }
+
+  const scriptSource = source.match(/^(.+?package\.json)\s+(scripts\..+)$/u);
+
+  if (scriptSource) {
+    const [, path, scriptName] = scriptSource;
+
+    return {
+      detail: path,
+      label: scriptName,
+    };
+  }
+
+  return {
+    detail: null,
+    label: source,
+  };
+};
+
 export const AnalysisDetailsPanel = ({
   analysisSources,
   headerAction,
@@ -92,6 +123,7 @@ export const AnalysisDetailsPanel = ({
         <dl className={s.toolingGrid}>
           {toolingGroups.map((group) => {
             const item = getPrimaryToolingItem(tooling[group]);
+            const primarySource = item?.sources[0] ? parseToolingSource(item.sources[0]) : null;
 
             return (
               <div className={s.toolingItem} key={group}>
@@ -99,12 +131,51 @@ export const AnalysisDetailsPanel = ({
                 <dd>
                   {item ? (
                     <>
-                      <span className={s.toolingName}>{item.label}</span>
-                      <Badge variant={statusVariantMap[item.status]}>
-                        {t(statusLabelKeys[item.status])}
-                      </Badge>
-                      {item.sources.length > 0 ? (
-                        <span className={s.toolingSource}>{item.sources.join(', ')}</span>
+                      <div className={s.toolingTitleRow}>
+                        <span className={s.toolingName}>{item.label}</span>
+                        <Badge variant={statusVariantMap[item.status]}>
+                          {t(statusLabelKeys[item.status])}
+                        </Badge>
+                      </div>
+
+                      {primarySource ? (
+                        <div className={s.toolingSourcePreview}>
+                          <span className={s.toolingSourcePreviewLabel}>{primarySource.label}</span>
+                        </div>
+                      ) : null}
+
+                      {item.sources.length > 1 ? (
+                        <details className={s.toolingSourcesDisclosure}>
+                          <summary className={s.toolingSourcesSummary}>
+                            <ChevronDown
+                              aria-hidden="true"
+                              className={s.toolingSourcesSummaryIcon}
+                              strokeWidth={2}
+                            />
+                            <span>{t('analysisDetails.tooling.sourcesTitle')}</span>
+                            <span className={s.toolingSourcesSummaryMeta}>
+                              {t('analysisDetails.tooling.sourcesCounter', {
+                                count: item.sources.length,
+                              })}
+                            </span>
+                          </summary>
+                          <ul className={s.toolingSourcesList}>
+                            {item.sources.map((source) => {
+                              const parsedSource = parseToolingSource(source);
+
+                              return (
+                                <li className={s.toolingSourceItem} key={source}>
+                                  <span className={s.toolingSourceLabel}>{parsedSource.label}</span>
+                                  {parsedSource.detail ? (
+                                    <span className={s.toolingSourceDetail}>
+                                      {parsedSource.detail}
+                                    </span>
+                                  ) : null}
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </details>
                       ) : null}
                     </>
                   ) : (
