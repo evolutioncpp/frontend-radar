@@ -31,18 +31,18 @@ const injectedRtkApi = api
         query: () => ({ url: `/reports` }),
         providesTags: ['Reports'],
       }),
-      forceRefreshReportAnalysis: build.mutation<
-        ForceRefreshReportAnalysisApiResponse,
-        ForceRefreshReportAnalysisApiArg
-      >({
-        query: (queryArg) => ({ url: `/reports/${queryArg.id}/refresh`, method: 'POST' }),
-        invalidatesTags: ['Reports'],
-      }),
       retryReportAnalysis: build.mutation<
         RetryReportAnalysisApiResponse,
         RetryReportAnalysisApiArg
       >({
         query: (queryArg) => ({ url: `/reports/${queryArg.id}/retry`, method: 'POST' }),
+        invalidatesTags: ['Reports'],
+      }),
+      forceRefreshReportAnalysis: build.mutation<
+        ForceRefreshReportAnalysisApiResponse,
+        ForceRefreshReportAnalysisApiArg
+      >({
+        query: (queryArg) => ({ url: `/reports/${queryArg.id}/refresh`, method: 'POST' }),
         invalidatesTags: ['Reports'],
       }),
       getReportComparison: build.query<GetReportComparisonApiResponse, GetReportComparisonApiArg>({
@@ -117,6 +117,14 @@ export type ListReportAnalysesApiResponse = /** status 200 Default Response */ {
   }[];
 };
 export type ListReportAnalysesApiArg = void;
+export type RetryReportAnalysisApiResponse = /** status 200 Default Response */ {
+  id: string;
+  retryReason: 'retried' | 'active' | 'completed';
+  status: 'queued' | 'running' | 'completed';
+};
+export type RetryReportAnalysisApiArg = {
+  id: string;
+};
 export type ForceRefreshReportAnalysisApiResponse =
   /** status 200 Default Response */
   {
@@ -126,14 +134,6 @@ export type ForceRefreshReportAnalysisApiResponse =
   };
 /** status 201 Default Response */
 export type ForceRefreshReportAnalysisApiArg = {
-  id: string;
-};
-export type RetryReportAnalysisApiResponse = /** status 200 Default Response */ {
-  id: string;
-  retryReason: 'retried' | 'active' | 'completed';
-  status: 'queued' | 'running' | 'completed';
-};
-export type RetryReportAnalysisApiArg = {
   id: string;
 };
 export type GetReportComparisonApiResponse =
@@ -197,10 +197,34 @@ export type GetReportAnalysisApiResponse =
   | {
       id: string;
       status: 'queued';
+      analysis: {
+        owner: string;
+        repository: string;
+        normalizedUrl: string;
+        branch: string;
+        projectPath: string | null;
+        latestCommitDate: string | null;
+        latestCommitSha: string | null;
+        latestCommitTitle: string | null;
+        createdAt: string;
+        updatedAt: string;
+      };
     }
   | {
       id: string;
       status: 'running';
+      analysis: {
+        owner: string;
+        repository: string;
+        normalizedUrl: string;
+        branch: string;
+        projectPath: string | null;
+        latestCommitDate: string | null;
+        latestCommitSha: string | null;
+        latestCommitTitle: string | null;
+        createdAt: string;
+        updatedAt: string;
+      };
     }
   | {
       id: string;
@@ -370,8 +394,8 @@ export const {
   useCreateReportAnalysisMutation,
   useListReportAnalysesQuery,
   useLazyListReportAnalysesQuery,
-  useForceRefreshReportAnalysisMutation,
   useRetryReportAnalysisMutation,
+  useForceRefreshReportAnalysisMutation,
   useGetReportComparisonQuery,
   useLazyGetReportComparisonQuery,
   useGetReportAnalysisQuery,

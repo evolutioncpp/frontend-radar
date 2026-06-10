@@ -60,6 +60,9 @@ vi.mock('@/shared/api/generatedApi', () => ({
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
+    i18n: {
+      language: 'en',
+    },
     t: (key: string, options?: Record<string, string | number>) => {
       const translations: Record<string, string> = {
         'page.reportAria': 'Dashboard report',
@@ -68,9 +71,25 @@ vi.mock('react-i18next', () => ({
           'This report is not available yet. Start a new analysis from the dashboard overview.',
         'page.reportLoading.title': 'Loading report',
         'page.reportLoading.description': 'Frontend Radar is checking the analysis status.',
+        'page.reportLoading.spinnerLabel': 'Loading report',
+        'page.reportProcessing.label': 'Repository analysis',
         'page.reportProcessing.title': 'Analysis in progress',
         'page.reportProcessing.description':
           'The report is being assembled from GitHub repository signals.',
+        'page.reportProcessing.repository': 'Repository',
+        'page.reportProcessing.polling': 'Updating automatically',
+        'page.reportProcessing.spinnerLabel': 'Repository analysis is in progress',
+        'page.reportProcessing.stepsLabel': 'Analysis progress',
+        'page.reportProcessing.statuses.queued': 'Analysis is queued',
+        'page.reportProcessing.statuses.running': 'Analysis in progress',
+        'page.reportProcessing.metadata.branch': 'Branch',
+        'page.reportProcessing.metadata.projectPath': 'Frontend path',
+        'page.reportProcessing.metadata.commit': 'Commit',
+        'page.reportProcessing.metadata.updatedAt': 'Last update',
+        'page.reportProcessing.steps.created': 'Task created',
+        'page.reportProcessing.steps.queued': 'Waiting for processing',
+        'page.reportProcessing.steps.reading': 'Reading GitHub sources',
+        'page.reportProcessing.steps.building': 'Preparing report',
         'page.reportError.title': 'Report could not be loaded',
         'page.reportError.description':
           'Frontend Radar could not load this report. You can start a new analysis from the form above.',
@@ -404,6 +423,19 @@ const testReport: ProjectReport = {
   },
 };
 
+const processingAnalysis = {
+  owner: 'evolutioncpp',
+  repository: 'frontend-radar',
+  normalizedUrl: 'https://github.com/evolutioncpp/frontend-radar',
+  branch: 'main',
+  projectPath: 'apps/web',
+  latestCommitSha: 'abc123',
+  latestCommitDate: '2026-06-09T00:00:00.000Z',
+  latestCommitTitle: 'Add frontend report page',
+  createdAt: '2026-06-09T00:00:00.000Z',
+  updatedAt: '2026-06-09T00:01:00.000Z',
+};
+
 const renderReportPage = (initialEntry: string | { pathname: string; state?: unknown }) => {
   return render(
     <MemoryRouter initialEntries={[initialEntry]}>
@@ -655,6 +687,7 @@ describe('ReportPage', () => {
     apiMocks.getReportAnalysis.mockReturnValue({
       data: {
         id: 'analysis-id',
+        analysis: processingAnalysis,
         status: 'running',
       },
       isError: false,
@@ -665,6 +698,34 @@ describe('ReportPage', () => {
 
     expect(screen.getByRole('heading', { name: 'Analysis in progress' })).toBeInTheDocument();
     expect(screen.getByText(/being assembled/i)).toBeInTheDocument();
+    expect(screen.getByText('evolutioncpp/frontend-radar')).toBeInTheDocument();
+    expect(screen.getByText('apps/web')).toBeInTheDocument();
+    expect(screen.getByText('Add frontend report page')).toBeInTheDocument();
+    expect(screen.getByText('Reading GitHub sources')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Repository analysis is in progress');
+  });
+
+  test('renders queued processing state with commit sha fallback', () => {
+    apiMocks.getReportAnalysis.mockReturnValue({
+      data: {
+        id: 'analysis-id',
+        analysis: {
+          ...processingAnalysis,
+          projectPath: null,
+          latestCommitTitle: null,
+        },
+        status: 'queued',
+      },
+      isError: false,
+      isLoading: false,
+    });
+
+    renderReportPage('/dashboard/report/analysis-id');
+
+    expect(screen.getByRole('heading', { name: 'Analysis is queued' })).toBeInTheDocument();
+    expect(screen.getByText('abc123')).toBeInTheDocument();
+    expect(screen.getByText('Waiting for processing')).toBeInTheDocument();
+    expect(screen.queryByText('apps/web')).not.toBeInTheDocument();
   });
 
   test('renders fallback for unknown report id', () => {

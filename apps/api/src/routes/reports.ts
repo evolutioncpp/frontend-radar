@@ -87,6 +87,19 @@ const createSnapshotLookup = (
   };
 };
 
+const createReportAnalysisProcessingSummary = (analysis: ReportAnalysisEntity) => ({
+  owner: analysis.owner,
+  repository: analysis.repository,
+  normalizedUrl: analysis.normalizedUrl,
+  branch: analysis.branch,
+  projectPath: analysis.projectPath || null,
+  latestCommitDate: analysis.latestCommitDate,
+  latestCommitSha: analysis.latestCommitSha,
+  latestCommitTitle: analysis.latestCommitTitle,
+  createdAt: analysis.createdAt.toISOString(),
+  updatedAt: analysis.updatedAt.toISOString(),
+});
+
 const getProjectPathSource = ({
   projectPath,
   projectPathSource,
@@ -719,6 +732,7 @@ export const createReportRoutes = ({
 
         return {
           id: analysis.id,
+          analysis: createReportAnalysisProcessingSummary(analysis),
           status: analysis.status,
         };
       },

@@ -483,6 +483,58 @@ describe('reports routes', () => {
     }
   });
 
+  it.each(['queued', 'running'] as const)(
+    'returns processing summary for %s report analysis',
+    async (status) => {
+      const repository = new InMemoryReportAnalysisRepository();
+      const app = buildApp(
+        {},
+        {
+          reportAnalysisRepository: repository,
+          reportAnalyzer: createAnalyzer(),
+          startReportAnalysis: () => undefined,
+        },
+      );
+      const analysis = await repository.create(
+        createTestRecordInput({
+          branch: 'feature/dashboard',
+          projectPath: 'apps/web',
+        }),
+      );
+
+      if (status === 'running') {
+        await repository.updateStatus(analysis.id, 'running');
+      }
+
+      try {
+        const response = await app.inject({
+          method: 'GET',
+          url: `/reports/${analysis.id}`,
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({
+          id: analysis.id,
+          status,
+          analysis: {
+            owner: 'owner',
+            repository: 'repo',
+            normalizedUrl: 'https://github.com/owner/repo',
+            branch: 'feature/dashboard',
+            projectPath: 'apps/web',
+            latestCommitDate: DEFAULT_COMMIT_DATE,
+            latestCommitSha: DEFAULT_COMMIT_SHA,
+            latestCommitTitle: DEFAULT_COMMIT_TITLE,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+          },
+        });
+      } finally {
+        await app.close();
+      }
+    },
+  );
+
   it('localizes completed report by accept-language header', async () => {
     const repository = new InMemoryReportAnalysisRepository();
     const app = buildApp(

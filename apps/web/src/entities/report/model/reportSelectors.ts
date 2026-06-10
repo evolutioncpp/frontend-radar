@@ -1,4 +1,4 @@
-import { formatDate } from '@/shared/lib/format-date';
+import { formatDateTime } from '@/shared/lib/format-date';
 
 import type { ListReportAnalysesApiResponse } from './reportApi';
 
@@ -67,7 +67,7 @@ export const getReportHistoryItemViewModel = (
 ): ReportHistoryItemViewModel => {
   return {
     activityAt: item.updatedAt,
-    activityLabel: formatDate(item.updatedAt, language),
+    activityLabel: formatDateTime(item.updatedAt, language),
     branch: item.branch,
     checksCount: item.checksCount ?? 0,
     commitTitle: normalizeCommitTitle(item.latestCommitTitle),

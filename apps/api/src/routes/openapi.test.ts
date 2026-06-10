@@ -286,6 +286,18 @@ describe('GET /openapi.json', () => {
         ),
       ).toContain('projectDetection');
       expect(
+        JSON.stringify(
+          body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,
+        ),
+      ).toContain('analysis');
+      expect(
+        collectSchemasWithRequiredProperties(
+          body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,
+          body,
+          ['owner', 'repository', 'normalizedUrl', 'branch', 'updatedAt'],
+        ).length,
+      ).toBeGreaterThan(0);
+      expect(
         collectSchemasWithRequiredProperties(
           body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,
           body,

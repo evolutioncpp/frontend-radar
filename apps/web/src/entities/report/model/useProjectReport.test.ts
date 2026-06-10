@@ -97,6 +97,19 @@ const testReport: ProjectReport = {
   tooling: emptyTooling,
 };
 
+const processingAnalysis = {
+  owner: 'evolutioncpp',
+  repository: 'frontend-radar',
+  normalizedUrl: 'https://github.com/evolutioncpp/frontend-radar',
+  branch: 'main',
+  projectPath: 'apps/web',
+  latestCommitSha: 'abc123',
+  latestCommitDate: '2026-06-09T00:00:00.000Z',
+  latestCommitTitle: 'Add frontend dashboard',
+  createdAt: '2026-06-09T00:00:00.000Z',
+  updatedAt: '2026-06-09T00:01:00.000Z',
+};
+
 describe('useProjectReport', () => {
   beforeEach(() => {
     apiMocks.getReportAnalysis.mockReturnValue({
@@ -137,6 +150,7 @@ describe('useProjectReport', () => {
     apiMocks.getReportAnalysis.mockReturnValue({
       data: {
         id: 'analysis-id',
+        analysis: processingAnalysis,
         status: 'running',
       },
       isError: false,
@@ -148,6 +162,8 @@ describe('useProjectReport', () => {
 
     expect(result.current).toEqual({
       status: 'processing',
+      analysisStatus: 'running',
+      analysis: processingAnalysis,
     });
   });
 
@@ -158,6 +174,7 @@ describe('useProjectReport', () => {
     apiMocks.getReportAnalysis.mockReturnValue({
       data: {
         id: 'analysis-id',
+        analysis: processingAnalysis,
         status: 'running',
       },
       isError: false,
@@ -235,6 +252,7 @@ describe('useProjectReport', () => {
     apiMocks.getReportAnalysis.mockReturnValue({
       data: {
         id: 'analysis-id',
+        analysis: processingAnalysis,
         status: 'running',
       },
       error: {

@@ -1,0 +1,203 @@
+@use 'app/styles/helpers' as *;
+
+.panel {
+  display: grid;
+  gap: $space-6;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-5;
+}
+
+.headingGroup {
+  display: grid;
+  gap: $space-2;
+  min-width: 0;
+}
+
+.eyebrow,
+.summaryLabel {
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0.08em;
+  line-height: $line-height-sm;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-2xl;
+  line-height: $line-height-sm;
+}
+
+.description {
+  max-width: 44rem;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: $font-size-md;
+  line-height: $line-height-lg;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+  color: var(--color-accent);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+  white-space: nowrap;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) minmax(0, 2fr);
+  gap: $space-5;
+  padding: $space-4;
+  border: 1px solid var(--color-border-primary);
+  border-radius: $radius-md;
+  background: color-mix(in srgb, var(--color-bg-surface-hover) 45%, transparent);
+}
+
+.repository {
+  display: grid;
+  align-content: start;
+  gap: $space-2;
+  min-width: 0;
+}
+
+.repositoryName {
+  @include text-ellipsis;
+
+  color: var(--color-text-primary);
+  font-size: $font-size-lg;
+  line-height: $line-height-sm;
+}
+
+.metadata {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $space-3 $space-5;
+  margin: 0;
+}
+
+.metadataItem {
+  display: grid;
+  gap: $space-1;
+  min-width: 0;
+
+  dt {
+    color: var(--color-text-muted);
+    font-size: $font-size-xs;
+    line-height: $line-height-sm;
+  }
+
+  dd {
+    @include text-ellipsis;
+
+    margin: 0;
+    color: var(--color-text-primary);
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    line-height: $line-height-sm;
+  }
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: $space-3;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: $space-2;
+  min-width: 0;
+  padding: $space-3;
+  border: 1px solid var(--color-border-primary);
+  border-radius: $radius-md;
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+}
+
+.stepMarker {
+  width: 0.625rem;
+  height: 0.625rem;
+  border: 2px solid currentColor;
+  border-radius: $radius-full;
+}
+
+.stepText {
+  min-width: 0;
+  color: inherit;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+}
+
+.step_complete {
+  color: var(--color-success);
+}
+
+.step_complete .stepMarker {
+  background: currentColor;
+}
+
+.step_active {
+  border-color: color-mix(in srgb, var(--color-accent) 55%, var(--color-border-primary));
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg-surface));
+  color: var(--color-accent);
+}
+
+.step_pending {
+  color: var(--color-text-muted);
+}
+
+@include media-max($breakpoint-lg) {
+  .header,
+  .summary {
+    grid-template-columns: 1fr;
+  }
+
+  .header {
+    display: grid;
+  }
+
+  .steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@include media-max($breakpoint-sm) {
+  .panel {
+    gap: $space-5;
+  }
+
+  .title {
+    font-size: $font-size-xl;
+  }
+
+  .description {
+    font-size: $font-size-sm;
+  }
+
+  .summary,
+  .metadata,
+  .steps {
+    grid-template-columns: 1fr;
+  }
+
+  .status {
+    white-space: normal;
+  }
+}

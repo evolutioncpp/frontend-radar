@@ -11,9 +11,11 @@ import {
 } from '@/features/repository-analysis';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
+import { Spinner } from '@/shared/ui/Spinner';
 import { RepositoryAnalysisPanel } from '@/widgets/repository-analysis-panel';
 
 import { DashboardReportView } from './dashboard-report-view/DashboardReportView';
+import { ReportProcessingPanel } from './report-processing-panel/ReportProcessingPanel';
 import s from './ReportPage.module.scss';
 
 const reportAnalysisReuseReasons = ['completed', 'active', 'retried'] as const;
@@ -154,12 +156,13 @@ export const ReportPage = () => {
       ) : reportState.status === 'loading' ? (
         <ReportStatusCard
           description={t('page.reportLoading.description')}
+          spinnerLabel={t('page.reportLoading.spinnerLabel')}
           title={t('page.reportLoading.title')}
         />
       ) : reportState.status === 'processing' ? (
-        <ReportStatusCard
-          description={t('page.reportProcessing.description')}
-          title={t('page.reportProcessing.title')}
+        <ReportProcessingPanel
+          analysis={reportState.analysis}
+          status={reportState.analysisStatus}
         />
       ) : reportState.status === 'error' ? (
         <ReportStatusCard
@@ -216,6 +219,7 @@ interface ReportStatusCardProps {
   actionLoadingLabel?: string;
   description: string;
   onAction?: () => void;
+  spinnerLabel?: string;
   title: string;
 }
 
@@ -226,13 +230,19 @@ const ReportStatusCard = ({
   actionLoadingLabel,
   description,
   onAction,
+  spinnerLabel,
   title,
 }: ReportStatusCardProps) => {
   const actionContent = actionDisabled && actionLoadingLabel ? actionLoadingLabel : actionLabel;
 
   return (
     <Card className={s.fallbackCard}>
-      <h1 className={s.fallbackTitle}>{title}</h1>
+      <div className={s.fallbackHeading}>
+        {spinnerLabel ? (
+          <Spinner className={s.fallbackSpinner} label={spinnerLabel} size="md" />
+        ) : null}
+        <h1 className={s.fallbackTitle}>{title}</h1>
+      </div>
       <p className={s.fallbackDescription}>{description}</p>
       {onAction && actionLabel ? (
         <Button

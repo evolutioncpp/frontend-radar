@@ -203,14 +203,29 @@ export const projectReportSchema = z.object({
   createdAt: z.string(),
 });
 
+export const reportAnalysisProcessingSummarySchema = z.object({
+  owner: z.string(),
+  repository: z.string(),
+  normalizedUrl: z.string().url(),
+  branch: z.string(),
+  projectPath: z.string().nullable(),
+  latestCommitDate: z.string().nullable(),
+  latestCommitSha: z.string().nullable(),
+  latestCommitTitle: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
 export const reportAnalysisQueuedResponseSchema = z.object({
   id: z.string(),
   status: z.literal('queued'),
+  analysis: reportAnalysisProcessingSummarySchema,
 });
 
 export const reportAnalysisRunningResponseSchema = z.object({
   id: z.string(),
   status: z.literal('running'),
+  analysis: reportAnalysisProcessingSummarySchema,
 });
 
 export const reportAnalysisCompletedResponseSchema = z.object({

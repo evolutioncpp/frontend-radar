@@ -85,11 +85,33 @@
     },
     "reportLoading": {
       "title": "Loading report",
-      "description": "Frontend Radar is checking the analysis status."
+      "description": "Frontend Radar is checking the analysis status.",
+      "spinnerLabel": "Loading report"
     },
     "reportProcessing": {
+      "label": "Repository analysis",
       "title": "Analysis in progress",
-      "description": "The report is being assembled from GitHub repository signals."
+      "description": "The report is being assembled from GitHub repository signals.",
+      "repository": "Repository",
+      "polling": "Updating automatically",
+      "spinnerLabel": "Repository analysis is in progress",
+      "stepsLabel": "Analysis progress",
+      "statuses": {
+        "queued": "Analysis is queued",
+        "running": "Analysis in progress"
+      },
+      "metadata": {
+        "branch": "Branch",
+        "projectPath": "Frontend path",
+        "commit": "Commit",
+        "updatedAt": "Last update"
+      },
+      "steps": {
+        "created": "Task created",
+        "queued": "Waiting for processing",
+        "reading": "Reading GitHub sources",
+        "building": "Preparing report"
+      }
     },
     "reportError": {
       "title": "Report could not be loaded",

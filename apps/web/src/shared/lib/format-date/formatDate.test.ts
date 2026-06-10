@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { formatDate } from './formatDate';
+import { formatDate, formatDateTime } from './formatDate';
 
 const localDate = new Date(2026, 5, 2);
 const isoDate = '2026-06-02T00:00:00.000Z';
@@ -22,5 +22,9 @@ describe('formatDate', () => {
         timeZone: 'UTC',
       }),
     ).toBe('Jun 02');
+  });
+
+  test('formats date with time', () => {
+    expect(formatDateTime(new Date(2026, 5, 2, 14, 30), 'en')).toMatch(/0?2:30/);
   });
 });

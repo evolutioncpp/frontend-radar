@@ -6,12 +6,27 @@ import { isReportProcessing } from './reportSelectors';
 
 import type { ProjectReport } from './types';
 
+export type ProjectReportProcessingAnalysis = {
+  owner: string;
+  repository: string;
+  normalizedUrl: string;
+  branch: string;
+  projectPath: string | null;
+  latestCommitSha: string | null;
+  latestCommitDate: string | null;
+  latestCommitTitle: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type ProjectReportState =
   | {
       status: 'loading';
     }
   | {
       status: 'processing';
+      analysisStatus: 'queued' | 'running';
+      analysis: ProjectReportProcessingAnalysis;
     }
   | {
       status: 'ready';
@@ -96,5 +111,7 @@ export const useProjectReport = (reportId?: string): ProjectReportState => {
 
   return {
     status: 'processing',
+    analysisStatus: query.data.status,
+    analysis: query.data.analysis,
   };
 };

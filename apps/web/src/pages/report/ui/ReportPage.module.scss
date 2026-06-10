@@ -79,6 +79,16 @@ $dashboard-section-scroll-offset: calc($space-10 + $space-10);
   gap: $space-3;
 }
 
+.fallbackHeading {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+}
+
+.fallbackSpinner {
+  color: var(--color-accent);
+}
+
 .fallbackTitle {
   margin: 0;
   color: var(--color-text-primary);

@@ -85,11 +85,33 @@
     },
     "reportLoading": {
       "title": "Загружаем отчёт",
-      "description": "Frontend Radar проверяет статус анализа."
+      "description": "Frontend Radar проверяет статус анализа.",
+      "spinnerLabel": "Загружаем отчёт"
     },
     "reportProcessing": {
+      "label": "Анализ репозитория",
       "title": "Анализ выполняется",
-      "description": "Отчёт собирается из сигналов GitHub-репозитория."
+      "description": "Отчёт собирается из сигналов GitHub-репозитория.",
+      "repository": "Репозиторий",
+      "polling": "Обновляется автоматически",
+      "spinnerLabel": "Анализ репозитория выполняется",
+      "stepsLabel": "Ход анализа",
+      "statuses": {
+        "queued": "Анализ в очереди",
+        "running": "Анализ выполняется"
+      },
+      "metadata": {
+        "branch": "Ветка",
+        "projectPath": "Путь к frontend",
+        "commit": "Коммит",
+        "updatedAt": "Последнее обновление"
+      },
+      "steps": {
+        "created": "Задача создана",
+        "queued": "Ожидаем обработку",
+        "reading": "Читаем источники GitHub",
+        "building": "Готовим отчёт"
+      }
     },
     "reportError": {
       "title": "Не удалось загрузить отчёт",

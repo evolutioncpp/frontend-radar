@@ -42,8 +42,10 @@ describe('reportSelectors', () => {
 
     expect(groups).toHaveLength(1);
     expect(groups[0]?.latestRun.id).toBe('newer');
+    expect(groups[0]?.latestRun.activityLabel).toMatch(/\d{1,2}:\d{2}/);
     expect(groups[0]?.latestRun.commitTitle).toBe('Add frontend radar dashboard');
     expect(groups[0]?.previousRuns.map((run) => run.id)).toEqual(['older']);
+    expect(groups[0]?.previousRuns[0]?.activityLabel).toMatch(/\d{1,2}:\d{2}/);
     expect(groups[0]?.runCount).toBe(2);
   });
 
