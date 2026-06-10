@@ -64,6 +64,7 @@ export type CreateReportAnalysisApiArg = {
     repository: string;
     normalizedUrl: string;
     projectPath?: string | null;
+    projectPathSource?: 'url' | 'manual';
   };
 };
 export type ListReportAnalysesApiResponse = /** status 200 Default Response */ {
@@ -177,6 +178,19 @@ export type GetReportAnalysisApiResponse =
           forks: number;
           defaultBranch: string;
           projectPath: string | null;
+          projectDetection: {
+            source: 'autodetect' | 'url' | 'manual';
+            path: string | null;
+            packageJsonPath: string | null;
+            confidence: 'high' | 'medium' | 'low';
+            signals: {
+              id: string;
+              status: 'found' | 'missing' | 'warning';
+              label: string;
+              description?: string;
+              source?: string;
+            }[];
+          };
           latestCommitSha: string | null;
           latestCommitDate: string | null;
           latestCommitTitle: string | null;

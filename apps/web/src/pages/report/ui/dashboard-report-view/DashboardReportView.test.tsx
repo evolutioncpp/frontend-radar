@@ -29,6 +29,16 @@ vi.mock('react-i18next', () => ({
         'repository.metadata.projectPath': 'Frontend path',
         'repository.metadata.license': 'License',
         'repository.metadata.unknown': 'Unknown',
+        'repository.projectDetection.title': 'Why this frontend path',
+        'repository.projectDetection.source': 'Path source',
+        'repository.projectDetection.packageJsonPath': 'Package metadata',
+        'repository.projectDetection.confidence': 'Detection confidence',
+        'repository.projectDetection.sources.autodetect': 'Detected automatically',
+        'repository.projectDetection.sources.url': 'From repository input',
+        'repository.projectDetection.sources.manual': 'Specified manually',
+        'repository.projectDetection.confidenceLevels.high': 'High',
+        'repository.projectDetection.confidenceLevels.medium': 'Medium',
+        'repository.projectDetection.confidenceLevels.low': 'Low',
 
         'healthScore.label': 'Frontend Health Score',
         'healthScore.title': 'Overall project quality',
@@ -69,6 +79,10 @@ vi.mock('react-i18next', () => ({
       }
 
       if (key === 'evidence.source') {
+        return `Source: ${options?.source}`;
+      }
+
+      if (key === 'repository.projectDetection.signalSource') {
         return `Source: ${options?.source}`;
       }
 
@@ -114,6 +128,20 @@ const customReport: ProjectReport = {
     forks: 7,
     defaultBranch: 'develop',
     projectPath: null,
+    projectDetection: {
+      source: 'autodetect',
+      path: null,
+      packageJsonPath: 'package.json',
+      confidence: 'medium',
+      signals: [
+        {
+          id: 'project-package-json',
+          label: 'Frontend package.json',
+          status: 'found',
+          source: 'package.json',
+        },
+      ],
+    },
     latestCommitSha: 'abc123',
     latestCommitDate: '2026-06-06T00:00:00.000Z',
     latestCommitTitle: 'Add custom dashboard report',

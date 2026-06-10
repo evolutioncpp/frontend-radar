@@ -45,6 +45,7 @@ export const RepositoryAnalysisForm = ({
   } = useForm<RepositoryAnalysisFormValues, unknown, RepositoryAnalysisFormSubmitResult>({
     defaultValues: {
       projectPath: '',
+      projectPathSource: '',
       repository: '',
       useProjectPath: false,
     },
@@ -92,6 +93,10 @@ export const RepositoryAnalysisForm = ({
         shouldDirty: true,
         shouldTouch: true,
       });
+      setValue('projectPathSource', 'url', {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
       clearErrors('projectPath');
     } else if (!parsedRepository?.projectPath && !isProjectPathManual && isProjectPathEnabled) {
       setValue('useProjectPath', false, {
@@ -99,6 +104,10 @@ export const RepositoryAnalysisForm = ({
         shouldTouch: true,
       });
       setValue('projectPath', '', {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+      setValue('projectPathSource', '', {
         shouldDirty: true,
         shouldTouch: true,
       });
@@ -117,12 +126,20 @@ export const RepositoryAnalysisForm = ({
         shouldDirty: true,
         shouldTouch: true,
       });
+      setValue('projectPathSource', '', {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
       clearErrors('projectPath');
     } else {
       const parsedRepository = parseRepositoryInput(repositoryInputValue);
 
       if (parsedRepository?.projectPath && !isProjectPathManual) {
         setValue('projectPath', parsedRepository.projectPath, {
+          shouldDirty: true,
+          shouldTouch: true,
+        });
+        setValue('projectPathSource', 'url', {
           shouldDirty: true,
           shouldTouch: true,
         });
@@ -134,6 +151,10 @@ export const RepositoryAnalysisForm = ({
 
   const handleProjectPathChange: ChangeEventHandler<HTMLInputElement> = (event) => {
     setIsProjectPathManual(true);
+    setValue('projectPathSource', 'manual', {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
     void projectPathField.onChange(event);
     onChange?.();
   };
@@ -148,6 +169,10 @@ export const RepositoryAnalysisForm = ({
       shouldTouch: true,
     });
     setValue('projectPath', '', {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+    setValue('projectPathSource', '', {
       shouldDirty: true,
       shouldTouch: true,
     });
@@ -197,6 +222,10 @@ export const RepositoryAnalysisForm = ({
             onClear={() => {
               setIsProjectPathManual(false);
               setValue('projectPath', '', {
+                shouldDirty: true,
+                shouldTouch: true,
+              });
+              setValue('projectPathSource', '', {
                 shouldDirty: true,
                 shouldTouch: true,
               });

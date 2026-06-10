@@ -23,6 +23,18 @@ export type ReportEvidence = {
   source?: string;
 };
 
+export type ProjectPathSource = 'autodetect' | 'url' | 'manual';
+
+export type ProjectDetectionConfidence = 'high' | 'medium' | 'low';
+
+export type ProjectDetection = {
+  source: ProjectPathSource;
+  path: string | null;
+  packageJsonPath: string | null;
+  confidence: ProjectDetectionConfidence;
+  signals: ReportEvidence[];
+};
+
 export type ReportRepository = {
   owner: string;
   name: string;
@@ -32,6 +44,7 @@ export type ReportRepository = {
   forks: number;
   defaultBranch: string;
   projectPath: string | null;
+  projectDetection: ProjectDetection;
   latestCommitSha: string | null;
   latestCommitDate: string | null;
   latestCommitTitle: string | null;

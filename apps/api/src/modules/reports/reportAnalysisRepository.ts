@@ -5,19 +5,21 @@ import {
   type ProjectReport,
   type ReportAnalysisErrorCode,
   type ReportAnalysisStatus,
+  type ReportProjectPathSource,
 } from './reportSchemas.js';
 
 import type { CreateReportAnalysisRequest } from './reportSchemas.js';
 
 export interface CreateReportAnalysisRecordInput extends Omit<
   CreateReportAnalysisRequest,
-  'projectPath'
+  'projectPath' | 'projectPathSource'
 > {
   analysisVersion: number;
   latestCommitDate: string | null;
   latestCommitSha: string | null;
   latestCommitTitle: string | null;
   projectPath: string;
+  projectPathSource: ReportProjectPathSource;
   repositoryKey: string;
   snapshotKey: string;
 }
@@ -40,6 +42,7 @@ export interface ReportAnalysisEntity {
   repository: string;
   repositoryKey: string;
   projectPath: string;
+  projectPathSource: ReportProjectPathSource;
   snapshotKey: string;
   normalizedUrl: string;
   status: ReportAnalysisStatus;
@@ -103,6 +106,14 @@ const parseReportAnalysisErrorCode = (value: string | null): ReportAnalysisError
   return null;
 };
 
+const parseReportProjectPathSource = (value: string | null): ReportProjectPathSource => {
+  if (value === 'url' || value === 'manual' || value === 'autodetect') {
+    return value;
+  }
+
+  return 'autodetect';
+};
+
 const mapPrismaReportAnalysis = (
   analysis: NonNullable<PrismaReportAnalysis>,
 ): ReportAnalysisEntity => {
@@ -112,6 +123,7 @@ const mapPrismaReportAnalysis = (
     repository: analysis.repository,
     repositoryKey: analysis.repositoryKey,
     projectPath: analysis.projectPath,
+    projectPathSource: parseReportProjectPathSource(analysis.projectPathSource),
     snapshotKey: analysis.snapshotKey,
     normalizedUrl: analysis.normalizedUrl,
     status: analysis.status,

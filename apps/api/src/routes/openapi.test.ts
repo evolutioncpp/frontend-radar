@@ -142,6 +142,9 @@ describe('GET /openapi.json', () => {
       expect(JSON.stringify(body.paths['/reports/analyze'].post.parameters)).toContain(
         'accept-language',
       );
+      expect(JSON.stringify(body.paths['/reports/analyze'].post.requestBody)).toContain(
+        'projectPathSource',
+      );
       expect(body.paths['/reports/analyze'].post.responses['403']).toBeDefined();
       expect(body.paths['/reports/analyze'].post.responses['404']).toBeDefined();
       expect(body.paths['/reports/analyze'].post.responses['429']).toBeDefined();
@@ -185,6 +188,11 @@ describe('GET /openapi.json', () => {
           body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,
         ),
       ).toContain('latestCommitTitle');
+      expect(
+        JSON.stringify(
+          body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,
+        ),
+      ).toContain('projectDetection');
       expect(
         findFailedResponseSchema(
           body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,

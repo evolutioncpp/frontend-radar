@@ -10,6 +10,7 @@ export const createRepositoryAnalysisFormSchema = (
   return z
     .object({
       projectPath: z.string(),
+      projectPathSource: z.union([z.enum(['url', 'manual']), z.literal('')]).optional(),
       repository: z.string(),
       useProjectPath: z.boolean(),
     })
@@ -46,9 +47,13 @@ export const createRepositoryAnalysisFormSchema = (
         return z.NEVER;
       }
 
+      const projectPathSource =
+        values.projectPathSource === 'url' ? ('url' as const) : ('manual' as const);
+
       return {
         ...parsedRepository,
         projectPath: normalizedProjectPath,
+        projectPathSource,
       };
     });
 };

@@ -112,6 +112,7 @@ describe('RepositoryAnalysisForm', () => {
         normalizedUrl: 'https://github.com/owner/repo',
         owner: 'owner',
         projectPath: 'apps/web',
+        projectPathSource: 'url',
         repository: 'repo',
       });
     });
@@ -135,6 +136,7 @@ describe('RepositoryAnalysisForm', () => {
         normalizedUrl: 'https://github.com/owner/repo',
         owner: 'owner',
         projectPath: 'packages/site',
+        projectPathSource: 'manual',
         repository: 'repo',
       });
     });
@@ -185,6 +187,7 @@ describe('RepositoryAnalysisForm', () => {
         normalizedUrl: 'https://github.com/owner/repo',
         owner: 'owner',
         projectPath: 'packages/site',
+        projectPathSource: 'manual',
         repository: 'repo',
       });
     });

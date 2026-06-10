@@ -147,6 +147,23 @@
       "projectPath": "Frontend path",
       "license": "License",
       "unknown": "Unknown"
+    },
+    "projectDetection": {
+      "title": "Why this frontend path",
+      "source": "Path source",
+      "packageJsonPath": "Package metadata",
+      "confidence": "Detection confidence",
+      "signalSource": "Source: {{source}}",
+      "sources": {
+        "autodetect": "Detected automatically",
+        "url": "From repository input",
+        "manual": "Specified manually"
+      },
+      "confidenceLevels": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      }
     }
   },
   "healthScore": {

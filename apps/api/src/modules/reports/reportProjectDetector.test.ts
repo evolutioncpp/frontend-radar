@@ -77,6 +77,29 @@ describe('detectReportProject', () => {
       }),
     ).resolves.toMatchObject({
       packageJsonPath: 'apps/web/package.json',
+      projectDetection: {
+        source: 'autodetect',
+        path: 'apps/web',
+        packageJsonPath: 'apps/web/package.json',
+        confidence: 'high',
+        signals: expect.arrayContaining([
+          expect.objectContaining({
+            id: 'project-package-json',
+            status: 'found',
+            source: 'apps/web/package.json',
+          }),
+          expect.objectContaining({
+            id: 'project-frontend-dependency',
+            status: 'found',
+            source: expect.stringContaining('react'),
+          }),
+          expect.objectContaining({
+            id: 'project-workspace',
+            status: 'found',
+            source: 'apps/*',
+          }),
+        ]),
+      },
       projectPath: 'apps/web',
     });
   });
@@ -135,12 +158,53 @@ describe('detectReportProject', () => {
         branch: 'abc123',
         owner: 'owner',
         projectPath: 'apps/web',
+        projectPathSource: 'url',
         reader,
         repository: 'repo',
       }),
     ).resolves.toMatchObject({
       packageJson,
       packageJsonPath: 'apps/web/package.json',
+      projectDetection: {
+        source: 'url',
+        path: 'apps/web',
+      },
+      projectPath: 'apps/web',
+    });
+  });
+
+  it('keeps autodetect source when an already detected project path is re-analyzed', async () => {
+    const packageJson: PackageJson = {
+      dependencies: {
+        react: '^19.0.0',
+      },
+      name: '@scope/web',
+    };
+    const reader = {
+      readPackageJson: async (
+        _owner: string,
+        _repository: string,
+        _branch: string,
+        basePath = '',
+      ) => (basePath === 'apps/web' ? packageJson : null),
+    } as unknown as GithubRepositoryReader;
+
+    await expect(
+      resolveReportProject({
+        branch: 'abc123',
+        owner: 'owner',
+        projectPath: 'apps/web',
+        projectPathSource: 'autodetect',
+        reader,
+        repository: 'repo',
+      }),
+    ).resolves.toMatchObject({
+      packageJson,
+      packageJsonPath: 'apps/web/package.json',
+      projectDetection: {
+        source: 'autodetect',
+        path: 'apps/web',
+      },
       projectPath: 'apps/web',
     });
   });

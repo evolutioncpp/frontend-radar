@@ -147,6 +147,23 @@
       "projectPath": "Путь к frontend",
       "license": "Лицензия",
       "unknown": "Неизвестно"
+    },
+    "projectDetection": {
+      "title": "Почему выбрана эта папка",
+      "source": "Источник пути",
+      "packageJsonPath": "Метаданные package",
+      "confidence": "Уверенность определения",
+      "signalSource": "Источник: {{source}}",
+      "sources": {
+        "autodetect": "Определено автоматически",
+        "url": "Из поля репозитория",
+        "manual": "Указано вручную"
+      },
+      "confidenceLevels": {
+        "high": "Высокая",
+        "medium": "Средняя",
+        "low": "Низкая"
+      }
     }
   },
   "healthScore": {

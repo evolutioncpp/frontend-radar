@@ -1,7 +1,18 @@
-import { Folder, GitBranch, GitCommit, GitFork, Scale, Star, type LucideIcon } from 'lucide-react';
+import {
+  ChevronDown,
+  Folder,
+  GitBranch,
+  GitCommit,
+  GitFork,
+  Package,
+  Scale,
+  Star,
+  type LucideIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { formatNumber } from '@/shared/lib/format-number';
+import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
 
@@ -24,6 +35,24 @@ interface MetaItem {
   isCode?: boolean;
 }
 
+const detectionStatusOrder = {
+  missing: 0,
+  warning: 1,
+  found: 2,
+} as const satisfies Record<
+  ReportRepository['projectDetection']['signals'][number]['status'],
+  number
+>;
+
+const confidenceBadgeVariants = {
+  high: 'success',
+  medium: 'warning',
+  low: 'danger',
+} as const satisfies Record<
+  ReportRepository['projectDetection']['confidence'],
+  'success' | 'warning' | 'danger'
+>;
+
 export const RepositorySummary = ({
   asideAction,
   headerAction,
@@ -32,6 +61,17 @@ export const RepositorySummary = ({
   const { t } = useTranslation('dashboard');
 
   const repositoryFullName = `${repository.owner}/${repository.name}`;
+  const detectionMarkerClasses = {
+    found: s.projectDetectionSignalMarker_found,
+    missing: s.projectDetectionSignalMarker_missing,
+    warning: s.projectDetectionSignalMarker_warning,
+  } as const satisfies Record<
+    ReportRepository['projectDetection']['signals'][number]['status'],
+    string
+  >;
+  const sortedProjectDetectionSignals = [...repository.projectDetection.signals].sort(
+    (left, right) => detectionStatusOrder[left.status] - detectionStatusOrder[right.status],
+  );
 
   const metaItems: MetaItem[] = [
     {
@@ -115,6 +155,75 @@ export const RepositorySummary = ({
           );
         })}
       </dl>
+
+      <details className={s.projectDetection}>
+        <summary className={s.projectDetectionSummary}>
+          <ChevronDown
+            aria-hidden="true"
+            className={s.projectDetectionSummaryIcon}
+            strokeWidth={2}
+          />
+          <span>{t('repository.projectDetection.title')}</span>
+          <span className={s.projectDetectionSummaryMeta}>
+            {t(`repository.projectDetection.sources.${repository.projectDetection.source}`)}
+          </span>
+        </summary>
+
+        <div className={s.projectDetectionContent}>
+          <dl className={s.projectDetectionMetaList}>
+            <div className={s.projectDetectionMetaItem}>
+              <dt>{t('repository.projectDetection.source')}</dt>
+              <dd>
+                {t(`repository.projectDetection.sources.${repository.projectDetection.source}`)}
+              </dd>
+            </div>
+
+            <div className={s.projectDetectionMetaItem}>
+              <dt>{t('repository.projectDetection.packageJsonPath')}</dt>
+              <dd>
+                <Package
+                  aria-hidden="true"
+                  className={s.projectDetectionMetaIcon}
+                  strokeWidth={2}
+                />
+                <span>{repository.projectDetection.packageJsonPath ?? 'package.json'}</span>
+              </dd>
+            </div>
+
+            <div className={s.projectDetectionMetaItem}>
+              <dt>{t('repository.projectDetection.confidence')}</dt>
+              <dd>
+                <Badge variant={confidenceBadgeVariants[repository.projectDetection.confidence]}>
+                  {t(
+                    `repository.projectDetection.confidenceLevels.${repository.projectDetection.confidence}`,
+                  )}
+                </Badge>
+              </dd>
+            </div>
+          </dl>
+
+          <ul className={s.projectDetectionSignalList}>
+            {sortedProjectDetectionSignals.map((signal) => (
+              <li className={s.projectDetectionSignal} key={signal.id}>
+                <span className={detectionMarkerClasses[signal.status]} aria-hidden="true" />
+                <div className={s.projectDetectionSignalContent}>
+                  <p className={s.projectDetectionSignalTitle}>{signal.label}</p>
+                  {signal.description ? (
+                    <p className={s.projectDetectionSignalDescription}>{signal.description}</p>
+                  ) : null}
+                  {signal.source ? (
+                    <p className={s.projectDetectionSignalSource}>
+                      {t('repository.projectDetection.signalSource', {
+                        source: signal.source,
+                      })}
+                    </p>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </details>
     </Card>
   );
 };

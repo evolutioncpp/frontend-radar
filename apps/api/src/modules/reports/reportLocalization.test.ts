@@ -20,6 +20,20 @@ const createReport = (recommendations: ProjectReport['recommendations']): Projec
     name: 'repo',
     owner: 'owner',
     projectPath: null,
+    projectDetection: {
+      source: 'autodetect',
+      path: null,
+      packageJsonPath: 'package.json',
+      confidence: 'high',
+      signals: [
+        {
+          id: 'project-package-json',
+          label: 'Frontend package.json',
+          status: 'found',
+          source: 'package.json',
+        },
+      ],
+    },
     stars: 0,
     url: 'https://github.com/owner/repo',
   },

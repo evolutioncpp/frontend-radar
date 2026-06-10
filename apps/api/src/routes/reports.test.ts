@@ -38,6 +38,20 @@ const createTestReport = (
     forks: 0,
     defaultBranch: 'main',
     projectPath,
+    projectDetection: {
+      source: projectPath ? 'manual' : 'autodetect',
+      path: projectPath,
+      packageJsonPath: projectPath ? `${projectPath}/package.json` : 'package.json',
+      confidence: 'high',
+      signals: [
+        {
+          id: 'project-package-json',
+          label: 'Frontend package.json',
+          status: 'found',
+          source: projectPath ? `${projectPath}/package.json` : 'package.json',
+        },
+      ],
+    },
     latestCommitSha,
     latestCommitDate,
     latestCommitTitle,
@@ -88,6 +102,7 @@ const createTestRecordInput = (
   normalizedUrl: 'https://github.com/owner/repo',
   owner: 'owner',
   projectPath: '',
+  projectPathSource: 'autodetect',
   repository: 'repo',
   repositoryKey: getGithubRepositoryKey('owner', 'repo'),
   snapshotKey: createReportAnalysisSnapshotKey({
@@ -155,7 +170,7 @@ describe('reports routes', () => {
 
   it('creates report analysis job for explicit project path', async () => {
     const repository = new InMemoryReportAnalysisRepository();
-    const startedAnalyses: Array<{ projectPath: string }> = [];
+    const startedAnalyses: Array<{ projectPath: string; projectPathSource: string }> = [];
     const resolveProjectPath = vi.fn(async () => 'apps/web');
     const app = buildApp(
       {},
@@ -167,6 +182,7 @@ describe('reports routes', () => {
         startReportAnalysis: (analysis) => {
           startedAnalyses.push({
             projectPath: analysis.projectPath,
+            projectPathSource: analysis.projectPathSource,
           });
         },
       },
@@ -179,6 +195,7 @@ describe('reports routes', () => {
         payload: {
           owner: 'owner',
           projectPath: 'apps/web',
+          projectPathSource: 'url',
           repository: 'repo',
           normalizedUrl: 'https://github.com/owner/repo',
         },
@@ -190,10 +207,12 @@ describe('reports routes', () => {
         'repo',
         DEFAULT_COMMIT_SHA,
         'apps/web',
+        'url',
       );
       expect(startedAnalyses).toEqual([
         {
           projectPath: 'apps/web',
+          projectPathSource: 'url',
         },
       ]);
     } finally {
@@ -818,6 +837,71 @@ describe('reports routes', () => {
           latestCommitDate,
           latestCommitSha,
         }),
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('keeps autodetected project path source when force refresh creates a new run', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const currentAnalysis = await repository.create(
+      createTestRecordInput({
+        projectPath: 'apps/web',
+        projectPathSource: 'autodetect',
+      }),
+    );
+
+    await repository.complete(
+      currentAnalysis.id,
+      createTestReport(
+        currentAnalysis.id,
+        currentAnalysis.latestCommitDate,
+        currentAnalysis.latestCommitSha,
+        'apps/web',
+      ),
+    );
+
+    const latestCommitDate = '2026-06-10T00:00:00.000Z';
+    const latestCommitSha = 'def456';
+    const resolveProjectPath = vi.fn(async () => 'apps/web');
+    const app = buildApp(
+      {},
+      {
+        reportAnalysisRepository: repository,
+        reportAnalyzer: createAnalyzer({
+          getRepositorySnapshot: async () => ({
+            defaultBranch: 'main',
+            latestCommitDate,
+            latestCommitSha,
+            latestCommitTitle: DEFAULT_COMMIT_TITLE,
+          }),
+          resolveProjectPath,
+        }),
+      },
+    );
+
+    try {
+      const response = await app.inject({
+        method: 'POST',
+        url: `/reports/${currentAnalysis.id}/refresh`,
+      });
+      const body = response.json<{ id: string; refreshReason: string; status: string }>();
+
+      expect(response.statusCode).toBe(201);
+      expect(resolveProjectPath).toHaveBeenCalledWith(
+        'owner',
+        'repo',
+        latestCommitSha,
+        'apps/web',
+        'autodetect',
+      );
+
+      const newAnalysis = await repository.findById(body.id);
+
+      expect(newAnalysis).toMatchObject({
+        projectPath: 'apps/web',
+        projectPathSource: 'autodetect',
       });
     } finally {
       await app.close();

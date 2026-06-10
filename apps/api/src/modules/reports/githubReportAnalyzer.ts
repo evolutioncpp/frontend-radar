@@ -6,7 +6,11 @@ import { buildScoreBreakdown } from './reportScoreCalculator.js';
 import { resolveReportProject } from './reportProjectDetector.js';
 import { collectRepositorySignals } from './reportSignals.js';
 
-import type { CreateReportAnalysisRequest, ProjectReport } from './reportSchemas.js';
+import type {
+  CreateReportAnalysisRequest,
+  ProjectReport,
+  ReportProjectPathSource,
+} from './reportSchemas.js';
 
 export {
   GithubApiError,
@@ -16,13 +20,17 @@ export {
   isGithubRepositoryNotFoundError,
 } from './githubErrors.js';
 
-type ReportAnalysisInput = CreateReportAnalysisRequest & {
+type ReportAnalysisInput = Omit<
+  CreateReportAnalysisRequest,
+  'projectPath' | 'projectPathSource'
+> & {
   id: string;
   createdAt: Date;
   latestCommitDate: string | null;
   latestCommitSha: string | null;
   latestCommitTitle: string | null;
   projectPath: string;
+  projectPathSource: ReportProjectPathSource;
 };
 
 export type { RepositorySnapshot };
@@ -35,6 +43,7 @@ export interface ReportAnalyzer {
     repository: string,
     ref: string,
     projectPath?: string | null,
+    projectPathSource?: ReportProjectPathSource | null,
   ): Promise<string>;
 }
 
@@ -50,11 +59,13 @@ export class GithubReportAnalyzer implements ReportAnalyzer {
     repository: string,
     ref: string,
     projectPath?: string | null,
+    projectPathSource?: ReportProjectPathSource | null,
   ) {
     const project = await resolveReportProject({
       branch: ref,
       owner,
       projectPath,
+      projectPathSource,
       reader: this.reader,
       repository,
     });
@@ -73,6 +84,7 @@ export class GithubReportAnalyzer implements ReportAnalyzer {
       branch: analysisRef,
       owner: input.owner,
       projectPath: input.projectPath,
+      projectPathSource: input.projectPathSource,
       reader: this.reader,
       repository: input.repository,
     });
@@ -102,7 +114,8 @@ export class GithubReportAnalyzer implements ReportAnalyzer {
         stars: repositoryMetadata.stars,
         forks: repositoryMetadata.forks,
         defaultBranch,
-        projectPath: input.projectPath || null,
+        projectPath: project.projectPath || null,
+        projectDetection: project.projectDetection,
         latestCommitSha: input.latestCommitSha,
         latestCommitDate: input.latestCommitDate ?? repositoryMetadata.pushedAt,
         latestCommitTitle: input.latestCommitTitle,

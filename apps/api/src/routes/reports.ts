@@ -35,6 +35,7 @@ import type {
   ReportAnalysisSnapshotLookup,
   ReportAnalysisRepository,
 } from '../modules/reports/reportAnalysisRepository.js';
+import type { CreateReportAnalysisRequest } from '../modules/reports/reportSchemas.js';
 import { isReportAnalysisAlreadyExistsError } from '../modules/reports/reportAnalysisRepository.js';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 
@@ -75,6 +76,17 @@ const createSnapshotLookup = (
       latestCommitSha,
     }),
   };
+};
+
+const getProjectPathSource = ({
+  projectPath,
+  projectPathSource,
+}: Pick<CreateReportAnalysisRequest, 'projectPath' | 'projectPathSource'>) => {
+  if (!projectPath) {
+    return 'autodetect' as const;
+  }
+
+  return projectPathSource ?? 'manual';
 };
 
 export const createReportRoutes = ({
@@ -120,6 +132,7 @@ export const createReportRoutes = ({
         let latestCommitSha: string | null = null;
         let latestCommitTitle: string | null = null;
         let projectPath = '';
+        const projectPathSource = getProjectPathSource(request.body);
         let analysisRef = 'main';
 
         try {
@@ -137,6 +150,7 @@ export const createReportRoutes = ({
             request.body.repository,
             analysisRef,
             request.body.projectPath,
+            request.body.projectPathSource,
           );
         } catch (error) {
           if (isReportProjectPathNotFoundError(error)) {
@@ -225,6 +239,7 @@ export const createReportRoutes = ({
             latestCommitSha,
             latestCommitTitle,
             projectPath,
+            projectPathSource,
           });
         } catch (error) {
           if (isReportAnalysisAlreadyExistsError(error)) {
@@ -346,6 +361,7 @@ export const createReportRoutes = ({
             currentAnalysis.repository,
             analysisRef,
             currentAnalysis.projectPath,
+            currentAnalysis.projectPathSource,
           );
         } catch (error) {
           if (isReportProjectPathNotFoundError(error)) {
@@ -444,6 +460,7 @@ export const createReportRoutes = ({
             normalizedUrl: currentAnalysis.normalizedUrl,
             owner: currentAnalysis.owner,
             projectPath: currentAnalysis.projectPath,
+            projectPathSource: currentAnalysis.projectPathSource,
             repository: currentAnalysis.repository,
             repositoryKey: currentAnalysis.repositoryKey,
             snapshotKey: snapshotLookup.snapshotKey,

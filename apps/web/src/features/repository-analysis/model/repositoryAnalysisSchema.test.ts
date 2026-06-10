@@ -42,6 +42,7 @@ describe('repositoryAnalysisFormSchema', () => {
     expect(
       schema.parse({
         projectPath: 'apps/web/package.json',
+        projectPathSource: 'manual',
         repository: 'https://github.com/owner/repo/tree/main/packages/site',
         useProjectPath: true,
       }),
@@ -49,6 +50,7 @@ describe('repositoryAnalysisFormSchema', () => {
       normalizedUrl: 'https://github.com/owner/repo',
       owner: 'owner',
       projectPath: 'apps/web',
+      projectPathSource: 'manual',
       repository: 'repo',
     });
   });

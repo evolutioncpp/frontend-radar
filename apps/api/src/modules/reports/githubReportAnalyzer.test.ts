@@ -129,6 +129,7 @@ describe('GithubReportAnalyzer', () => {
       repository: 'repo',
       normalizedUrl: 'https://github.com/owner/repo',
       projectPath: '',
+      projectPathSource: 'autodetect',
       createdAt: new Date('2026-06-09T00:00:00.000Z'),
       latestCommitDate: '2026-06-09T00:00:00.000Z',
       latestCommitSha: 'abc123',
@@ -144,6 +145,18 @@ describe('GithubReportAnalyzer', () => {
         stars: 12,
         forks: 3,
         defaultBranch: 'main',
+        projectDetection: {
+          source: 'autodetect',
+          packageJsonPath: 'package.json',
+          confidence: 'medium',
+          signals: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'project-package-json',
+              status: 'found',
+              source: 'package.json',
+            }),
+          ]),
+        },
         latestCommitSha: 'abc123',
         latestCommitDate: '2026-06-09T00:00:00.000Z',
         latestCommitTitle: 'Add frontend dashboard',
@@ -263,6 +276,7 @@ describe('GithubReportAnalyzer', () => {
       repository: 'repo',
       normalizedUrl: 'https://github.com/owner/repo',
       projectPath: '',
+      projectPathSource: 'autodetect',
       createdAt: new Date('2026-06-09T00:00:00.000Z'),
       latestCommitDate: null,
       latestCommitSha: null,
@@ -414,6 +428,7 @@ describe('GithubReportAnalyzer', () => {
       repository: 'repo',
       normalizedUrl: 'https://github.com/owner/repo',
       projectPath: 'apps/web',
+      projectPathSource: 'manual',
       createdAt: new Date('2026-06-09T00:00:00.000Z'),
       latestCommitDate: '2026-06-09T00:00:00.000Z',
       latestCommitSha: 'abc123',
@@ -459,6 +474,11 @@ describe('GithubReportAnalyzer', () => {
         }),
       ]),
     );
+    expect(report.repository.projectDetection).toMatchObject({
+      source: 'manual',
+      path: 'apps/web',
+      packageJsonPath: 'apps/web/package.json',
+    });
     expect(report.checks).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

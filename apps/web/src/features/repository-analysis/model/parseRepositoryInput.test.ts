@@ -29,6 +29,7 @@ describe('parseRepositoryInput', () => {
       normalizedUrl: `https://github.com/${owner}/${repository}`,
       owner,
       projectPath,
+      projectPathSource: 'url',
       repository,
     });
   });

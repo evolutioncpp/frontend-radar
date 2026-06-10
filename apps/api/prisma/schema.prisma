@@ -14,12 +14,19 @@ enum ReportAnalysisStatus {
   failed
 }
 
+enum ReportProjectPathSource {
+  autodetect
+  url
+  manual
+}
+
 model ReportAnalysis {
   id                String               @id @default(cuid())
   owner             String
   repository        String
   repositoryKey     String
   projectPath       String               @default("")
+  projectPathSource ReportProjectPathSource @default(autodetect)
   normalizedUrl     String
   status            ReportAnalysisStatus @default(queued)
   snapshotKey       String

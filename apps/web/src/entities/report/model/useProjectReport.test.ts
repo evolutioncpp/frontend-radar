@@ -26,6 +26,20 @@ const testReport: ProjectReport = {
     forks: 14,
     defaultBranch: 'main',
     projectPath: null,
+    projectDetection: {
+      source: 'autodetect',
+      path: null,
+      packageJsonPath: 'package.json',
+      confidence: 'high',
+      signals: [
+        {
+          id: 'project-package-json',
+          label: 'Frontend package.json',
+          status: 'found',
+          source: 'package.json',
+        },
+      ],
+    },
     latestCommitSha: 'abc123',
     latestCommitDate: '2026-06-09T00:00:00.000Z',
     latestCommitTitle: 'Add frontend dashboard',

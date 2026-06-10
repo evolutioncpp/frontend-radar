@@ -7,6 +7,8 @@ import {
 } from '@frontend-radar/github-repository';
 
 export const reportAnalysisStatuses = ['queued', 'running', 'completed', 'failed'] as const;
+export const reportProjectPathSources = ['autodetect', 'url', 'manual'] as const;
+export const projectDetectionConfidences = ['high', 'medium', 'low'] as const;
 export const reportAnalysisErrorCodes = [
   'repository_not_found',
   'repository_forbidden',
@@ -32,6 +34,7 @@ export const evidenceStatuses = ['found', 'missing', 'warning'] as const;
 export const recommendationSeverities = ['low', 'medium', 'high'] as const;
 
 export const reportAnalysisStatusSchema = z.enum(reportAnalysisStatuses);
+export const reportProjectPathSourceSchema = z.enum(reportProjectPathSources);
 export const reportAnalysisErrorCodeSchema = z.enum(reportAnalysisErrorCodes);
 
 export const acceptLanguageHeadersSchema = z
@@ -49,6 +52,7 @@ export const createReportAnalysisRequestSchema = z.object({
     .refine(isGithubProjectPath)
     .transform((value) => normalizeGithubProjectPath(value) ?? value)
     .nullish(),
+  projectPathSource: z.enum(['url', 'manual']).optional(),
 });
 
 export const createReportAnalysisResponseSchema = z.object({
@@ -63,6 +67,22 @@ export const refreshReportAnalysisResponseSchema = z.object({
   status: z.enum(['queued', 'running', 'completed']),
 });
 
+export const projectDetectionSignalSchema = z.object({
+  id: z.string(),
+  status: z.enum(evidenceStatuses),
+  label: z.string(),
+  description: z.string().optional(),
+  source: z.string().optional(),
+});
+
+export const projectDetectionSchema = z.object({
+  source: reportProjectPathSourceSchema,
+  path: z.string().nullable(),
+  packageJsonPath: z.string().nullable(),
+  confidence: z.enum(projectDetectionConfidences),
+  signals: z.array(projectDetectionSignalSchema),
+});
+
 export const reportRepositorySchema = z.object({
   owner: z.string(),
   name: z.string(),
@@ -72,6 +92,7 @@ export const reportRepositorySchema = z.object({
   forks: z.number().int().nonnegative(),
   defaultBranch: z.string(),
   projectPath: z.string().nullable().default(null),
+  projectDetection: projectDetectionSchema,
   latestCommitSha: z.string().nullable().default(null),
   latestCommitDate: z.string().nullable(),
   latestCommitTitle: z.string().nullable().default(null),
@@ -238,3 +259,4 @@ export type GetReportComparisonResponse = z.infer<typeof getReportComparisonResp
 export type ReportAnalysisErrorCode = z.infer<typeof reportAnalysisErrorCodeSchema>;
 export type ProjectReport = z.infer<typeof projectReportSchema>;
 export type ReportAnalysisStatus = z.infer<typeof reportAnalysisStatusSchema>;
+export type ReportProjectPathSource = z.infer<typeof reportProjectPathSourceSchema>;

@@ -7,7 +7,7 @@ import type { ReportRepository } from '@/entities/report';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => {
+    t: (key: string, options?: Record<string, string | number>) => {
       const translations: Record<string, string> = {
         'repository.label': 'Repository',
         'repository.openRepository': 'Open repository',
@@ -18,7 +18,21 @@ vi.mock('react-i18next', () => ({
         'repository.metadata.projectPath': 'Frontend path',
         'repository.metadata.license': 'License',
         'repository.metadata.unknown': 'Unknown',
+        'repository.projectDetection.title': 'Why this frontend path',
+        'repository.projectDetection.source': 'Path source',
+        'repository.projectDetection.packageJsonPath': 'Package metadata',
+        'repository.projectDetection.confidence': 'Detection confidence',
+        'repository.projectDetection.sources.autodetect': 'Detected automatically',
+        'repository.projectDetection.sources.url': 'From repository input',
+        'repository.projectDetection.sources.manual': 'Specified manually',
+        'repository.projectDetection.confidenceLevels.high': 'High',
+        'repository.projectDetection.confidenceLevels.medium': 'Medium',
+        'repository.projectDetection.confidenceLevels.low': 'Low',
       };
+
+      if (key === 'repository.projectDetection.signalSource') {
+        return `Source: ${options?.source}`;
+      }
 
       return translations[key] ?? key;
     },
@@ -34,6 +48,25 @@ const repository: ReportRepository = {
   forks: 14,
   defaultBranch: 'main',
   projectPath: null,
+  projectDetection: {
+    source: 'autodetect',
+    path: null,
+    packageJsonPath: 'package.json',
+    confidence: 'high',
+    signals: [
+      {
+        id: 'project-package-json',
+        label: 'Frontend package.json',
+        status: 'found',
+        source: 'package.json',
+      },
+      {
+        id: 'project-frontend-dependency',
+        label: 'Frontend dependency',
+        status: 'missing',
+      },
+    ],
+  },
   latestCommitSha: 'abc123',
   latestCommitDate: '2026-06-02T00:00:00.000Z',
   latestCommitTitle: 'Add repository summary',
@@ -85,10 +118,34 @@ describe('RepositorySummary', () => {
   });
 
   test('renders project path when repository was analyzed from a nested package', () => {
-    render(<RepositorySummary repository={{ ...repository, projectPath: 'apps/web' }} />);
+    render(
+      <RepositorySummary
+        repository={{
+          ...repository,
+          projectPath: 'apps/web',
+          projectDetection: {
+            ...repository.projectDetection,
+            path: 'apps/web',
+            packageJsonPath: 'apps/web/package.json',
+            source: 'url',
+          },
+        }}
+      />,
+    );
 
     expect(screen.getByText('Frontend path')).toBeInTheDocument();
     expect(screen.getByText('apps/web')).toBeInTheDocument();
+  });
+
+  test('renders project detection disclosure', () => {
+    render(<RepositorySummary repository={repository} />);
+
+    expect(screen.getByText('Why this frontend path')).toBeInTheDocument();
+    expect(screen.getAllByText('Detected automatically').length).toBeGreaterThan(0);
+    expect(screen.getByText('Package metadata')).toBeInTheDocument();
+    expect(screen.getByText('package.json')).toBeInTheDocument();
+    expect(screen.getByText('Frontend package.json')).toBeInTheDocument();
+    expect(screen.getByText('Frontend dependency')).toBeInTheDocument();
   });
 
   test('renders repository link', () => {
