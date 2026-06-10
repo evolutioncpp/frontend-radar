@@ -1,4 +1,7 @@
 export type Styles = {
+  commitTitle: string;
+  commitTitleIcon: string;
+  commitTitleText: string;
   description: string;
   header: string;
   headerAside: string;

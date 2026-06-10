@@ -132,6 +132,7 @@ describe('GithubReportAnalyzer', () => {
       createdAt: new Date('2026-06-09T00:00:00.000Z'),
       latestCommitDate: '2026-06-09T00:00:00.000Z',
       latestCommitSha: 'abc123',
+      latestCommitTitle: 'Add frontend dashboard',
     });
 
     expect(report).toMatchObject({
@@ -145,6 +146,7 @@ describe('GithubReportAnalyzer', () => {
         defaultBranch: 'main',
         latestCommitSha: 'abc123',
         latestCommitDate: '2026-06-09T00:00:00.000Z',
+        latestCommitTitle: 'Add frontend dashboard',
         license: 'MIT',
       },
     });
@@ -264,11 +266,13 @@ describe('GithubReportAnalyzer', () => {
       createdAt: new Date('2026-06-09T00:00:00.000Z'),
       latestCommitDate: null,
       latestCommitSha: null,
+      latestCommitTitle: null,
     });
 
     expect(report.repository).toMatchObject({
       latestCommitSha: null,
       latestCommitDate: '2026-06-08T00:00:00.000Z',
+      latestCommitTitle: null,
     });
     expect(contentRefs.length).toBeGreaterThan(0);
     expect(contentRefs.every((ref) => ref === 'main')).toBe(true);
@@ -413,6 +417,7 @@ describe('GithubReportAnalyzer', () => {
       createdAt: new Date('2026-06-09T00:00:00.000Z'),
       latestCommitDate: '2026-06-09T00:00:00.000Z',
       latestCommitSha: 'abc123',
+      latestCommitTitle: 'Add workspace frontend',
     });
 
     expect(report.scoreBreakdown).toEqual(

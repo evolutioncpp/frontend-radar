@@ -6,6 +6,7 @@ export type Styles = {
   main: string;
   sectionHeader: string;
   title: string;
+  titleRow: string;
 };
 
 export type ClassNames = keyof Styles;

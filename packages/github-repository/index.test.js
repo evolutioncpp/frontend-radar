@@ -19,6 +19,7 @@ describe('github repository helpers', () => {
     ['https://github.com/owner/repo.git', 'owner', 'repo'],
     ['https://github.com/owner/repo?tab=readme', 'owner', 'repo'],
     ['https://github.com/owner/repo#readme', 'owner', 'repo'],
+    ['https://github.com/owner/repo/tree/main', 'owner', 'repo'],
     [' https://github.com/owner/repo/ ', 'owner', 'repo'],
     ['Owner/repo.name-1', 'Owner', 'repo.name-1'],
   ])('parses %s', (value, owner, repository) => {
@@ -63,6 +64,7 @@ describe('github repository helpers', () => {
     'owner/repo/apps//web',
     'owner/repo//apps/web',
     'https://github.com/owner/repo/issues',
+    'https://github.com/owner/repo/tree',
     'https://github.com/owner/repo/tree/main/../apps',
   ])('rejects invalid input %s', (value) => {
     expect(parseGithubRepositoryInput(value)).toBeNull();

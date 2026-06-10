@@ -116,6 +116,7 @@ const customReport: ProjectReport = {
     projectPath: null,
     latestCommitSha: 'abc123',
     latestCommitDate: '2026-06-06T00:00:00.000Z',
+    latestCommitTitle: 'Add custom dashboard report',
     license: 'Apache-2.0',
   },
   scoreBreakdown: [

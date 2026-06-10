@@ -36,6 +36,7 @@ const repository: ReportRepository = {
   projectPath: null,
   latestCommitSha: 'abc123',
   latestCommitDate: '2026-06-02T00:00:00.000Z',
+  latestCommitTitle: 'Add repository summary',
   license: 'MIT',
 };
 
@@ -43,6 +44,15 @@ describe('RepositorySummary', () => {
   test('renders repository full name', () => {
     render(<RepositorySummary repository={repository} />);
 
+    expect(
+      screen.getByRole('heading', { name: 'evolutioncpp/frontend-radar' }),
+    ).toBeInTheDocument();
+  });
+
+  test('renders latest commit title next to repository name', () => {
+    render(<RepositorySummary repository={repository} />);
+
+    expect(screen.getByText('Add repository summary')).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { name: 'evolutioncpp/frontend-radar' }),
     ).toBeInTheDocument();

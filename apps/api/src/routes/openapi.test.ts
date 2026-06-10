@@ -166,12 +166,25 @@ describe('GET /openapi.json', () => {
       ).toContain('up_to_date');
       expect(body.paths['/reports/{id}/comparison']).toBeDefined();
       expect(body.paths['/reports/{id}/comparison'].get.operationId).toBe('getReportComparison');
+      expect(JSON.stringify(body.paths['/reports/{id}/comparison'].get.parameters)).toContain(
+        'previousId',
+      );
       expect(
         JSON.stringify(
           body.paths['/reports/{id}/comparison'].get.responses['200'].content['application/json']
             .schema,
         ),
       ).toContain('persistentCount');
+      expect(
+        JSON.stringify(
+          body.paths['/reports'].get.responses['200'].content['application/json'].schema,
+        ),
+      ).toContain('latestCommitTitle');
+      expect(
+        JSON.stringify(
+          body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,
+        ),
+      ).toContain('latestCommitTitle');
       expect(
         findFailedResponseSchema(
           body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,

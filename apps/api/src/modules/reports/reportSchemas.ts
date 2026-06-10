@@ -74,6 +74,7 @@ export const reportRepositorySchema = z.object({
   projectPath: z.string().nullable().default(null),
   latestCommitSha: z.string().nullable().default(null),
   latestCommitDate: z.string().nullable(),
+  latestCommitTitle: z.string().nullable().default(null),
   license: z.string().nullable(),
 });
 
@@ -158,6 +159,7 @@ export const reportAnalysisListItemSchema = z.object({
   status: reportAnalysisStatusSchema,
   latestCommitDate: z.string().nullable(),
   latestCommitSha: z.string().nullable(),
+  latestCommitTitle: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
   score: z.number().int().min(0).max(100).optional(),
@@ -220,6 +222,10 @@ export const getReportComparisonResponseSchema = z.discriminatedUnion('status', 
 
 export const reportAnalysisParamsSchema = z.object({
   id: z.string().min(1),
+});
+
+export const getReportComparisonQuerySchema = z.object({
+  previousId: z.string().min(1).optional(),
 });
 
 export const errorResponseSchema = z.object({

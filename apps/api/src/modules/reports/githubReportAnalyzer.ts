@@ -21,6 +21,7 @@ type ReportAnalysisInput = CreateReportAnalysisRequest & {
   createdAt: Date;
   latestCommitDate: string | null;
   latestCommitSha: string | null;
+  latestCommitTitle: string | null;
   projectPath: string;
 };
 
@@ -104,6 +105,7 @@ export class GithubReportAnalyzer implements ReportAnalyzer {
         projectPath: input.projectPath || null,
         latestCommitSha: input.latestCommitSha,
         latestCommitDate: input.latestCommitDate ?? repositoryMetadata.pushedAt,
+        latestCommitTitle: input.latestCommitTitle,
         license: repositoryMetadata.license,
       },
       scoreBreakdown,

@@ -16,6 +16,7 @@ export interface CreateReportAnalysisRecordInput extends Omit<
   analysisVersion: number;
   latestCommitDate: string | null;
   latestCommitSha: string | null;
+  latestCommitTitle: string | null;
   projectPath: string;
   repositoryKey: string;
   snapshotKey: string;
@@ -44,6 +45,7 @@ export interface ReportAnalysisEntity {
   status: ReportAnalysisStatus;
   latestCommitSha: string | null;
   latestCommitDate: string | null;
+  latestCommitTitle: string | null;
   analysisVersion: number;
   report: ProjectReport | null;
   errorCode: ReportAnalysisErrorCode | null;
@@ -115,6 +117,7 @@ const mapPrismaReportAnalysis = (
     status: analysis.status,
     latestCommitSha: analysis.latestCommitSha,
     latestCommitDate: analysis.latestCommitDate,
+    latestCommitTitle: analysis.latestCommitTitle,
     analysisVersion: analysis.analysisVersion,
     report: analysis.report ? projectReportSchema.parse(analysis.report) : null,
     errorCode: parseReportAnalysisErrorCode(analysis.errorCode),

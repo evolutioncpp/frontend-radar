@@ -15,6 +15,7 @@ const createReport = (recommendations: ProjectReport['recommendations']): Projec
     forks: 0,
     latestCommitDate: null,
     latestCommitSha: null,
+    latestCommitTitle: null,
     license: null,
     name: 'repo',
     owner: 'owner',

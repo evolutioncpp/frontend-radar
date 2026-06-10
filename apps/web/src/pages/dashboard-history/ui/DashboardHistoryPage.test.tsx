@@ -44,6 +44,7 @@ vi.mock('react-i18next', () => ({
         'group.hidePreviousRuns': 'Hide previous runs',
         'group.previousRunsLabel': 'Previous runs',
         'group.openPreviousRunAria': `Open previous report for ${options?.repository} from ${options?.date}`,
+        'group.compareWithLatest': 'Compare with latest',
       };
 
       if (key === 'card.analyzedAt') {
@@ -58,6 +59,10 @@ vi.mock('react-i18next', () => ({
         return Number(options?.count) === 1
           ? 'Show previous run'
           : `Show previous runs (${options?.count})`;
+      }
+
+      if (key === 'group.compareWithLatestAria') {
+        return `Compare latest report for ${options?.repository} with previous run from ${options?.date}`;
       }
 
       return translations[key] ?? key;
@@ -82,6 +87,7 @@ const completedHistoryItem = {
   status: 'completed' as const,
   latestCommitDate: '2026-06-09T00:00:00.000Z',
   latestCommitSha: 'abc123',
+  latestCommitTitle: 'Add frontend radar dashboard',
   createdAt: '2026-06-09T00:00:00.000Z',
   updatedAt: '2026-06-09T00:02:00.000Z',
   score: 82,
@@ -99,6 +105,7 @@ const queuedHistoryItem = {
   status: 'queued' as const,
   latestCommitDate: '2026-06-09T00:01:00.000Z',
   latestCommitSha: 'def456',
+  latestCommitTitle: 'Queue frontend radar analysis',
   createdAt: '2026-06-09T00:01:00.000Z',
   updatedAt: '2026-06-09T00:01:00.000Z',
 };
@@ -107,6 +114,7 @@ const repeatedRepositoryHistoryItem = {
   ...completedHistoryItem,
   id: 'second-analysis-id',
   createdAt: '2026-06-09T00:02:00.000Z',
+  latestCommitTitle: 'Improve history grouping',
   updatedAt: '2026-06-09T00:03:00.000Z',
   score: 84,
 };
@@ -194,6 +202,7 @@ describe('DashboardHistoryPage', () => {
     expectSummaryItem('Recommendations', '0');
     expect(screen.getByText(/Last activity/i)).toBeInTheDocument();
     expect(screen.getByText('Completed')).toBeInTheDocument();
+    expect(screen.getByText('Add frontend radar dashboard')).toBeInTheDocument();
   });
 
   test('renders project path for nested frontend history item', () => {
@@ -222,11 +231,45 @@ describe('DashboardHistoryPage', () => {
 
     expect(screen.getByText('Previous runs')).toBeInTheDocument();
     expect(screen.getByText('82/100')).toBeInTheDocument();
+    expect(screen.getByText('Add frontend radar dashboard')).toBeInTheDocument();
     expect(
       screen.getByRole('link', {
         name: /Open previous report for evolutioncpp\/frontend-radar/i,
       }),
     ).toHaveAttribute('href', getReportPath('analysis-id'));
+    expect(
+      screen.getByRole('link', {
+        name: /Compare latest report for evolutioncpp\/frontend-radar/i,
+      }),
+    ).toHaveAttribute(
+      'href',
+      getReportPath('second-analysis-id', {
+        compareWith: 'analysis-id',
+      }),
+    );
+    expect(screen.getByText('Compare with latest')).toBeInTheDocument();
+  });
+
+  test('hides compare action when latest run is not completed', () => {
+    apiMocks.listReportAnalyses.mockReturnValue(
+      createHistoryResponse([
+        {
+          ...queuedHistoryItem,
+          updatedAt: '2026-06-09T00:05:00.000Z',
+        },
+        completedHistoryItem,
+      ]),
+    );
+
+    renderDashboardHistoryPage();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show previous run' }));
+
+    expect(
+      screen.queryByRole('link', {
+        name: /Compare latest report for evolutioncpp\/frontend-radar/i,
+      }),
+    ).not.toBeInTheDocument();
   });
 
   test('renders different project paths as separate groups', () => {

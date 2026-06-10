@@ -5,6 +5,9 @@ export type Styles = {
   cardLink: string;
   cardMain: string;
   cardTop: string;
+  commitTitle: string;
+  commitTitleIcon: string;
+  commitTitleText: string;
   dashboardHistoryPage: string;
   description: string;
   disclosureButton: string;
@@ -20,10 +23,14 @@ export type Styles = {
   meta: string;
   metaCode: string;
   metaSeparator: string;
+  previousRunCommitTitle: string;
+  previousRunCompareIcon: string;
+  previousRunCompareLink: string;
   previousRunDate: string;
   previousRunItem: string;
   previousRunLink: string;
   previousRunMain: string;
+  previousRunRow: string;
   previousRuns: string;
   previousRunScore: string;
   previousRunsLabel: string;
@@ -31,6 +38,7 @@ export type Styles = {
   previousRunsPanel: string;
   previousRunStatus: string;
   repository: string;
+  repositoryHeader: string;
   repositoryName: string;
   score: string;
   scoreLabel: string;

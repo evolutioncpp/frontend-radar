@@ -10,6 +10,7 @@ export interface ReportHistoryItemViewModel {
   activityAt: string;
   activityLabel: string;
   checksCount: number;
+  commitTitle: string | null;
   id: string;
   metricsCount: number;
   projectPath: string | null;
@@ -52,6 +53,12 @@ const normalizeHistoryProjectPath = (projectPath?: string | null) => {
   return normalizedProjectPath ? normalizedProjectPath : null;
 };
 
+const normalizeCommitTitle = (title?: string | null) => {
+  const normalizedTitle = title?.trim();
+
+  return normalizedTitle ? normalizedTitle : null;
+};
+
 export const getReportHistoryItemViewModel = (
   item: ReportHistoryItem,
   language: string,
@@ -60,6 +67,7 @@ export const getReportHistoryItemViewModel = (
     activityAt: item.updatedAt,
     activityLabel: formatDate(item.updatedAt, language),
     checksCount: item.checksCount ?? 0,
+    commitTitle: normalizeCommitTitle(item.latestCommitTitle),
     id: item.id,
     metricsCount: item.metricsCount ?? 0,
     projectPath: normalizeHistoryProjectPath(item.projectPath),

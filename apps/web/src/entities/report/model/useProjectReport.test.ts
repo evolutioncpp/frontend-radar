@@ -28,6 +28,7 @@ const testReport: ProjectReport = {
     projectPath: null,
     latestCommitSha: 'abc123',
     latestCommitDate: '2026-06-09T00:00:00.000Z',
+    latestCommitTitle: 'Add frontend dashboard',
     license: 'MIT',
   },
   scoreBreakdown: [

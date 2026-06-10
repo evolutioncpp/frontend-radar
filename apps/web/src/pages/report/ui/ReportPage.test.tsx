@@ -104,8 +104,11 @@ vi.mock('react-i18next', () => ({
 
         'comparison.label': 'Comparison',
         'comparison.title': 'Changes since previous report',
+        'comparison.manualTitle': 'Comparison with selected run',
         'comparison.description':
           'Compare the current completed report with the previous completed report for the same repository.',
+        'comparison.manualDescription':
+          'Compare the current completed report with the selected previous run from history.',
         'comparison.totalScore': 'Total score',
         'comparison.noDelta': 'No change',
         'comparison.metricsTitle': 'Metric changes',
@@ -247,6 +250,7 @@ const testReport: ProjectReport = {
     projectPath: null,
     latestCommitSha: 'abc123',
     latestCommitDate: '2026-06-09T00:00:00.000Z',
+    latestCommitTitle: 'Add frontend report page',
     license: 'MIT',
   },
   scoreBreakdown: [
@@ -439,6 +443,55 @@ describe('ReportPage', () => {
     ).toBeInTheDocument();
     expect(screen.getAllByText('README exists').length).toBeGreaterThan(1);
     expect(screen.getByText('Add an automated test script')).toBeInTheDocument();
+  });
+
+  test('requests manual comparison baseline from query string', () => {
+    renderReportPage('/dashboard/report/analysis-id?compareWith=previous-analysis-id');
+
+    expect(apiMocks.getReportComparison).toHaveBeenCalledWith(
+      {
+        id: 'analysis-id',
+        previousId: 'previous-analysis-id',
+      },
+      {
+        skip: false,
+      },
+    );
+  });
+
+  test('renders manual comparison title from query string', () => {
+    apiMocks.getReportComparison.mockReturnValue({
+      data: {
+        status: 'available',
+        currentReportId: 'analysis-id',
+        previousReportId: 'previous-analysis-id',
+        totalScore: {
+          current: 82,
+          previous: 70,
+          delta: 12,
+        },
+        metrics: [],
+        checks: [],
+        recommendations: {
+          added: [],
+          resolved: [],
+          persistentCount: 0,
+        },
+      },
+      isError: false,
+      isLoading: false,
+    });
+
+    renderReportPage('/dashboard/report/analysis-id?compareWith=previous-analysis-id');
+
+    expect(
+      screen.getByRole('heading', { name: 'Comparison with selected run' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Compare the current completed report with the selected previous run from history.',
+      ),
+    ).toBeInTheDocument();
   });
 
   test('renders completed reuse notice from navigation state', () => {

@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { ChevronDown } from 'lucide-react';
+import { ArrowLeftRight, ChevronDown } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -16,31 +16,61 @@ interface HistoryReportGroupProps {
   group: ReportHistoryGroupViewModel;
 }
 
-const HistoryPreviousRunItem = ({ run }: { run: ReportHistoryItemViewModel }) => {
+const HistoryPreviousRunItem = ({
+  latestRun,
+  run,
+}: {
+  latestRun: ReportHistoryItemViewModel;
+  run: ReportHistoryItemViewModel;
+}) => {
   const { t } = useTranslation('dashboard-history');
   const normalizedScore = typeof run.score === 'number' ? normalizeScore(run.score) : null;
+  const canCompare = latestRun.status === 'completed' && run.status === 'completed';
 
   return (
     <li className={s.previousRunItem}>
-      <Link
-        aria-label={t('group.openPreviousRunAria', {
-          date: run.activityLabel,
-          repository: run.repositoryName,
-        })}
-        className={s.previousRunLink}
-        to={getReportPath(run.id)}
-      >
-        <span className={s.previousRunMain}>
-          <time className={s.previousRunDate} dateTime={run.activityAt}>
-            {run.activityLabel}
-          </time>
-          <span className={s.previousRunStatus}>{t(`card.statuses.${run.status}`)}</span>
-        </span>
+      <div className={s.previousRunRow}>
+        <Link
+          aria-label={t('group.openPreviousRunAria', {
+            date: run.activityLabel,
+            repository: run.repositoryName,
+          })}
+          className={s.previousRunLink}
+          to={getReportPath(run.id)}
+        >
+          <span className={s.previousRunMain}>
+            <time className={s.previousRunDate} dateTime={run.activityAt}>
+              {run.activityLabel}
+            </time>
+            <span className={s.previousRunStatus}>{t(`card.statuses.${run.status}`)}</span>
+            {run.commitTitle ? (
+              <span className={s.previousRunCommitTitle}>{run.commitTitle}</span>
+            ) : null}
+          </span>
 
-        <span className={s.previousRunScore}>
-          {normalizedScore === null ? t(`card.statuses.${run.status}`) : `${normalizedScore}/100`}
-        </span>
-      </Link>
+          <span className={s.previousRunScore}>
+            {normalizedScore === null ? t(`card.statuses.${run.status}`) : `${normalizedScore}/100`}
+          </span>
+        </Link>
+
+        {canCompare ? (
+          <Link
+            aria-label={t('group.compareWithLatestAria', {
+              date: run.activityLabel,
+              repository: run.repositoryName,
+            })}
+            className={s.previousRunCompareLink}
+            to={getReportPath(latestRun.id, { compareWith: run.id })}
+          >
+            <ArrowLeftRight
+              aria-hidden="true"
+              className={s.previousRunCompareIcon}
+              strokeWidth={2}
+            />
+            <span>{t('group.compareWithLatest')}</span>
+          </Link>
+        ) : null}
+      </div>
     </li>
   );
 };
@@ -58,6 +88,7 @@ export const HistoryReportGroup = ({ group }: HistoryReportGroupProps) => {
         activityAt={group.latestRun.activityAt}
         activityLabel={group.latestRun.activityLabel}
         checksCount={group.latestRun.checksCount}
+        commitTitle={group.latestRun.commitTitle}
         metricsCount={group.latestRun.metricsCount}
         projectPath={group.projectPath}
         recommendationsCount={group.latestRun.recommendationsCount}
@@ -100,7 +131,7 @@ export const HistoryReportGroup = ({ group }: HistoryReportGroupProps) => {
                 </p>
                 <ul aria-labelledby={previousRunsLabelId} className={s.previousRunsList}>
                   {group.previousRuns.map((run) => (
-                    <HistoryPreviousRunItem key={run.id} run={run} />
+                    <HistoryPreviousRunItem key={run.id} latestRun={group.latestRun} run={run} />
                   ))}
                 </ul>
               </div>

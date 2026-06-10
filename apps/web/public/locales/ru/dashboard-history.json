@@ -38,6 +38,8 @@
     "showPreviousRuns_other": "Показать прошлые запуски ({{count}})",
     "hidePreviousRuns": "Скрыть прошлые запуски",
     "previousRunsLabel": "Прошлые запуски",
-    "openPreviousRunAria": "Открыть прошлый отчет для {{repository}} от {{date}}"
+    "openPreviousRunAria": "Открыть прошлый отчет для {{repository}} от {{date}}",
+    "compareWithLatest": "Сравнить с последним",
+    "compareWithLatestAria": "Сравнить последний отчет для {{repository}} с прошлым запуском от {{date}}"
   }
 }

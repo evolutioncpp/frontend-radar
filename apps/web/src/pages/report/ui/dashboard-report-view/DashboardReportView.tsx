@@ -23,6 +23,7 @@ import type { GetReportComparisonApiResponse, ProjectReport } from '@/entities/r
 
 interface DashboardReportViewProps {
   comparison?: Extract<GetReportComparisonApiResponse, { status: 'available' }> | null;
+  comparisonMode?: 'automatic' | 'manual';
   isRefreshing?: boolean;
   onForceRefresh?: () => void;
   report: ProjectReport;
@@ -30,6 +31,7 @@ interface DashboardReportViewProps {
 
 export const DashboardReportView = ({
   comparison = null,
+  comparisonMode = 'automatic',
   isRefreshing = false,
   onForceRefresh,
   report,
@@ -86,6 +88,7 @@ export const DashboardReportView = ({
           <ReportComparisonPanel
             comparison={comparison}
             headerAction={<DashboardSectionCopyButton sectionId={DashboardSectionIds.COMPARISON} />}
+            mode={comparisonMode}
           />
         </DashboardReportSection>
       ) : null}

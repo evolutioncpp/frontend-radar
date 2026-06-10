@@ -11,6 +11,7 @@ describe('parseRepositoryInput', () => {
     ['https://github.com/owner/repo.git', 'owner', 'repo'],
     ['https://github.com/owner/repo?tab=readme', 'owner', 'repo'],
     ['https://github.com/owner/repo#readme', 'owner', 'repo'],
+    ['https://github.com/owner/repo/tree/main', 'owner', 'repo'],
     [' https://github.com/owner/repo/ ', 'owner', 'repo'],
   ])('parses %s', (value, owner, repository) => {
     expect(parseRepositoryInput(value)).toEqual({

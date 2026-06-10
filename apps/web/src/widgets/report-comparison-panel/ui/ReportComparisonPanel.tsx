@@ -26,6 +26,7 @@ type ReportComparison = Extract<
 interface ReportComparisonPanelProps {
   comparison: ReportComparison;
   headerAction?: ReactNode;
+  mode?: 'automatic' | 'manual';
 }
 
 const scoreStatusLabelKeys = {
@@ -116,8 +117,15 @@ const getChangeToneClassName = (improvedCount: number, worsenedCount: number) =>
   return s.toneNeutral;
 };
 
-export const ReportComparisonPanel = ({ comparison, headerAction }: ReportComparisonPanelProps) => {
+export const ReportComparisonPanel = ({
+  comparison,
+  headerAction,
+  mode = 'automatic',
+}: ReportComparisonPanelProps) => {
   const { t } = useTranslation('dashboard');
+  const titleKey = mode === 'manual' ? 'comparison.manualTitle' : 'comparison.title';
+  const descriptionKey =
+    mode === 'manual' ? 'comparison.manualDescription' : 'comparison.description';
 
   const improvedMetrics = sortByDeltaImpact(
     comparison.metrics.filter((metric) => metric.delta > 0),
@@ -222,10 +230,10 @@ export const ReportComparisonPanel = ({ comparison, headerAction }: ReportCompar
           </span>
         }
         label={t('comparison.label')}
-        title={t('comparison.title')}
+        title={t(titleKey)}
       />
 
-      <p className={s.description}>{t('comparison.description')}</p>
+      <p className={s.description}>{t(descriptionKey)}</p>
 
       <div className={s.summaryGrid}>
         <div className={clsx(s.summaryItem, getToneClassName(comparison.totalScore.delta))}>

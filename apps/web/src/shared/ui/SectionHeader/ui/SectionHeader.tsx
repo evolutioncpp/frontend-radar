@@ -10,9 +10,17 @@ interface SectionHeaderProps {
   action?: ReactNode;
   aside?: ReactNode;
   className?: string;
+  titleAfter?: ReactNode;
 }
 
-export const SectionHeader = ({ action, aside, className, label, title }: SectionHeaderProps) => {
+export const SectionHeader = ({
+  action,
+  aside,
+  className,
+  label,
+  title,
+  titleAfter,
+}: SectionHeaderProps) => {
   return (
     <div className={clsx(s.sectionHeader, className)}>
       <div className={s.main}>
@@ -21,7 +29,10 @@ export const SectionHeader = ({ action, aside, className, label, title }: Sectio
           {action ? <div className={s.action}>{action}</div> : null}
         </div>
 
-        <h2 className={s.title}>{title}</h2>
+        <div className={s.titleRow}>
+          <h2 className={s.title}>{title}</h2>
+          {titleAfter}
+        </div>
       </div>
 
       {aside ? <div className={s.aside}>{aside}</div> : null}

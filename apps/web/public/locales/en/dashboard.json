@@ -183,7 +183,9 @@
   "comparison": {
     "label": "Comparison",
     "title": "Changes since previous report",
+    "manualTitle": "Comparison with selected run",
     "description": "Compare the current completed report with the previous completed report for the same repository.",
+    "manualDescription": "Compare the current completed report with the selected previous run from history.",
     "totalScore": "Total score",
     "totalScoreDeltaAria": "Total score delta {{delta}}",
     "noDelta": "No change",

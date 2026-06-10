@@ -18,6 +18,7 @@ export interface RepositorySnapshot {
   defaultBranch?: string;
   latestCommitDate: string | null;
   latestCommitSha: string | null;
+  latestCommitTitle: string | null;
 }
 
 export type PackageJson = {
@@ -90,6 +91,10 @@ const getWorkspaces = (value: unknown) => {
   return getStringArray(workspacePackages) ?? undefined;
 };
 
+const getCommitTitle = (message: string | null) => {
+  return message?.split(/\r?\n/u)[0]?.trim() || null;
+};
+
 export const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 };
@@ -132,6 +137,7 @@ export class GithubRepositoryReader {
       defaultBranch: repositoryMetadata.defaultBranch,
       latestCommitDate: latestCommit?.date ?? repositoryMetadata.pushedAt,
       latestCommitSha: latestCommit?.sha ?? null,
+      latestCommitTitle: latestCommit?.title ?? null,
     } satisfies RepositorySnapshot;
   }
 
@@ -164,14 +170,16 @@ export class GithubRepositoryReader {
       const author = getObjectField(commit, 'author');
       const sha = getStringField(body, 'sha');
       const date = getStringField(author, 'date');
+      const title = getCommitTitle(getStringField(commit, 'message'));
 
-      if (!sha && !date) {
+      if (!sha && !date && !title) {
         return null;
       }
 
       return {
         date,
         sha,
+        title,
       };
     } catch (error) {
       if (isGithubRepositoryNotFoundError(error)) {

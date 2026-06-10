@@ -11,6 +11,12 @@ const removeGitSuffix = (value) => {
   return value.endsWith('.git') ? value.slice(0, -4) : value;
 };
 
+const getRawUrlPathParts = (value) => {
+  const rawPathname = value.replace(/^https?:\/\/[^/?#]+/i, '').split(/[?#]/u)[0] ?? '';
+
+  return rawPathname.split('/').filter(Boolean);
+};
+
 const isAbsolutePath = (value) => {
   return value.startsWith('/') || /^[a-z]:\//i.test(value);
 };
@@ -105,17 +111,26 @@ export const parseGithubRepositoryInput = (value) => {
   try {
     const url = new URL(valueWithProtocol);
     const isGithubHost = url.hostname.toLowerCase() === 'github.com';
-    const pathParts = url.pathname.split('/').filter(Boolean);
+    const pathParts = getRawUrlPathParts(valueWithProtocol);
+    const hasUnsafePathSegment = pathParts.some((part) => {
+      try {
+        const decodedPart = decodeURIComponent(part);
 
-    if (!isGithubHost || pathParts.length < 2) {
+        return decodedPart === '.' || decodedPart === '..';
+      } catch {
+        return true;
+      }
+    });
+
+    if (!isGithubHost || pathParts.length < 2 || hasUnsafePathSegment) {
       return null;
     }
 
     const [owner, repository] = pathParts;
-    const projectPath =
-      pathParts[2] === 'tree' && pathParts.length > 4 ? pathParts.slice(4).join('/') : undefined;
+    const isTreeUrl = pathParts[2] === 'tree';
+    const projectPath = isTreeUrl && pathParts.length > 4 ? pathParts.slice(4).join('/') : undefined;
 
-    if (pathParts.length > 2 && !projectPath) {
+    if (pathParts.length > 2 && (!isTreeUrl || pathParts.length === 3)) {
       return null;
     }
 

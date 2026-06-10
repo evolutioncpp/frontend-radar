@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import { GitCommit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
@@ -15,6 +16,7 @@ interface HistoryReportCardProps {
   activityLabel: string;
   children?: ReactNode;
   checksCount: number;
+  commitTitle?: string | null;
   metricsCount: number;
   projectPath?: string | null;
   recommendationsCount: number;
@@ -36,6 +38,7 @@ export const HistoryReportCard = ({
   activityLabel,
   children,
   checksCount,
+  commitTitle,
   metricsCount,
   projectPath,
   recommendationsCount,
@@ -67,7 +70,15 @@ export const HistoryReportCard = ({
           </div>
 
           <div className={s.repository}>
-            <h2 className={s.repositoryName}>{repositoryName}</h2>
+            <div className={s.repositoryHeader}>
+              <h2 className={s.repositoryName}>{repositoryName}</h2>
+              {commitTitle ? (
+                <p className={s.commitTitle} title={commitTitle}>
+                  <GitCommit aria-hidden="true" className={s.commitTitleIcon} strokeWidth={2} />
+                  <span className={s.commitTitleText}>{commitTitle}</span>
+                </p>
+              ) : null}
+            </div>
             <p className={s.meta}>
               <time dateTime={activityAt}>
                 {t('card.analyzedAt', {

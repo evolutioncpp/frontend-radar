@@ -1,4 +1,4 @@
-import { Folder, GitBranch, GitFork, Scale, Star, type LucideIcon } from 'lucide-react';
+import { Folder, GitBranch, GitCommit, GitFork, Scale, Star, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { formatNumber } from '@/shared/lib/format-number';
@@ -87,6 +87,14 @@ export const RepositorySummary = ({
         className={s.header}
         label={t('repository.label')}
         title={repositoryFullName}
+        titleAfter={
+          repository.latestCommitTitle ? (
+            <p className={s.commitTitle} title={repository.latestCommitTitle}>
+              <GitCommit aria-hidden="true" className={s.commitTitleIcon} strokeWidth={2} />
+              <span className={s.commitTitleText}>{repository.latestCommitTitle}</span>
+            </p>
+          ) : null
+        }
       />
 
       {repository.description ? <p className={s.description}>{repository.description}</p> : null}

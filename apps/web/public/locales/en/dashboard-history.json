@@ -34,6 +34,8 @@
     "showPreviousRuns_other": "Show previous runs ({{count}})",
     "hidePreviousRuns": "Hide previous runs",
     "previousRunsLabel": "Previous runs",
-    "openPreviousRunAria": "Open previous report for {{repository}} from {{date}}"
+    "openPreviousRunAria": "Open previous report for {{repository}} from {{date}}",
+    "compareWithLatest": "Compare with latest",
+    "compareWithLatestAria": "Compare latest report for {{repository}} with previous run from {{date}}"
   }
 }

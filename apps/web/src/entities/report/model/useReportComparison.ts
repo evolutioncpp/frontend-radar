@@ -1,6 +1,6 @@
 import { useGetReportComparisonQuery } from './reportApi';
 
-import type { GetReportComparisonApiResponse } from './reportApi';
+import type { GetReportComparisonApiArg, GetReportComparisonApiResponse } from './reportApi';
 
 type AvailableReportComparison = Extract<
   GetReportComparisonApiResponse,
@@ -18,15 +18,17 @@ export type ReportComparisonState =
       status: 'hidden';
     };
 
-export const useReportComparison = (reportId?: string): ReportComparisonState => {
-  const { data, isError, isLoading } = useGetReportComparisonQuery(
-    {
-      id: reportId ?? '',
-    },
-    {
-      skip: !reportId,
-    },
-  );
+export const useReportComparison = (
+  reportId?: string,
+  previousReportId?: string | null,
+): ReportComparisonState => {
+  const queryArg: GetReportComparisonApiArg = {
+    id: reportId ?? '',
+    ...(previousReportId ? { previousId: previousReportId } : {}),
+  };
+  const { data, isError, isLoading } = useGetReportComparisonQuery(queryArg, {
+    skip: !reportId,
+  });
 
   if (isLoading || isError || data?.status !== 'available') {
     return {

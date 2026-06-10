@@ -30,7 +30,12 @@ const injectedRtkApi = api
         invalidatesTags: ['Reports'],
       }),
       getReportComparison: build.query<GetReportComparisonApiResponse, GetReportComparisonApiArg>({
-        query: (queryArg) => ({ url: `/reports/${queryArg.id}/comparison` }),
+        query: (queryArg) => ({
+          url: `/reports/${queryArg.id}/comparison`,
+          params: {
+            previousId: queryArg.previousId,
+          },
+        }),
         providesTags: ['Reports'],
       }),
       getReportAnalysis: build.query<GetReportAnalysisApiResponse, GetReportAnalysisApiArg>({
@@ -71,6 +76,7 @@ export type ListReportAnalysesApiResponse = /** status 200 Default Response */ {
     status: 'queued' | 'running' | 'completed' | 'failed';
     latestCommitDate: string | null;
     latestCommitSha: string | null;
+    latestCommitTitle: string | null;
     createdAt: string;
     updatedAt: string;
     score?: number;
@@ -144,6 +150,7 @@ export type GetReportComparisonApiResponse =
       };
     };
 export type GetReportComparisonApiArg = {
+  previousId?: string;
   id: string;
 };
 export type GetReportAnalysisApiResponse =
@@ -172,6 +179,7 @@ export type GetReportAnalysisApiResponse =
           projectPath: string | null;
           latestCommitSha: string | null;
           latestCommitDate: string | null;
+          latestCommitTitle: string | null;
           license: string | null;
         };
         totalScore: number;

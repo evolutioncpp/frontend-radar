@@ -9,6 +9,16 @@ export const AppRoutes = {
 
 export type AppRoute = (typeof AppRoutes)[keyof typeof AppRoutes];
 
-export const getReportPath = (reportId: string) => {
-  return AppRoutes.REPORT.replace(':id', reportId);
+interface GetReportPathOptions {
+  compareWith?: string | null;
+}
+
+export const getReportPath = (reportId: string, options: GetReportPathOptions = {}) => {
+  const path = AppRoutes.REPORT.replace(':id', reportId);
+
+  if (!options.compareWith) {
+    return path;
+  }
+
+  return `${path}?${new URLSearchParams({ compareWith: options.compareWith }).toString()}`;
 };

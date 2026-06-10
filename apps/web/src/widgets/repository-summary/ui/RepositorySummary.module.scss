@@ -40,6 +40,34 @@
   }
 }
 
+.commitTitle {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  max-width: min(100%, 30rem);
+  min-width: 0;
+  gap: $space-2;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: $font-size-sm;
+  line-height: $line-height-sm;
+}
+
+.commitTitleIcon {
+  display: block;
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: 0 0 auto;
+  color: currentColor;
+}
+
+.commitTitleText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .metaList {
   display: flex;
   flex-wrap: wrap;
@@ -92,6 +120,10 @@
   .headerAside {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .commitTitle {
+    max-width: 100%;
   }
 
   .metaList {

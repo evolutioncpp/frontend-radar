@@ -102,11 +102,20 @@
   gap: $space-2;
 }
 
+.repositoryHeader {
+  display: flex;
+  align-items: flex-end;
+  min-width: 0;
+  gap: $space-3;
+}
+
 .repositoryName {
+  min-width: 0;
   margin: 0;
   color: var(--color-text-primary);
   font-size: $font-size-xl;
   line-height: $line-height-sm;
+  overflow-wrap: anywhere;
 }
 
 .meta {
@@ -123,6 +132,34 @@
 
 .metaCode {
   font-family: var(--font-family-mono);
+}
+
+.commitTitle {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  max-width: min(100%, 30rem);
+  min-width: 0;
+  gap: $space-2;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: $font-size-sm;
+  line-height: $line-height-sm;
+}
+
+.commitTitleIcon {
+  display: block;
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: 0 0 auto;
+  color: currentColor;
+}
+
+.commitTitleText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cardAside {
@@ -302,6 +339,14 @@
   }
 }
 
+.previousRunRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-width: 0;
+  gap: $space-2;
+}
+
 .previousRunLink {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -320,6 +365,38 @@
     background: var(--color-bg-surface-hover);
     color: var(--color-text-primary);
   }
+}
+
+.previousRunCompareLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  border-radius: $radius-sm;
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  gap: $space-2;
+  line-height: $line-height-sm;
+  padding: $space-2;
+  transition:
+    background-color $transition-base,
+    color $transition-base;
+  user-select: none;
+  white-space: nowrap;
+
+  @include focus-visible;
+
+  &:hover {
+    background: var(--color-bg-surface-hover);
+    color: var(--color-text-primary);
+  }
+}
+
+.previousRunCompareIcon {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: 0 0 auto;
 }
 
 .previousRunMain {
@@ -341,6 +418,14 @@
   font-size: $font-size-xs;
   font-weight: $font-weight-semibold;
   line-height: $line-height-sm;
+}
+
+.previousRunCommitTitle {
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-size: $font-size-sm;
+  line-height: $line-height-sm;
+  overflow-wrap: anywhere;
 }
 
 .previousRunScore {
@@ -395,6 +480,15 @@
     margin-left: 0;
   }
 
+  .repositoryHeader {
+    display: grid;
+    gap: $space-1;
+  }
+
+  .commitTitle {
+    max-width: 100%;
+  }
+
   .meta {
     display: none;
   }
@@ -429,10 +523,16 @@
     padding: $space-3 $space-4 $space-4;
   }
 
+  .previousRunRow,
   .previousRunLink {
     grid-template-columns: 1fr;
     align-items: start;
+  }
+
+  .previousRunCompareLink {
     gap: $space-2;
+    justify-self: start;
+    margin: 0 0 $space-2 $space-2;
   }
 }
 
@@ -448,6 +548,7 @@
   .cardLink,
   .disclosureButton,
   .disclosureIcon,
+  .previousRunCompareLink,
   .previousRunLink {
     transition: none;
   }

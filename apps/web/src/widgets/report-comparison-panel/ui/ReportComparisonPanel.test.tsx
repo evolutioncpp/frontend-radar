@@ -11,7 +11,9 @@ vi.mock('react-i18next', () => ({
       const translations: Record<string, string> = {
         'comparison.label': 'Comparison',
         'comparison.title': 'Changes since previous report',
+        'comparison.manualTitle': 'Comparison with selected run',
         'comparison.description': 'Compare current and previous reports.',
+        'comparison.manualDescription': 'Compare current report with selected history run.',
         'comparison.totalScore': 'Total score',
         'comparison.noDelta': 'No change',
         'comparison.metricsTitle': 'Metric changes',
@@ -204,5 +206,16 @@ describe('ReportComparisonPanel', () => {
       screen.getByRole('heading', { name: 'No changes since previous report' }),
     ).toBeInTheDocument();
     expect(screen.queryByText(/^0$/u)).not.toBeInTheDocument();
+  });
+
+  test('renders manual comparison copy when selected history run is used', () => {
+    render(<ReportComparisonPanel comparison={comparison} mode="manual" />);
+
+    expect(
+      screen.getByRole('heading', { name: 'Comparison with selected run' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Compare current report with selected history run.'),
+    ).toBeInTheDocument();
   });
 });

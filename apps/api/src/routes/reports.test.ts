@@ -17,12 +17,14 @@ import type { ProjectReport } from '../modules/reports/reportSchemas.js';
 
 const DEFAULT_COMMIT_DATE = '2026-06-09T00:00:00.000Z';
 const DEFAULT_COMMIT_SHA = 'abc123';
+const DEFAULT_COMMIT_TITLE = 'Initial frontend quality pass';
 
 const createTestReport = (
   id: string,
   latestCommitDate: string | null = DEFAULT_COMMIT_DATE,
   latestCommitSha: string | null = DEFAULT_COMMIT_SHA,
   projectPath: string | null = null,
+  latestCommitTitle: string | null = DEFAULT_COMMIT_TITLE,
 ): ProjectReport => ({
   id,
   createdAt: '2026-06-09T00:00:00.000Z',
@@ -38,6 +40,7 @@ const createTestReport = (
     projectPath,
     latestCommitSha,
     latestCommitDate,
+    latestCommitTitle,
     license: 'MIT',
   },
   scoreBreakdown: [
@@ -81,6 +84,7 @@ const createTestRecordInput = (
   analysisVersion: REPORT_ANALYSIS_VERSION,
   latestCommitDate: DEFAULT_COMMIT_DATE,
   latestCommitSha: DEFAULT_COMMIT_SHA,
+  latestCommitTitle: DEFAULT_COMMIT_TITLE,
   normalizedUrl: 'https://github.com/owner/repo',
   owner: 'owner',
   projectPath: '',
@@ -100,11 +104,13 @@ const createAnalyzer = (overrides: Partial<ReportAnalyzer> = {}): ReportAnalyzer
       input.latestCommitDate,
       input.latestCommitSha,
       input.projectPath || null,
+      input.latestCommitTitle,
     ),
   getRepositorySnapshot: async () => ({
     defaultBranch: 'main',
     latestCommitDate: DEFAULT_COMMIT_DATE,
     latestCommitSha: DEFAULT_COMMIT_SHA,
+    latestCommitTitle: DEFAULT_COMMIT_TITLE,
   }),
   resolveProjectPath: async (_owner, _repository, _ref, projectPath) => projectPath ?? '',
   ...overrides,
@@ -313,6 +319,7 @@ describe('reports routes', () => {
           id,
           repository: {
             latestCommitSha: DEFAULT_COMMIT_SHA,
+            latestCommitTitle: DEFAULT_COMMIT_TITLE,
             owner: 'owner',
             name: 'repo',
           },
@@ -459,6 +466,7 @@ describe('reports routes', () => {
       expect(body.items).toHaveLength(1);
       expect(body.items[0]).toMatchObject({
         id: firstCreateBody.id,
+        latestCommitTitle: DEFAULT_COMMIT_TITLE,
         owner: 'owner',
         repository: 'repo',
         score: 100,
@@ -572,6 +580,7 @@ describe('reports routes', () => {
           getRepositorySnapshot: async () => ({
             latestCommitDate: DEFAULT_COMMIT_DATE,
             latestCommitSha: null,
+            latestCommitTitle: DEFAULT_COMMIT_TITLE,
           }),
         }),
       },
@@ -619,10 +628,18 @@ describe('reports routes', () => {
       {
         reportAnalysisRepository: repository,
         reportAnalyzer: createAnalyzer({
-          analyze: async (input) => createTestReport(input.id, latestCommitDate, latestCommitSha),
+          analyze: async (input) =>
+            createTestReport(
+              input.id,
+              latestCommitDate,
+              latestCommitSha,
+              null,
+              input.latestCommitTitle,
+            ),
           getRepositorySnapshot: async () => ({
             latestCommitDate,
             latestCommitSha,
+            latestCommitTitle: DEFAULT_COMMIT_TITLE,
           }),
         }),
       },
@@ -744,10 +761,17 @@ describe('reports routes', () => {
         reportAnalysisRepository: repository,
         reportAnalyzer: createAnalyzer({
           analyze: async (input) =>
-            createTestReport(input.id, input.latestCommitDate, input.latestCommitSha),
+            createTestReport(
+              input.id,
+              input.latestCommitDate,
+              input.latestCommitSha,
+              null,
+              input.latestCommitTitle,
+            ),
           getRepositorySnapshot: async () => ({
             latestCommitDate,
             latestCommitSha,
+            latestCommitTitle: DEFAULT_COMMIT_TITLE,
           }),
         }),
       },
@@ -789,6 +813,7 @@ describe('reports routes', () => {
       expect(newAnalysis).toMatchObject({
         latestCommitDate,
         latestCommitSha,
+        latestCommitTitle: DEFAULT_COMMIT_TITLE,
         snapshotKey: createReportAnalysisSnapshotKey({
           latestCommitDate,
           latestCommitSha,
@@ -825,6 +850,7 @@ describe('reports routes', () => {
           getRepositorySnapshot: async () => ({
             latestCommitDate,
             latestCommitSha,
+            latestCommitTitle: DEFAULT_COMMIT_TITLE,
           }),
         }),
       },
@@ -1346,6 +1372,143 @@ describe('reports routes', () => {
           persistentCount: 1,
         },
       });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('returns comparison against explicit previous completed report', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const createScoredReport = (id: string, score: number): ProjectReport => ({
+      ...createTestReport(id),
+      totalScore: score,
+      scoreBreakdown: [
+        {
+          ...createTestReport(id).scoreBreakdown[0],
+          value: score,
+        },
+      ],
+    });
+    const explicitPreviousAnalysis = await repository.create(
+      createTestRecordInput({
+        latestCommitDate: '2026-06-07T00:00:00.000Z',
+        latestCommitSha: 'explicit-previous-sha',
+      }),
+    );
+
+    await repository.complete(
+      explicitPreviousAnalysis.id,
+      createScoredReport(explicitPreviousAnalysis.id, 50),
+    );
+
+    await waitForClockTick();
+
+    const automaticPreviousAnalysis = await repository.create(
+      createTestRecordInput({
+        latestCommitDate: '2026-06-08T00:00:00.000Z',
+        latestCommitSha: 'automatic-previous-sha',
+      }),
+    );
+
+    await repository.complete(
+      automaticPreviousAnalysis.id,
+      createScoredReport(automaticPreviousAnalysis.id, 70),
+    );
+
+    await waitForClockTick();
+
+    const currentAnalysis = await repository.create(
+      createTestRecordInput({
+        latestCommitDate: '2026-06-09T00:00:00.000Z',
+        latestCommitSha: 'current-sha',
+      }),
+    );
+
+    await repository.complete(currentAnalysis.id, createScoredReport(currentAnalysis.id, 90));
+
+    const app = buildApp(
+      {},
+      {
+        reportAnalysisRepository: repository,
+        reportAnalyzer: createAnalyzer(),
+      },
+    );
+
+    try {
+      const response = await app.inject({
+        method: 'GET',
+        url: `/reports/${currentAnalysis.id}/comparison?previousId=${explicitPreviousAnalysis.id}`,
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toMatchObject({
+        status: 'available',
+        currentReportId: currentAnalysis.id,
+        previousReportId: explicitPreviousAnalysis.id,
+        totalScore: {
+          current: 90,
+          previous: 50,
+          delta: 40,
+        },
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('returns unavailable comparison for invalid explicit previous report', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const currentAnalysis = await repository.create(createTestRecordInput());
+    const queuedAnalysis = await repository.create(
+      createTestRecordInput({
+        latestCommitDate: '2026-06-10T00:00:00.000Z',
+        latestCommitSha: 'queued-sha',
+      }),
+    );
+    const otherProjectAnalysis = await repository.create(
+      createTestRecordInput({
+        latestCommitDate: '2026-06-11T00:00:00.000Z',
+        latestCommitSha: 'other-project-sha',
+        projectPath: 'apps/docs',
+      }),
+    );
+
+    await repository.complete(currentAnalysis.id, createTestReport(currentAnalysis.id));
+    await repository.complete(
+      otherProjectAnalysis.id,
+      createTestReport(
+        otherProjectAnalysis.id,
+        otherProjectAnalysis.latestCommitDate,
+        otherProjectAnalysis.latestCommitSha,
+        'apps/docs',
+      ),
+    );
+
+    const app = buildApp(
+      {},
+      {
+        reportAnalysisRepository: repository,
+        reportAnalyzer: createAnalyzer(),
+      },
+    );
+
+    try {
+      for (const previousId of [
+        currentAnalysis.id,
+        queuedAnalysis.id,
+        otherProjectAnalysis.id,
+        'missing-analysis-id',
+      ]) {
+        const response = await app.inject({
+          method: 'GET',
+          url: `/reports/${currentAnalysis.id}/comparison?previousId=${previousId}`,
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+          status: 'unavailable',
+        });
+      }
     } finally {
       await app.close();
     }

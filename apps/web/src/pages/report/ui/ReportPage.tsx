@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 
 import { useProjectReport, useReportComparison } from '@/entities/report';
 import {
@@ -39,9 +39,14 @@ export const ReportPage = () => {
   const { t } = useTranslation('dashboard');
   const { id } = useParams();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const reuseReason = getReportAnalysisReuseReason(location.state);
+  const compareWith = searchParams.get('compareWith') || null;
   const reportState = useProjectReport(id);
-  const comparisonState = useReportComparison(reportState.status === 'ready' ? id : undefined);
+  const comparisonState = useReportComparison(
+    reportState.status === 'ready' ? id : undefined,
+    compareWith,
+  );
   const reportForceRefresh = useReportForceRefresh(id);
   const repositoryAnalysisSubmit = useRepositoryAnalysisSubmit();
 
@@ -71,6 +76,7 @@ export const ReportPage = () => {
       {reportState.status === 'ready' ? (
         <DashboardReportView
           comparison={comparisonState.status === 'available' ? comparisonState.comparison : null}
+          comparisonMode={compareWith ? 'manual' : 'automatic'}
           isRefreshing={reportForceRefresh.isRefreshing}
           onForceRefresh={reportForceRefresh.refreshReport}
           report={reportState.report}

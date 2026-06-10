@@ -15,27 +15,28 @@ enum ReportAnalysisStatus {
 }
 
 model ReportAnalysis {
-  id               String               @id @default(cuid())
-  owner            String
-  repository       String
-  repositoryKey    String
-  projectPath      String               @default("")
-  normalizedUrl    String
-  status           ReportAnalysisStatus @default(queued)
-  snapshotKey      String
-  latestCommitSha  String?
-  latestCommitDate String?
-  analysisVersion  Int                  @default(1)
-  report           Json?
-  errorCode        String?
-  errorMessage     String?
-  startedAt        DateTime?
-  completedAt      DateTime?
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
+  id                String               @id @default(cuid())
+  owner             String
+  repository        String
+  repositoryKey     String
+  projectPath       String               @default("")
+  normalizedUrl     String
+  status            ReportAnalysisStatus @default(queued)
+  snapshotKey       String
+  latestCommitSha   String?
+  latestCommitDate  String?
+  latestCommitTitle String?
+  analysisVersion   Int                  @default(1)
+  report            Json?
+  errorCode         String?
+  errorMessage      String?
+  startedAt         DateTime?
+  completedAt       DateTime?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
 
+  @@unique([repositoryKey, projectPath, snapshotKey, analysisVersion])
   @@index([createdAt])
   @@index([updatedAt])
   @@index([repositoryKey, projectPath, status, updatedAt])
-  @@unique([repositoryKey, projectPath, snapshotKey, analysisVersion])
 }

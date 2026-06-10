@@ -11,6 +11,7 @@ const createHistoryItem = (overrides: Partial<ReportHistoryItem> = {}): ReportHi
   id: 'analysis-id',
   latestCommitDate: '2026-06-09T00:00:00.000Z',
   latestCommitSha: 'abc123',
+  latestCommitTitle: 'Add frontend radar dashboard',
   normalizedUrl: 'https://github.com/evolutioncpp/frontend-radar',
   owner: 'evolutioncpp',
   projectPath: null,
@@ -40,6 +41,7 @@ describe('reportSelectors', () => {
 
     expect(groups).toHaveLength(1);
     expect(groups[0]?.latestRun.id).toBe('newer');
+    expect(groups[0]?.latestRun.commitTitle).toBe('Add frontend radar dashboard');
     expect(groups[0]?.previousRuns.map((run) => run.id)).toEqual(['older']);
     expect(groups[0]?.runCount).toBe(2);
   });

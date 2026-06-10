@@ -6,6 +6,7 @@ import {
   createReportAnalysisRequestSchema,
   createReportAnalysisResponseSchema,
   errorResponseSchema,
+  getReportComparisonQuerySchema,
   getReportComparisonResponseSchema,
   getReportAnalysisResponseSchema,
   listReportAnalysesResponseSchema,
@@ -117,6 +118,7 @@ export const createReportRoutes = ({
         const repositoryKey = getGithubRepositoryKey(request.body.owner, request.body.repository);
         let latestCommitDate: string | null = null;
         let latestCommitSha: string | null = null;
+        let latestCommitTitle: string | null = null;
         let projectPath = '';
         let analysisRef = 'main';
 
@@ -128,6 +130,7 @@ export const createReportRoutes = ({
 
           latestCommitDate = snapshot.latestCommitDate;
           latestCommitSha = snapshot.latestCommitSha;
+          latestCommitTitle = snapshot.latestCommitTitle;
           analysisRef = latestCommitSha ?? snapshot.defaultBranch ?? analysisRef;
           projectPath = await analyzer.resolveProjectPath(
             request.body.owner,
@@ -220,6 +223,7 @@ export const createReportRoutes = ({
             ...snapshotLookup,
             latestCommitDate,
             latestCommitSha,
+            latestCommitTitle,
             projectPath,
           });
         } catch (error) {
@@ -269,6 +273,7 @@ export const createReportRoutes = ({
             projectPath: analysis.projectPath || null,
             latestCommitDate: analysis.latestCommitDate,
             latestCommitSha: analysis.latestCommitSha,
+            latestCommitTitle: analysis.latestCommitTitle,
             createdAt: analysis.createdAt.toISOString(),
             updatedAt: analysis.updatedAt.toISOString(),
             ...(analysis.report
@@ -322,6 +327,7 @@ export const createReportRoutes = ({
 
         let latestCommitDate: string | null = null;
         let latestCommitSha: string | null = null;
+        let latestCommitTitle: string | null = null;
         let analysisRef = 'main';
 
         try {
@@ -332,6 +338,7 @@ export const createReportRoutes = ({
 
           latestCommitDate = snapshot.latestCommitDate;
           latestCommitSha = snapshot.latestCommitSha;
+          latestCommitTitle = snapshot.latestCommitTitle;
           analysisRef = latestCommitSha ?? snapshot.defaultBranch ?? analysisRef;
 
           await analyzer.resolveProjectPath(
@@ -433,6 +440,7 @@ export const createReportRoutes = ({
             analysisVersion: REPORT_ANALYSIS_VERSION,
             latestCommitDate,
             latestCommitSha,
+            latestCommitTitle,
             normalizedUrl: currentAnalysis.normalizedUrl,
             owner: currentAnalysis.owner,
             projectPath: currentAnalysis.projectPath,
@@ -470,6 +478,7 @@ export const createReportRoutes = ({
           operationId: 'getReportComparison',
           headers: acceptLanguageHeadersSchema,
           params: reportAnalysisParamsSchema,
+          querystring: getReportComparisonQuerySchema,
           response: {
             200: getReportComparisonResponseSchema,
             404: errorResponseSchema,
@@ -486,9 +495,17 @@ export const createReportRoutes = ({
           });
         }
 
-        const previousAnalysis = await repository.findPreviousCompleted(analysis);
+        const previousAnalysis = request.query.previousId
+          ? await repository.findById(request.query.previousId)
+          : await repository.findPreviousCompleted(analysis);
 
-        if (!previousAnalysis?.report) {
+        if (
+          !previousAnalysis?.report ||
+          previousAnalysis.id === analysis.id ||
+          previousAnalysis.repositoryKey !== analysis.repositoryKey ||
+          previousAnalysis.projectPath !== analysis.projectPath ||
+          previousAnalysis.status !== 'completed'
+        ) {
           return {
             status: 'unavailable' as const,
           };

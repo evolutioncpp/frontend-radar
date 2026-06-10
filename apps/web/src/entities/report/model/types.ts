@@ -34,6 +34,7 @@ export type ReportRepository = {
   projectPath: string | null;
   latestCommitSha: string | null;
   latestCommitDate: string | null;
+  latestCommitTitle: string | null;
   license: string | null;
 };
 

@@ -38,4 +38,17 @@ describe('SectionHeader', () => {
 
     expect(screen.getByText('7 checks')).toBeInTheDocument();
   });
+
+  test('renders title side content without changing heading name', () => {
+    render(
+      <SectionHeader
+        label="Repository"
+        title="owner/repository"
+        titleAfter={<span>Latest commit title</span>}
+      />,
+    );
+
+    expect(screen.getByRole('heading', { name: 'owner/repository' })).toBeInTheDocument();
+    expect(screen.getByText('Latest commit title')).toBeInTheDocument();
+  });
 });

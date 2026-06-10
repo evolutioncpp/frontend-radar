@@ -73,6 +73,41 @@ const createReader = () => {
 };
 
 describe('GithubRepositoryReader', () => {
+  it('returns latest commit snapshot with title from first commit message line', async () => {
+    const client = {
+      requestJson: async (path: string) => {
+        if (path === '/repos/owner/repo') {
+          return {
+            default_branch: 'main',
+            pushed_at: '2026-06-08T00:00:00.000Z',
+          };
+        }
+
+        if (path === '/repos/owner/repo/commits/main') {
+          return {
+            sha: 'abc123',
+            commit: {
+              author: {
+                date: '2026-06-09T00:00:00.000Z',
+              },
+              message: 'Add frontend dashboard\n\nDetailed body.',
+            },
+          };
+        }
+
+        return null;
+      },
+    } satisfies Pick<GithubClient, 'requestJson'>;
+    const reader = new GithubRepositoryReader(client as GithubClient);
+
+    await expect(reader.getRepositorySnapshot('owner', 'repo')).resolves.toEqual({
+      defaultBranch: 'main',
+      latestCommitDate: '2026-06-09T00:00:00.000Z',
+      latestCommitSha: 'abc123',
+      latestCommitTitle: 'Add frontend dashboard',
+    });
+  });
+
   it('returns the first existing path from path candidates', async () => {
     const { reader } = createReader();
 
