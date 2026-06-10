@@ -8,6 +8,7 @@ export {
   useListReportAnalysesQuery,
 } from './model/reportApi';
 export {
+  getReportHistoryGroupsViewModel,
   getReportHistoryItemViewModel,
   isReportProcessing,
   isReportTerminal,
@@ -31,6 +32,10 @@ export type {
   ScoreStatus,
 } from './model/types';
 export type { ReportAnalysisStatus } from './model/reportSelectors';
+export type {
+  ReportHistoryGroupViewModel,
+  ReportHistoryItemViewModel,
+} from './model/reportSelectors';
 export type { ProjectReportState } from './model/useProjectReport';
 export type { ReportComparisonState } from './model/useReportComparison';
 export type {

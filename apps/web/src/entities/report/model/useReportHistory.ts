@@ -1,11 +1,13 @@
 import { useListReportAnalysesQuery } from './reportApi';
-import { getReportHistoryItemViewModel } from './reportSelectors';
+import { getReportHistoryGroupsViewModel, getReportHistoryItemViewModel } from './reportSelectors';
 
 export const useReportHistory = (language: string) => {
   const query = useListReportAnalysesQuery();
+  const items = query.data?.items ?? [];
 
   return {
     ...query,
-    items: query.data?.items.map((item) => getReportHistoryItemViewModel(item, language)) ?? [],
+    groups: getReportHistoryGroupsViewModel(items, language),
+    items: items.map((item) => getReportHistoryItemViewModel(item, language)),
   };
 };

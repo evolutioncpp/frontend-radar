@@ -5,6 +5,12 @@
   gap: $space-3;
 }
 
+.historyGroup {
+  display: grid;
+  min-width: 0;
+  gap: $space-2;
+}
+
 .header {
   display: grid;
   gap: $space-2;
@@ -27,15 +33,9 @@
 
 .historyCard {
   display: grid;
+  overflow: hidden;
   min-width: 0;
   padding: 0;
-  transition:
-    border-color $transition-base,
-    background-color $transition-base;
-
-  &:hover {
-    background: var(--color-bg-surface-hover);
-  }
 }
 
 .cardLink {
@@ -46,8 +46,13 @@
   gap: $space-6;
   color: inherit;
   padding: $space-5;
+  transition: background-color $transition-base;
 
   @include focus-visible;
+
+  &:hover {
+    background: var(--color-bg-surface-hover);
+  }
 }
 
 .cardLabel {
@@ -63,9 +68,18 @@
 .cardTop {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  justify-content: flex-start;
   min-width: 0;
   gap: $space-3;
+}
+
+.groupRunCount {
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+  white-space: nowrap;
 }
 
 .cardDateCompact {
@@ -143,10 +157,25 @@
 }
 
 .scoreValue {
-  color: var(--color-score-good);
   font-size: $font-size-4xl;
   font-weight: $font-weight-bold;
   letter-spacing: -0.04em;
+}
+
+.scoreValueExcellent {
+  color: var(--color-score-excellent);
+}
+
+.scoreValueGood {
+  color: var(--color-score-good);
+}
+
+.scoreValueWarning {
+  color: var(--color-score-warning);
+}
+
+.scoreValueCritical {
+  color: var(--color-score-critical);
 }
 
 .scoreMax {
@@ -195,6 +224,134 @@
   line-height: $line-height-sm;
 }
 
+.previousRunsPanel {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-3 $space-5 $space-4;
+  border-top: 1px solid var(--color-border-secondary);
+}
+
+.disclosureButton {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  border: 0;
+  border-radius: $radius-sm;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  gap: $space-2;
+  line-height: $line-height-sm;
+  padding: $space-2 0;
+  transition: color $transition-base;
+  user-select: none;
+
+  @include focus-visible;
+
+  &:hover {
+    color: var(--color-text-primary);
+  }
+}
+
+.disclosureIcon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  transition: transform $transition-base;
+}
+
+.disclosureIconOpen {
+  transform: rotate(180deg);
+}
+
+.previousRuns {
+  display: grid;
+  flex: 1 0 100%;
+  gap: $space-2;
+  padding-block-start: $space-2;
+}
+
+.previousRunsLabel {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+  text-transform: uppercase;
+}
+
+.previousRunsList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-border-secondary);
+}
+
+.previousRunItem {
+  min-width: 0;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--color-border-secondary);
+  }
+}
+
+.previousRunLink {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-width: 0;
+  gap: $space-3;
+  color: inherit;
+  padding: $space-3 $space-2;
+  transition:
+    background-color $transition-base,
+    color $transition-base;
+
+  @include focus-visible;
+
+  &:hover {
+    background: var(--color-bg-surface-hover);
+    color: var(--color-text-primary);
+  }
+}
+
+.previousRunMain {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2 $space-3;
+}
+
+.previousRunDate {
+  color: var(--color-text-secondary);
+  font-size: $font-size-sm;
+  line-height: $line-height-sm;
+}
+
+.previousRunStatus {
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+}
+
+.previousRunScore {
+  color: var(--color-text-primary);
+  font-family: var(--font-family-mono);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  line-height: $line-height-sm;
+  white-space: nowrap;
+}
+
 .emptyCard {
   display: grid;
   gap: $space-2;
@@ -231,6 +388,11 @@
 
   .cardDateCompact {
     display: block;
+    margin-left: auto;
+  }
+
+  .groupRunCount {
+    margin-left: 0;
   }
 
   .meta {
@@ -262,6 +424,16 @@
   .summaryList {
     width: 100%;
   }
+
+  .previousRunsPanel {
+    padding: $space-3 $space-4 $space-4;
+  }
+
+  .previousRunLink {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: $space-2;
+  }
 }
 
 @include media-max(360px) {
@@ -273,7 +445,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .historyCard {
+  .cardLink,
+  .disclosureButton,
+  .disclosureIcon,
+  .previousRunLink {
     transition: none;
   }
 }

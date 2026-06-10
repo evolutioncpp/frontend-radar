@@ -1,14 +1,19 @@
+import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
+import { getScoreStatus, type ScoreStatus } from '@/entities/report';
 import { normalizeScore } from '@/shared/lib/format-score';
 import { Card } from '@/shared/ui/Card';
 
 import s from '../DashboardHistoryPage.module.scss';
 
+import type { ReactNode } from 'react';
+
 interface HistoryReportCardProps {
   activityAt: string;
   activityLabel: string;
+  children?: ReactNode;
   checksCount: number;
   metricsCount: number;
   projectPath?: string | null;
@@ -19,9 +24,17 @@ interface HistoryReportCardProps {
   to: string;
 }
 
+const scoreStatusClassMap: Record<ScoreStatus, string> = {
+  excellent: s.scoreValueExcellent,
+  good: s.scoreValueGood,
+  warning: s.scoreValueWarning,
+  critical: s.scoreValueCritical,
+};
+
 export const HistoryReportCard = ({
   activityAt,
   activityLabel,
+  children,
   checksCount,
   metricsCount,
   projectPath,
@@ -33,6 +46,8 @@ export const HistoryReportCard = ({
 }: HistoryReportCardProps) => {
   const { t } = useTranslation('dashboard-history');
   const normalizedScore = typeof score === 'number' ? normalizeScore(score) : null;
+  const scoreStatusClassName =
+    normalizedScore === null ? undefined : scoreStatusClassMap[getScoreStatus(normalizedScore)];
 
   return (
     <Card className={s.historyCard}>
@@ -45,7 +60,7 @@ export const HistoryReportCard = ({
       >
         <div className={s.cardMain}>
           <div className={s.cardTop}>
-            <p className={s.cardLabel}>{t('card.label')}</p>
+            <p className={s.cardLabel}>{t('card.latestRunLabel')}</p>
             <time className={s.cardDateCompact} dateTime={activityAt}>
               {activityLabel}
             </time>
@@ -78,7 +93,7 @@ export const HistoryReportCard = ({
               <span className={s.scorePending}>{t(`card.statuses.${status}`)}</span>
             ) : (
               <span className={s.scoreValueWrapper}>
-                <span className={s.scoreValue}>{normalizedScore}</span>
+                <span className={clsx(s.scoreValue, scoreStatusClassName)}>{normalizedScore}</span>
                 <span className={s.scoreMax}>/100</span>
               </span>
             )}
@@ -102,6 +117,8 @@ export const HistoryReportCard = ({
           </dl>
         </div>
       </Link>
+
+      {children}
     </Card>
   );
 };

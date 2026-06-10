@@ -1,16 +1,15 @@
 import { useTranslation } from 'react-i18next';
 
 import { useReportHistory } from '@/entities/report';
-import { getReportPath } from '@/shared/config/routes/appRoutes';
 import { Card } from '@/shared/ui/Card';
 
 import s from './DashboardHistoryPage.module.scss';
-import { HistoryReportCard } from './history-report-card/HistoryReportCard';
+import { HistoryReportGroup } from './history-report-group/HistoryReportGroup';
 
 export const DashboardHistoryPage = () => {
   const { i18n, t } = useTranslation('dashboard-history');
   const historyQuery = useReportHistory(i18n.language);
-  const history = historyQuery.items;
+  const historyGroups = historyQuery.groups;
 
   return (
     <div className={s.dashboardHistoryPage}>
@@ -29,22 +28,8 @@ export const DashboardHistoryPage = () => {
           <h2 className={s.emptyTitle}>{t('page.errorTitle')}</h2>
           <p className={s.emptyDescription}>{t('page.errorDescription')}</p>
         </Card>
-      ) : history.length > 0 ? (
-        history.map((item) => (
-          <HistoryReportCard
-            activityAt={item.activityAt}
-            activityLabel={item.activityLabel}
-            checksCount={item.checksCount}
-            key={item.id}
-            metricsCount={item.metricsCount}
-            projectPath={item.projectPath}
-            recommendationsCount={item.recommendationsCount}
-            repositoryName={item.repositoryName}
-            score={item.score}
-            status={item.status}
-            to={getReportPath(item.id)}
-          />
-        ))
+      ) : historyGroups.length > 0 ? (
+        historyGroups.map((group) => <HistoryReportGroup group={group} key={group.id} />)
       ) : (
         <Card className={s.emptyCard}>
           <h2 className={s.emptyTitle}>{t('page.emptyTitle')}</h2>

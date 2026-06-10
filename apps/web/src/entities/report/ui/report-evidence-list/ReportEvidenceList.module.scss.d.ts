@@ -8,6 +8,7 @@ export type Styles = {
   source: string;
   status: string;
   summary: string;
+  summaryIcon: string;
 };
 
 export type ClassNames = keyof Styles;

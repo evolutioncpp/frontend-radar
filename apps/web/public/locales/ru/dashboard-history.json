@@ -11,6 +11,7 @@
   },
   "card": {
     "label": "Запуск анализа",
+    "latestRunLabel": "Последний запуск анализа",
     "analyzedAt": "Последняя активность {{date}}",
     "openReportAria": "Открыть отчет для {{repository}}",
     "scoreLabel": "Оценка здоровья",
@@ -25,5 +26,18 @@
       "checks": "Проверки",
       "recommendations": "Рекомендации"
     }
+  },
+  "group": {
+    "runCount_one": "{{count}} запуск",
+    "runCount_few": "{{count}} запуска",
+    "runCount_many": "{{count}} запусков",
+    "runCount_other": "{{count}} запуска",
+    "showPreviousRuns_one": "Показать прошлый запуск",
+    "showPreviousRuns_few": "Показать прошлые запуски ({{count}})",
+    "showPreviousRuns_many": "Показать прошлые запуски ({{count}})",
+    "showPreviousRuns_other": "Показать прошлые запуски ({{count}})",
+    "hidePreviousRuns": "Скрыть прошлые запуски",
+    "previousRunsLabel": "Прошлые запуски",
+    "openPreviousRunAria": "Открыть прошлый отчет для {{repository}} от {{date}}"
   }
 }

@@ -2,16 +2,49 @@
 
 .reportEvidenceList {
   display: grid;
-  gap: $space-3;
+  gap: $space-2;
 }
 
 .summary {
+  display: inline-flex;
   width: fit-content;
+  align-items: center;
+  gap: $space-2;
+  border-radius: $radius-sm;
   cursor: pointer;
   color: var(--color-text-secondary);
   font-size: $font-size-sm;
   font-weight: $font-weight-semibold;
   line-height: $line-height-sm;
+  list-style: none;
+  padding: $space-1 0;
+  transition: color $transition-base;
+  user-select: none;
+
+  @include focus-visible;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &::marker {
+    content: '';
+  }
+
+  &:hover {
+    color: var(--color-text-primary);
+  }
+}
+
+.summaryIcon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  transition: transform $transition-base;
+}
+
+.reportEvidenceList[open] .summaryIcon {
+  transform: rotate(180deg);
 }
 
 .list {
@@ -69,5 +102,12 @@
   .item {
     grid-template-columns: 1fr;
     gap: $space-2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summary,
+  .summaryIcon {
+    transition: none;
   }
 }

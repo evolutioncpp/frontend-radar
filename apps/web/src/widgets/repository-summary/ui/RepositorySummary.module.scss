@@ -5,6 +5,10 @@
   gap: $space-5;
 }
 
+.header {
+  min-width: 0;
+}
+
 .description {
   max-width: 52rem;
   margin: 0;
@@ -81,7 +85,12 @@
 }
 
 @include media-max($breakpoint-sm) {
+  .header {
+    grid-template-columns: 1fr;
+  }
+
   .headerAside {
+    width: 100%;
     justify-content: flex-start;
   }
 

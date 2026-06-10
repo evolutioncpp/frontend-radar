@@ -7,6 +7,7 @@
   gap: $space-3;
   color: var(--color-text-primary);
   cursor: pointer;
+  user-select: none;
 }
 
 .input {

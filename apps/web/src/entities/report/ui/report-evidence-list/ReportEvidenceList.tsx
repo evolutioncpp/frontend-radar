@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import { ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { Badge } from '@/shared/ui/Badge';
@@ -43,7 +44,10 @@ export const ReportEvidenceList = ({ className, evidence }: ReportEvidenceListPr
 
   return (
     <details className={clsx(s.reportEvidenceList, className)}>
-      <summary className={s.summary}>{t('evidence.title')}</summary>
+      <summary className={s.summary}>
+        <ChevronDown aria-hidden="true" className={s.summaryIcon} strokeWidth={2} />
+        <span>{t('evidence.title')}</span>
+      </summary>
 
       <ul className={s.list}>
         {sortedEvidence.map((item) => (

@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
@@ -31,6 +31,7 @@ vi.mock('react-i18next', () => ({
         'page.emptyTitle': 'No analysis history yet',
         'page.emptyDescription': 'Start a repository analysis from the dashboard overview.',
         'card.label': 'Analysis run',
+        'card.latestRunLabel': 'Latest analysis run',
         'card.openReportAria': `Open report for ${options?.repository}`,
         'card.scoreLabel': 'Health score',
         'card.statuses.queued': 'Queued',
@@ -40,10 +41,23 @@ vi.mock('react-i18next', () => ({
         'card.summary.metrics': 'Metrics',
         'card.summary.checks': 'Checks',
         'card.summary.recommendations': 'Recommendations',
+        'group.hidePreviousRuns': 'Hide previous runs',
+        'group.previousRunsLabel': 'Previous runs',
+        'group.openPreviousRunAria': `Open previous report for ${options?.repository} from ${options?.date}`,
       };
 
       if (key === 'card.analyzedAt') {
         return `Last activity ${options?.date}`;
+      }
+
+      if (key === 'group.runCount') {
+        return `${options?.count} runs`;
+      }
+
+      if (key === 'group.showPreviousRuns') {
+        return Number(options?.count) === 1
+          ? 'Show previous run'
+          : `Show previous runs (${options?.count})`;
       }
 
       return translations[key] ?? key;
@@ -93,13 +107,24 @@ const repeatedRepositoryHistoryItem = {
   ...completedHistoryItem,
   id: 'second-analysis-id',
   createdAt: '2026-06-09T00:02:00.000Z',
-  updatedAt: '2026-06-09T00:02:00.000Z',
+  updatedAt: '2026-06-09T00:03:00.000Z',
   score: 84,
+};
+
+const differentProjectPathHistoryItem = {
+  ...completedHistoryItem,
+  id: 'docs-analysis-id',
+  projectPath: 'apps/docs',
+  updatedAt: '2026-06-09T00:04:00.000Z',
+  score: 76,
 };
 
 const createHistoryResponse = (
   items: Array<
-    typeof completedHistoryItem | typeof queuedHistoryItem | typeof repeatedRepositoryHistoryItem
+    | typeof completedHistoryItem
+    | typeof queuedHistoryItem
+    | typeof repeatedRepositoryHistoryItem
+    | typeof differentProjectPathHistoryItem
   >,
 ) => ({
   data: {
@@ -158,7 +183,7 @@ describe('DashboardHistoryPage', () => {
     renderDashboardHistoryPage();
 
     expect(screen.getByRole('heading', { name: 'History' })).toBeInTheDocument();
-    expect(screen.getByText('Analysis run')).toBeInTheDocument();
+    expect(screen.getByText('Latest analysis run')).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { name: 'evolutioncpp/frontend-radar' }),
     ).toBeInTheDocument();
@@ -181,16 +206,42 @@ describe('DashboardHistoryPage', () => {
     expect(screen.getByText('apps/web')).toBeInTheDocument();
   });
 
-  test('renders repeated repository runs as separate cards', () => {
+  test('groups repeated repository runs and reveals previous runs on demand', () => {
     apiMocks.listReportAnalyses.mockReturnValue(
       createHistoryResponse([repeatedRepositoryHistoryItem, completedHistoryItem]),
     );
 
     renderDashboardHistoryPage();
 
-    expect(screen.getAllByRole('heading', { name: 'evolutioncpp/frontend-radar' })).toHaveLength(2);
+    expect(screen.getAllByRole('heading', { name: 'evolutioncpp/frontend-radar' })).toHaveLength(1);
+    expect(screen.getByText('2 runs')).toBeInTheDocument();
     expect(screen.getByText('84')).toBeInTheDocument();
-    expect(screen.getByText('82')).toBeInTheDocument();
+    expect(screen.queryByText('82')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show previous run' }));
+
+    expect(screen.getByText('Previous runs')).toBeInTheDocument();
+    expect(screen.getByText('82/100')).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', {
+        name: /Open previous report for evolutioncpp\/frontend-radar/i,
+      }),
+    ).toHaveAttribute('href', getReportPath('analysis-id'));
+  });
+
+  test('renders different project paths as separate groups', () => {
+    apiMocks.listReportAnalyses.mockReturnValue(
+      createHistoryResponse([
+        differentProjectPathHistoryItem,
+        { ...completedHistoryItem, projectPath: 'apps/web' },
+      ]),
+    );
+
+    renderDashboardHistoryPage();
+
+    expect(screen.getAllByRole('heading', { name: 'evolutioncpp/frontend-radar' })).toHaveLength(2);
+    expect(screen.getByText('apps/docs')).toBeInTheDocument();
+    expect(screen.getByText('apps/web')).toBeInTheDocument();
   });
 
   test('renders queued analysis run without score', () => {

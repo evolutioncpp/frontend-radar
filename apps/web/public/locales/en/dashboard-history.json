@@ -11,6 +11,7 @@
   },
   "card": {
     "label": "Analysis run",
+    "latestRunLabel": "Latest analysis run",
     "analyzedAt": "Last activity {{date}}",
     "openReportAria": "Open report for {{repository}}",
     "scoreLabel": "Health score",
@@ -25,5 +26,14 @@
       "checks": "Checks",
       "recommendations": "Recommendations"
     }
+  },
+  "group": {
+    "runCount_one": "{{count}} run",
+    "runCount_other": "{{count}} runs",
+    "showPreviousRuns_one": "Show previous run",
+    "showPreviousRuns_other": "Show previous runs ({{count}})",
+    "hidePreviousRuns": "Hide previous runs",
+    "previousRunsLabel": "Previous runs",
+    "openPreviousRunAria": "Open previous report for {{repository}} from {{date}}"
   }
 }

@@ -84,6 +84,7 @@ export const RepositorySummary = ({
             </a>
           </div>
         }
+        className={s.header}
         label={t('repository.label')}
         title={repositoryFullName}
       />
