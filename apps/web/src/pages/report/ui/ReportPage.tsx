@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 
@@ -6,7 +7,9 @@ import {
   type ReportAnalysisNavigationState,
   useReportForceRefresh,
   useRepositoryAnalysisSubmit,
+  useRetryReportAnalysisMutation,
 } from '@/features/repository-analysis';
+import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { RepositoryAnalysisPanel } from '@/widgets/repository-analysis-panel';
 
@@ -14,6 +17,38 @@ import { DashboardReportView } from './dashboard-report-view/DashboardReportView
 import s from './ReportPage.module.scss';
 
 const reportAnalysisReuseReasons = ['completed', 'active', 'retried'] as const;
+const repositoryAnalysisPanelId = 'repository-analysis';
+
+const reportFailureCopyKeys = {
+  analysis_failed: {
+    description: 'page.reportFailed.errors.analysisFailed.description',
+    title: 'page.reportFailed.errors.analysisFailed.title',
+  },
+  github_rate_limited: {
+    description: 'page.reportFailed.errors.githubRateLimited.description',
+    title: 'page.reportFailed.errors.githubRateLimited.title',
+  },
+  github_unavailable: {
+    description: 'page.reportFailed.errors.githubUnavailable.description',
+    title: 'page.reportFailed.errors.githubUnavailable.title',
+  },
+  project_path_not_found: {
+    description: 'page.reportFailed.errors.projectPathNotFound.description',
+    title: 'page.reportFailed.errors.projectPathNotFound.title',
+  },
+  repository_forbidden: {
+    description: 'page.reportFailed.errors.repositoryForbidden.description',
+    title: 'page.reportFailed.errors.repositoryForbidden.title',
+  },
+  repository_not_found: {
+    description: 'page.reportFailed.errors.repositoryNotFound.description',
+    title: 'page.reportFailed.errors.repositoryNotFound.title',
+  },
+  repository_verification_failed: {
+    description: 'page.reportFailed.errors.repositoryVerificationFailed.description',
+    title: 'page.reportFailed.errors.repositoryVerificationFailed.title',
+  },
+} as const;
 
 const isReportAnalysisReuseReason = (
   value: unknown,
@@ -35,6 +70,14 @@ const getReportAnalysisReuseReason = (state: unknown) => {
   return null;
 };
 
+const getReportFailureCopyKeys = (errorCode: string) => {
+  if (errorCode in reportFailureCopyKeys) {
+    return reportFailureCopyKeys[errorCode as keyof typeof reportFailureCopyKeys];
+  }
+
+  return null;
+};
+
 export const ReportPage = () => {
   const { t } = useTranslation('dashboard');
   const { id } = useParams();
@@ -49,10 +92,30 @@ export const ReportPage = () => {
   );
   const reportForceRefresh = useReportForceRefresh(id);
   const repositoryAnalysisSubmit = useRepositoryAnalysisSubmit();
+  const [retryReportAnalysis, { isLoading: isRetrying }] = useRetryReportAnalysisMutation();
+  const [isRetryErrorVisible, setIsRetryErrorVisible] = useState(false);
+  const failedReportCopyKeys =
+    reportState.status === 'failed' ? getReportFailureCopyKeys(reportState.errorCode) : null;
+  const retryFailedReport = () => {
+    if (reportState.status !== 'failed') {
+      return;
+    }
+
+    setIsRetryErrorVisible(false);
+
+    void retryReportAnalysis({
+      id: reportState.id,
+    })
+      .unwrap()
+      .catch(() => {
+        setIsRetryErrorVisible(true);
+      });
+  };
 
   return (
     <div className={s.reportPage}>
       <RepositoryAnalysisPanel
+        id={repositoryAnalysisPanelId}
         isSubmitting={repositoryAnalysisSubmit.isSubmitting}
         onChange={repositoryAnalysisSubmit.clearSubmitError}
         onSubmit={repositoryAnalysisSubmit.submitRepositoryAnalysis}
@@ -70,6 +133,13 @@ export const ReportPage = () => {
         <ReportReuseNotice
           description={t(`page.reportRefresh.${reportForceRefresh.refreshNotice}.description`)}
           title={t(`page.reportRefresh.${reportForceRefresh.refreshNotice}.title`)}
+        />
+      ) : null}
+
+      {isRetryErrorVisible ? (
+        <ReportReuseNotice
+          description={t('page.reportRetry.error.description')}
+          title={t('page.reportRetry.error.title')}
         />
       ) : null}
 
@@ -93,16 +163,30 @@ export const ReportPage = () => {
         />
       ) : reportState.status === 'error' ? (
         <ReportStatusCard
+          actionHref={`#${repositoryAnalysisPanelId}`}
+          actionLabel={t('page.reportStatusAction')}
           description={t('page.reportError.description')}
           title={t('page.reportError.title')}
         />
       ) : reportState.status === 'failed' ? (
         <ReportStatusCard
-          description={reportState.errorMessage || t('page.reportFailed.description')}
-          title={t('page.reportFailed.title')}
+          actionDisabled={isRetrying}
+          actionLabel={t('page.reportStatusAction')}
+          actionLoadingLabel={t('page.reportStatusActionLoading')}
+          onAction={retryFailedReport}
+          description={
+            failedReportCopyKeys
+              ? t(failedReportCopyKeys.description)
+              : reportState.errorMessage || t('page.reportFailed.description')
+          }
+          title={
+            failedReportCopyKeys ? t(failedReportCopyKeys.title) : t('page.reportFailed.title')
+          }
         />
       ) : (
         <ReportStatusCard
+          actionHref={`#${repositoryAnalysisPanelId}`}
+          actionLabel={t('page.reportStatusAction')}
           description={t('page.reportFallback.description')}
           title={t('page.reportFallback.title')}
         />
@@ -126,15 +210,44 @@ const ReportReuseNotice = ({ description, title }: ReportReuseNoticeProps) => {
 };
 
 interface ReportStatusCardProps {
+  actionDisabled?: boolean;
+  actionHref?: string;
+  actionLabel?: string;
+  actionLoadingLabel?: string;
   description: string;
+  onAction?: () => void;
   title: string;
 }
 
-const ReportStatusCard = ({ description, title }: ReportStatusCardProps) => {
+const ReportStatusCard = ({
+  actionDisabled = false,
+  actionHref,
+  actionLabel,
+  actionLoadingLabel,
+  description,
+  onAction,
+  title,
+}: ReportStatusCardProps) => {
+  const actionContent = actionDisabled && actionLoadingLabel ? actionLoadingLabel : actionLabel;
+
   return (
     <Card className={s.fallbackCard}>
       <h1 className={s.fallbackTitle}>{title}</h1>
       <p className={s.fallbackDescription}>{description}</p>
+      {onAction && actionLabel ? (
+        <Button
+          className={s.fallbackButton}
+          disabled={actionDisabled}
+          onClick={onAction}
+          type="button"
+        >
+          {actionContent}
+        </Button>
+      ) : actionHref && actionLabel ? (
+        <a className={s.fallbackAction} href={actionHref}>
+          {actionContent}
+        </a>
+      ) : null}
     </Card>
   );
 };

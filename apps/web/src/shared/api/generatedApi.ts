@@ -38,6 +38,13 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/reports/${queryArg.id}/refresh`, method: 'POST' }),
         invalidatesTags: ['Reports'],
       }),
+      retryReportAnalysis: build.mutation<
+        RetryReportAnalysisApiResponse,
+        RetryReportAnalysisApiArg
+      >({
+        query: (queryArg) => ({ url: `/reports/${queryArg.id}/retry`, method: 'POST' }),
+        invalidatesTags: ['Reports'],
+      }),
       getReportComparison: build.query<GetReportComparisonApiResponse, GetReportComparisonApiArg>({
         query: (queryArg) => ({
           url: `/reports/${queryArg.id}/comparison`,
@@ -119,6 +126,14 @@ export type ForceRefreshReportAnalysisApiResponse =
   };
 /** status 201 Default Response */
 export type ForceRefreshReportAnalysisApiArg = {
+  id: string;
+};
+export type RetryReportAnalysisApiResponse = /** status 200 Default Response */ {
+  id: string;
+  retryReason: 'retried' | 'active' | 'completed';
+  status: 'queued' | 'running' | 'completed';
+};
+export type RetryReportAnalysisApiArg = {
   id: string;
 };
 export type GetReportComparisonApiResponse =
@@ -356,6 +371,7 @@ export const {
   useListReportAnalysesQuery,
   useLazyListReportAnalysesQuery,
   useForceRefreshReportAnalysisMutation,
+  useRetryReportAnalysisMutation,
   useGetReportComparisonQuery,
   useLazyGetReportComparisonQuery,
   useGetReportAnalysisQuery,

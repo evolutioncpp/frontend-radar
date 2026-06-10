@@ -856,6 +856,109 @@ describe('reports routes', () => {
     }
   });
 
+  it('retries failed report analysis by id', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const failedAnalysis = await repository.create(createTestRecordInput());
+
+    await repository.fail(failedAnalysis.id, {
+      errorCode: 'github_unavailable',
+      errorMessage: 'GitHub is unavailable right now.',
+    });
+
+    const startedAnalyses: string[] = [];
+    const app = buildApp(
+      {},
+      {
+        reportAnalysisRepository: repository,
+        reportAnalyzer: createAnalyzer(),
+        startReportAnalysis: (analysis) => {
+          startedAnalyses.push(analysis.id);
+        },
+      },
+    );
+
+    try {
+      const response = await app.inject({
+        method: 'POST',
+        url: `/reports/${failedAnalysis.id}/retry`,
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toEqual({
+        id: failedAnalysis.id,
+        retryReason: 'retried',
+        status: 'queued',
+      });
+      expect(startedAnalyses).toEqual([failedAnalysis.id]);
+
+      const retriedAnalysis = await repository.findById(failedAnalysis.id);
+
+      expect(retriedAnalysis).toMatchObject({
+        errorCode: null,
+        errorMessage: null,
+        status: 'queued',
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('returns active retry status without restarting active report analysis', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const runningAnalysis = await repository.create(createTestRecordInput());
+
+    await repository.updateStatus(runningAnalysis.id, 'running');
+
+    const startReportAnalysis = vi.fn();
+    const app = buildApp(
+      {},
+      {
+        reportAnalysisRepository: repository,
+        reportAnalyzer: createAnalyzer(),
+        startReportAnalysis,
+      },
+    );
+
+    try {
+      const response = await app.inject({
+        method: 'POST',
+        url: `/reports/${runningAnalysis.id}/retry`,
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toEqual({
+        id: runningAnalysis.id,
+        retryReason: 'active',
+        status: 'running',
+      });
+      expect(startReportAnalysis).not.toHaveBeenCalled();
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('returns not found when retry target does not exist', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const app = buildApp(
+      {},
+      {
+        reportAnalysisRepository: repository,
+        reportAnalyzer: createAnalyzer(),
+      },
+    );
+
+    try {
+      const response = await app.inject({
+        method: 'POST',
+        url: '/reports/missing-id/retry',
+      });
+
+      expect(response.statusCode).toBe(404);
+    } finally {
+      await app.close();
+    }
+  });
+
   it('keeps current completed report when force refresh snapshot is unchanged', async () => {
     const repository = new InMemoryReportAnalysisRepository();
     const app = buildApp(

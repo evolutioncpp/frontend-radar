@@ -3,6 +3,8 @@ export type Styles = {
   detailsCard: string;
   detailsGrid: string;
   detailsSection: string;
+  fallbackAction: string;
+  fallbackButton: string;
   fallbackCard: string;
   fallbackDescription: string;
   fallbackTitle: string;

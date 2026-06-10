@@ -10,6 +10,7 @@ import { Card } from '@/shared/ui/Card';
 import s from './RepositoryAnalysisPanel.module.scss';
 
 interface RepositoryAnalysisPanelProps {
+  id?: string;
   isSubmitting?: boolean;
   onChange?: () => void;
   onSubmit: (request: RepositoryAnalysisRequest) => void;
@@ -17,6 +18,7 @@ interface RepositoryAnalysisPanelProps {
 }
 
 export const RepositoryAnalysisPanel = ({
+  id,
   isSubmitting = false,
   onChange,
   onSubmit,
@@ -25,7 +27,7 @@ export const RepositoryAnalysisPanel = ({
   const { t } = useTranslation('dashboard');
 
   return (
-    <Card className={s.repositoryAnalysisPanel}>
+    <Card className={s.repositoryAnalysisPanel} id={id}>
       <section className={s.header}>
         <p className={s.label}>{t('page.label')}</p>
 

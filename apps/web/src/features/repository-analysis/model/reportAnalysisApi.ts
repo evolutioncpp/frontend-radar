@@ -3,6 +3,7 @@ export {
   useForceRefreshReportAnalysisMutation,
   useLazyListRepositoryBranchesQuery,
   useListRepositoryBranchesQuery,
+  useRetryReportAnalysisMutation,
 } from '@/shared/api/generatedApi';
 
 export type {
@@ -12,4 +13,6 @@ export type {
   ForceRefreshReportAnalysisApiResponse,
   ListRepositoryBranchesApiArg,
   ListRepositoryBranchesApiResponse,
+  RetryReportAnalysisApiArg,
+  RetryReportAnalysisApiResponse,
 } from '@/shared/api/generatedApi';

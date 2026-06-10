@@ -200,6 +200,7 @@ describe('useProjectReport', () => {
       status: 'failed',
       errorCode: 'github_unavailable',
       errorMessage: 'GitHub is unavailable right now. Try again later.',
+      id: 'analysis-id',
     });
     expect(refetch).not.toHaveBeenCalled();
   });

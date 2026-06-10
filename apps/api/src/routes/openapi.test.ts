@@ -241,6 +241,14 @@ describe('GET /openapi.json', () => {
             .schema,
         ),
       ).toContain('up_to_date');
+      expect(body.paths['/reports/{id}/retry']).toBeDefined();
+      expect(body.paths['/reports/{id}/retry'].post.operationId).toBe('retryReportAnalysis');
+      expect(
+        JSON.stringify(
+          body.paths['/reports/{id}/retry'].post.responses['200'].content['application/json']
+            .schema,
+        ),
+      ).toContain('retryReason');
       expect(body.paths['/reports/{id}/comparison']).toBeDefined();
       expect(body.paths['/reports/{id}/comparison'].get.operationId).toBe('getReportComparison');
       expect(JSON.stringify(body.paths['/reports/{id}/comparison'].get.parameters)).toContain(

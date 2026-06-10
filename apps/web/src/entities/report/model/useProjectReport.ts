@@ -27,6 +27,7 @@ export type ProjectReportState =
       status: 'failed';
       errorCode: string;
       errorMessage: string;
+      id: string;
     };
 
 export const useProjectReport = (reportId?: string): ProjectReportState => {
@@ -89,6 +90,7 @@ export const useProjectReport = (reportId?: string): ProjectReportState => {
       status: 'failed',
       errorCode: query.data.errorCode,
       errorMessage: query.data.errorMessage,
+      id: query.data.id,
     };
   }
 

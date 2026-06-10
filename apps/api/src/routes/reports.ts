@@ -14,6 +14,7 @@ import {
   reportAnalysisParamsSchema,
   repositoryBranchesParamsSchema,
   refreshReportAnalysisResponseSchema,
+  retryReportAnalysisResponseSchema,
 } from '../modules/reports/reportSchemas.js';
 import { isGithubApiError } from '../modules/reports/githubReportAnalyzer.js';
 import {
@@ -366,6 +367,66 @@ export const createReportRoutes = ({
               : {}),
           })),
         };
+      },
+    );
+
+    app.post(
+      '/reports/:id/retry',
+      {
+        schema: {
+          tags: ['Reports'],
+          operationId: 'retryReportAnalysis',
+          headers: acceptLanguageHeadersSchema,
+          params: reportAnalysisParamsSchema,
+          response: {
+            200: retryReportAnalysisResponseSchema,
+            404: errorResponseSchema,
+          },
+        },
+      },
+      async (request, reply) => {
+        const language = getReportLanguage(request.headers['accept-language']);
+        const analysis = await repository.findById(request.params.id);
+
+        if (!analysis) {
+          return reply.code(404).send({
+            message: getLocalizedReportNotFoundMessage(language),
+          });
+        }
+
+        let retryTarget = analysis;
+
+        if (analysis.status !== 'failed') {
+          const refreshedAnalysis = await repository.touch(analysis.id);
+
+          if (refreshedAnalysis.status === 'completed') {
+            return reply.code(200).send({
+              id: refreshedAnalysis.id,
+              retryReason: 'completed',
+              status: 'completed',
+            });
+          }
+
+          if (refreshedAnalysis.status === 'queued' || refreshedAnalysis.status === 'running') {
+            return reply.code(200).send({
+              id: refreshedAnalysis.id,
+              retryReason: 'active',
+              status: refreshedAnalysis.status,
+            });
+          }
+
+          retryTarget = refreshedAnalysis;
+        }
+
+        const retriedAnalysis = await repository.resetForRetry(retryTarget.id);
+
+        runAnalysis(retriedAnalysis);
+
+        return reply.code(200).send({
+          id: retriedAnalysis.id,
+          retryReason: 'retried',
+          status: 'queued',
+        });
       },
     );
 

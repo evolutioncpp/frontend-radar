@@ -96,6 +96,12 @@ export const refreshReportAnalysisResponseSchema = z.object({
   status: z.enum(['queued', 'running', 'completed']),
 });
 
+export const retryReportAnalysisResponseSchema = z.object({
+  id: z.string(),
+  retryReason: z.enum(['retried', 'active', 'completed']),
+  status: z.enum(['queued', 'running', 'completed']),
+});
+
 export const projectDetectionSignalSchema = z.object({
   id: z.string(),
   status: z.enum(evidenceStatuses),

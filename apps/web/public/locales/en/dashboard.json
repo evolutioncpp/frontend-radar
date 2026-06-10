@@ -92,12 +92,50 @@
       "description": "The report is being assembled from GitHub repository signals."
     },
     "reportError": {
-      "title": "Analysis failed",
-      "description": "The report could not be loaded. Try starting a new analysis."
+      "title": "Report could not be loaded",
+      "description": "Frontend Radar could not load this report. You can start a new analysis from the form above."
     },
     "reportFailed": {
       "title": "Analysis failed",
-      "description": "Repository analysis failed. Try starting a new analysis."
+      "description": "Repository analysis failed. Start a new analysis when you are ready.",
+      "errors": {
+        "analysisFailed": {
+          "title": "Analysis failed",
+          "description": "Frontend Radar could not finish the repository analysis. Check the repository input and try again."
+        },
+        "githubRateLimited": {
+          "title": "GitHub rate limit reached",
+          "description": "GitHub API rejected the request because the rate limit was reached. Check the configured token or try again later."
+        },
+        "githubUnavailable": {
+          "title": "Could not reach GitHub",
+          "description": "GitHub API did not respond during analysis. Check the connection, token access or try again later."
+        },
+        "projectPathNotFound": {
+          "title": "Frontend path was not found",
+          "description": "package.json was not found in the selected frontend path. Check the path and start a new analysis."
+        },
+        "repositoryForbidden": {
+          "title": "Repository access is blocked",
+          "description": "The repository is private or the configured GitHub token does not have access to it."
+        },
+        "repositoryNotFound": {
+          "title": "Repository was not found",
+          "description": "GitHub could not find this repository. Check the owner, repository name and selected branch."
+        },
+        "repositoryVerificationFailed": {
+          "title": "Repository could not be verified",
+          "description": "Frontend Radar could not verify the repository before analysis. Check GitHub access and try again."
+        }
+      }
+    },
+    "reportStatusAction": "Start a new analysis",
+    "reportStatusActionLoading": "Starting analysis...",
+    "reportRetry": {
+      "error": {
+        "title": "Could not restart analysis",
+        "description": "Frontend Radar could not restart this analysis. Try again later or start a new analysis manually."
+      }
     },
     "reportReuse": {
       "completed": {

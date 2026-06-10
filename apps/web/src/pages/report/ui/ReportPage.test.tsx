@@ -25,6 +25,7 @@ const apiMocks = vi.hoisted(() => ({
   forceRefreshReportAnalysis: vi.fn(),
   getReportComparison: vi.fn(),
   getReportAnalysis: vi.fn(),
+  retryReportAnalysis: vi.fn(),
 }));
 
 const repositoryBranchesResponse = vi.hoisted(() => ({
@@ -44,6 +45,7 @@ vi.mock('@/shared/api/generatedApi', () => ({
     apiMocks.forceRefreshReportAnalysis,
     { isLoading: false },
   ],
+  useRetryReportAnalysisMutation: () => [apiMocks.retryReportAnalysis, { isLoading: false }],
   useGetReportComparisonQuery: (...args: unknown[]) => apiMocks.getReportComparison(...args),
   useGetReportAnalysisQuery: (...args: unknown[]) => apiMocks.getReportAnalysis(...args),
   useLazyListRepositoryBranchesQuery: () => [
@@ -69,11 +71,20 @@ vi.mock('react-i18next', () => ({
         'page.reportProcessing.title': 'Analysis in progress',
         'page.reportProcessing.description':
           'The report is being assembled from GitHub repository signals.',
-        'page.reportError.title': 'Analysis failed',
+        'page.reportError.title': 'Report could not be loaded',
         'page.reportError.description':
-          'The report could not be loaded. Try starting a new analysis.',
+          'Frontend Radar could not load this report. You can start a new analysis from the form above.',
+        'page.reportStatusAction': 'Start a new analysis',
+        'page.reportStatusActionLoading': 'Starting analysis...',
+        'page.reportRetry.error.title': 'Could not restart analysis',
+        'page.reportRetry.error.description':
+          'Frontend Radar could not restart this analysis. Try again later or start a new analysis manually.',
         'page.reportFailed.title': 'Analysis failed',
-        'page.reportFailed.description': 'Repository analysis failed. Try starting a new analysis.',
+        'page.reportFailed.description':
+          'Repository analysis failed. Start a new analysis when you are ready.',
+        'page.reportFailed.errors.githubUnavailable.title': 'Could not reach GitHub',
+        'page.reportFailed.errors.githubUnavailable.description':
+          'GitHub API did not respond during analysis. Check the connection, token access or try again later.',
         'page.reportReuse.completed.title': 'Using the current report',
         'page.reportReuse.completed.description':
           'The repository has not changed since the latest completed analysis, so Frontend Radar reused the existing report.',
@@ -435,6 +446,14 @@ describe('ReportPage', () => {
           status: 'completed',
         }),
     });
+    apiMocks.retryReportAnalysis.mockReturnValue({
+      unwrap: () =>
+        Promise.resolve({
+          id: 'analysis-id',
+          retryReason: 'retried',
+          status: 'queued',
+        }),
+    });
     apiMocks.getReportComparison.mockReturnValue({
       data: {
         status: 'unavailable',
@@ -680,11 +699,15 @@ describe('ReportPage', () => {
 
     renderReportPage('/dashboard/report/analysis-id');
 
-    expect(screen.getByRole('heading', { name: 'Analysis failed' })).toBeInTheDocument();
-    expect(screen.getByText(/could not be loaded/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Report could not be loaded' })).toBeInTheDocument();
+    expect(screen.getByText(/could not load this report/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Start a new analysis' })).toHaveAttribute(
+      'href',
+      '#repository-analysis',
+    );
   });
 
-  test('renders failed analysis state', () => {
+  test('renders failed analysis state and restarts analysis from the failed report', async () => {
     apiMocks.getReportAnalysis.mockReturnValue({
       data: {
         id: 'analysis-id',
@@ -698,7 +721,36 @@ describe('ReportPage', () => {
 
     renderReportPage('/dashboard/report/analysis-id');
 
-    expect(screen.getByRole('heading', { name: 'Analysis failed' })).toBeInTheDocument();
-    expect(screen.getByText(/GitHub is unavailable/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Could not reach GitHub' })).toBeInTheDocument();
+    expect(screen.getByText(/GitHub API did not respond/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Start a new analysis' }));
+
+    await waitFor(() => {
+      expect(apiMocks.retryReportAnalysis).toHaveBeenCalledWith({
+        id: 'analysis-id',
+      });
+    });
+  });
+
+  test('shows retry error notice when failed report restart fails', async () => {
+    apiMocks.retryReportAnalysis.mockReturnValue({
+      unwrap: () => Promise.reject(new Error('Retry failed')),
+    });
+    apiMocks.getReportAnalysis.mockReturnValue({
+      data: {
+        id: 'analysis-id',
+        status: 'failed',
+        errorCode: 'github_unavailable',
+        errorMessage: 'GitHub is unavailable right now. Try again later.',
+      },
+      isError: false,
+      isLoading: false,
+    });
+
+    renderReportPage('/dashboard/report/analysis-id');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start a new analysis' }));
+
+    expect(await screen.findByText('Could not restart analysis')).toBeInTheDocument();
   });
 });
