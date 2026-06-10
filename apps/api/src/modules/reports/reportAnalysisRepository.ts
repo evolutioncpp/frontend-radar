@@ -9,16 +9,21 @@ import {
 
 import type { CreateReportAnalysisRequest } from './reportSchemas.js';
 
-export interface CreateReportAnalysisRecordInput extends CreateReportAnalysisRequest {
+export interface CreateReportAnalysisRecordInput extends Omit<
+  CreateReportAnalysisRequest,
+  'projectPath'
+> {
   analysisVersion: number;
   latestCommitDate: string | null;
   latestCommitSha: string | null;
+  projectPath: string;
   repositoryKey: string;
   snapshotKey: string;
 }
 
 export interface ReportAnalysisSnapshotLookup {
   analysisVersion: number;
+  projectPath: string;
   repositoryKey: string;
   snapshotKey: string;
 }
@@ -33,6 +38,7 @@ export interface ReportAnalysisEntity {
   owner: string;
   repository: string;
   repositoryKey: string;
+  projectPath: string;
   snapshotKey: string;
   normalizedUrl: string;
   status: ReportAnalysisStatus;
@@ -54,6 +60,7 @@ export interface ReportAnalysisRepository {
   fail(id: string, failure: ReportAnalysisFailure): Promise<ReportAnalysisEntity>;
   findById(id: string): Promise<ReportAnalysisEntity | null>;
   findLatest(limit: number): Promise<ReportAnalysisEntity[]>;
+  findPreviousCompleted(analysis: ReportAnalysisEntity): Promise<ReportAnalysisEntity | null>;
   findRecoverable(): Promise<ReportAnalysisEntity[]>;
   findReusableBySnapshot(
     lookup: ReportAnalysisSnapshotLookup,
@@ -84,6 +91,7 @@ const parseReportAnalysisErrorCode = (value: string | null): ReportAnalysisError
     value === 'repository_forbidden' ||
     value === 'github_rate_limited' ||
     value === 'github_unavailable' ||
+    value === 'project_path_not_found' ||
     value === 'repository_verification_failed' ||
     value === 'analysis_failed'
   ) {
@@ -101,6 +109,7 @@ const mapPrismaReportAnalysis = (
     owner: analysis.owner,
     repository: analysis.repository,
     repositoryKey: analysis.repositoryKey,
+    projectPath: analysis.projectPath,
     snapshotKey: analysis.snapshotKey,
     normalizedUrl: analysis.normalizedUrl,
     status: analysis.status,
@@ -119,11 +128,13 @@ const mapPrismaReportAnalysis = (
 
 const createSnapshotWhere = ({
   analysisVersion,
+  projectPath,
   repositoryKey,
   snapshotKey,
 }: ReportAnalysisSnapshotLookup): Prisma.ReportAnalysisWhereInput => {
   return {
     analysisVersion,
+    projectPath,
     repositoryKey,
     snapshotKey,
   };
@@ -213,6 +224,28 @@ export class PrismaReportAnalysisRepository implements ReportAnalysisRepository 
     });
 
     return analyses.map(mapPrismaReportAnalysis);
+  }
+
+  async findPreviousCompleted(analysis: ReportAnalysisEntity) {
+    const completedBefore = analysis.completedAt ?? analysis.updatedAt;
+    const previousAnalysis = await this.prisma.reportAnalysis.findFirst({
+      orderBy: {
+        completedAt: 'desc',
+      },
+      where: {
+        completedAt: {
+          lte: completedBefore,
+        },
+        id: {
+          not: analysis.id,
+        },
+        repositoryKey: analysis.repositoryKey,
+        projectPath: analysis.projectPath,
+        status: 'completed',
+      },
+    });
+
+    return previousAnalysis ? mapPrismaReportAnalysis(previousAnalysis) : null;
   }
 
   async findReusableBySnapshot(lookup: ReportAnalysisSnapshotLookup) {

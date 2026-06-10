@@ -1,4 +1,4 @@
-import { GitBranch, GitFork, Scale, Star, type LucideIcon } from 'lucide-react';
+import { Folder, GitBranch, GitFork, Scale, Star, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { formatNumber } from '@/shared/lib/format-number';
@@ -13,6 +13,7 @@ import type { ReactNode } from 'react';
 interface RepositorySummaryProps {
   repository: ReportRepository;
   headerAction?: ReactNode;
+  asideAction?: ReactNode;
 }
 
 interface MetaItem {
@@ -23,7 +24,11 @@ interface MetaItem {
   isCode?: boolean;
 }
 
-export const RepositorySummary = ({ headerAction, repository }: RepositorySummaryProps) => {
+export const RepositorySummary = ({
+  asideAction,
+  headerAction,
+  repository,
+}: RepositorySummaryProps) => {
   const { t } = useTranslation('dashboard');
 
   const repositoryFullName = `${repository.owner}/${repository.name}`;
@@ -48,6 +53,17 @@ export const RepositorySummary = ({ headerAction, repository }: RepositorySummar
       value: repository.defaultBranch,
       isCode: true,
     },
+    ...(repository.projectPath
+      ? [
+          {
+            id: 'projectPath',
+            icon: Folder,
+            label: t('repository.metadata.projectPath'),
+            value: repository.projectPath,
+            isCode: true,
+          },
+        ]
+      : []),
     {
       id: 'license',
       icon: Scale,
@@ -61,9 +77,12 @@ export const RepositorySummary = ({ headerAction, repository }: RepositorySummar
       <SectionHeader
         action={headerAction}
         aside={
-          <a className={s.repositoryLink} href={repository.url} rel="noreferrer" target="_blank">
-            {t('repository.openRepository')}
-          </a>
+          <div className={s.headerAside}>
+            {asideAction}
+            <a className={s.repositoryLink} href={repository.url} rel="noreferrer" target="_blank">
+              {t('repository.openRepository')}
+            </a>
+          </div>
         }
         label={t('repository.label')}
         title={repositoryFullName}

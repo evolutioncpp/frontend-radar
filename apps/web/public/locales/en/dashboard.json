@@ -17,6 +17,7 @@
       "settings": "Settings",
       "repository": "Repository",
       "healthScore": "Health score",
+      "comparison": "Comparison",
       "metrics": "Metrics",
       "checks": "Checks",
       "recommendations": "Recommendations"
@@ -111,9 +112,20 @@
         "description": "The previous attempt for this repository commit failed, so Frontend Radar restarted the analysis."
       }
     },
+    "reportRefresh": {
+      "upToDate": {
+        "title": "Report is up to date",
+        "description": "The repository latest commit has not changed, so no new analysis run was created."
+      },
+      "error": {
+        "title": "Refresh failed",
+        "description": "Frontend Radar could not check the latest repository commit. Try again later."
+      }
+    },
     "sections": {
       "repository": "Repository summary",
       "healthScore": "Health score",
+      "comparison": "Report comparison",
       "metrics": "Quality metrics",
       "checks": "Project checks",
       "recommendations": "Recommendations"
@@ -125,11 +137,14 @@
   "repository": {
     "label": "Repository",
     "openRepository": "Open repository",
+    "refresh": "Refresh",
+    "refreshLoading": "Checking...",
     "metadataAria": "Repository metadata",
     "metadata": {
       "stars": "Stars",
       "forks": "Forks",
       "branch": "Branch",
+      "projectPath": "Frontend path",
       "license": "License",
       "unknown": "Unknown"
     }
@@ -164,6 +179,25 @@
     "counter_other": "{{count}} recommendations",
     "listAria": "Recommendations list",
     "empty": "No recommendations for now."
+  },
+  "comparison": {
+    "label": "Comparison",
+    "title": "Changes since previous report",
+    "description": "Compare the current completed report with the previous completed report for the same repository.",
+    "totalScore": "Total score",
+    "totalScoreDeltaAria": "Total score delta {{delta}}",
+    "metricsTitle": "Metric changes",
+    "changedChecksTitle": "Changed checks",
+    "recommendationsTitle": "Recommendations",
+    "noChangedChecks": "No checks changed between reports.",
+    "addedRecommendations_one": "{{count}} added",
+    "addedRecommendations_other": "{{count}} added",
+    "resolvedRecommendations_one": "{{count}} resolved",
+    "resolvedRecommendations_other": "{{count}} resolved",
+    "persistentRecommendations_one": "{{count}} persistent",
+    "persistentRecommendations_other": "{{count}} persistent",
+    "emptyRecommendations": "No recommendation changes.",
+    "resolvedBadge": "Resolved"
   },
   "evidence": {
     "title": "Evidence",

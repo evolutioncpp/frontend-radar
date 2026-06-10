@@ -22,6 +22,17 @@ const injectedRtkApi = api
         query: () => ({ url: `/reports` }),
         providesTags: ['Reports'],
       }),
+      forceRefreshReportAnalysis: build.mutation<
+        ForceRefreshReportAnalysisApiResponse,
+        ForceRefreshReportAnalysisApiArg
+      >({
+        query: (queryArg) => ({ url: `/reports/${queryArg.id}/refresh`, method: 'POST' }),
+        invalidatesTags: ['Reports'],
+      }),
+      getReportComparison: build.query<GetReportComparisonApiResponse, GetReportComparisonApiArg>({
+        query: (queryArg) => ({ url: `/reports/${queryArg.id}/comparison` }),
+        providesTags: ['Reports'],
+      }),
       getReportAnalysis: build.query<GetReportAnalysisApiResponse, GetReportAnalysisApiArg>({
         query: (queryArg) => ({ url: `/reports/${queryArg.id}` }),
         providesTags: ['Reports'],
@@ -47,6 +58,7 @@ export type CreateReportAnalysisApiArg = {
     owner: string;
     repository: string;
     normalizedUrl: string;
+    projectPath?: string | null;
   };
 };
 export type ListReportAnalysesApiResponse = /** status 200 Default Response */ {
@@ -55,6 +67,7 @@ export type ListReportAnalysesApiResponse = /** status 200 Default Response */ {
     owner: string;
     repository: string;
     normalizedUrl: string;
+    projectPath: string | null;
     status: 'queued' | 'running' | 'completed' | 'failed';
     latestCommitDate: string | null;
     latestCommitSha: string | null;
@@ -67,6 +80,72 @@ export type ListReportAnalysesApiResponse = /** status 200 Default Response */ {
   }[];
 };
 export type ListReportAnalysesApiArg = void;
+export type ForceRefreshReportAnalysisApiResponse =
+  /** status 200 Default Response */
+  {
+    id: string;
+    refreshReason: 'up_to_date' | 'reused' | 'created';
+    status: 'queued' | 'running' | 'completed';
+  };
+/** status 201 Default Response */
+export type ForceRefreshReportAnalysisApiArg = {
+  id: string;
+};
+export type GetReportComparisonApiResponse =
+  /** status 200 Default Response */
+  | {
+      status: 'unavailable';
+    }
+  | {
+      status: 'available';
+      currentReportId: string;
+      previousReportId: string;
+      totalScore: {
+        current: number;
+        previous: number;
+        delta: number;
+      };
+      metrics: {
+        category:
+          | 'documentation'
+          | 'testing'
+          | 'ci'
+          | 'dependencies'
+          | 'maintainability'
+          | 'performance'
+          | 'accessibility';
+        label: string;
+        currentValue: number;
+        previousValue: number;
+        delta: number;
+        currentStatus: 'excellent' | 'good' | 'warning' | 'critical';
+        previousStatus: 'excellent' | 'good' | 'warning' | 'critical';
+      }[];
+      checks: {
+        id: string;
+        label: string;
+        previousStatus: 'passed' | 'failed' | 'warning';
+        currentStatus: 'passed' | 'failed' | 'warning';
+      }[];
+      recommendations: {
+        added: {
+          id: string;
+          severity: 'low' | 'medium' | 'high';
+          title: string;
+          description: string;
+        }[];
+        resolved: {
+          id: string;
+          severity: 'low' | 'medium' | 'high';
+          title: string;
+          description: string;
+        }[];
+        persistentCount: number;
+      };
+    };
+export type GetReportComparisonApiArg = {
+  id: string;
+};
 export type GetReportAnalysisApiResponse =
   /** status 200 Default Response */
   | {
@@ -90,6 +169,7 @@ export type GetReportAnalysisApiResponse =
           stars: number;
           forks: number;
           defaultBranch: string;
+          projectPath: string | null;
           latestCommitSha: string | null;
           latestCommitDate: string | null;
           license: string | null;
@@ -140,6 +220,7 @@ export type GetReportAnalysisApiResponse =
         | 'repository_forbidden'
         | 'github_rate_limited'
         | 'github_unavailable'
+        | 'project_path_not_found'
         | 'repository_verification_failed'
         | 'analysis_failed';
       errorMessage: string;
@@ -153,6 +234,9 @@ export const {
   useCreateReportAnalysisMutation,
   useListReportAnalysesQuery,
   useLazyListReportAnalysesQuery,
+  useForceRefreshReportAnalysisMutation,
+  useGetReportComparisonQuery,
+  useLazyGetReportComparisonQuery,
   useGetReportAnalysisQuery,
   useLazyGetReportAnalysisQuery,
 } = injectedRtkApi;

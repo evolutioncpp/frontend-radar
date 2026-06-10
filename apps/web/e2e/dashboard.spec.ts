@@ -12,6 +12,7 @@ const testReport = {
     stars: 128,
     forks: 14,
     defaultBranch: 'main',
+    projectPath: null,
     latestCommitSha: 'abc123',
     latestCommitDate: '2026-06-09T00:00:00.000Z',
     license: 'MIT',

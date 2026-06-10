@@ -19,6 +19,7 @@ export type RepositoryAnalysisSubmitError =
   | 'repositoryForbidden'
   | 'githubRateLimited'
   | 'githubUnavailable'
+  | 'projectPathNotFound'
   | 'repositoryVerificationFailed'
   | 'unknown'
   | null;
@@ -58,6 +59,10 @@ const getRepositoryAnalysisSubmitError = (error: unknown): RepositoryAnalysisSub
     return 'githubUnavailable';
   }
 
+  if (errorCode === 'project_path_not_found') {
+    return 'projectPathNotFound';
+  }
+
   if (errorCode === 'repository_verification_failed') {
     return 'repositoryVerificationFailed';
   }
@@ -73,6 +78,10 @@ const getRepositoryAnalysisSubmitError = (error: unknown): RepositoryAnalysisSub
 
     if (error.status === 429) {
       return 'githubRateLimited';
+    }
+
+    if (error.status === 422) {
+      return 'projectPathNotFound';
     }
 
     if (error.status === 502) {

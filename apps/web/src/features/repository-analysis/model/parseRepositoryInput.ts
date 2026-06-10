@@ -9,6 +9,7 @@ export const parseRepositoryInput = (value: string): RepositoryAnalysisRequest |
     ? {
         normalizedUrl: parsedRepository.normalizedUrl,
         owner: parsedRepository.owner,
+        ...(parsedRepository.projectPath ? { projectPath: parsedRepository.projectPath } : {}),
         repository: parsedRepository.repository,
       }
     : null;

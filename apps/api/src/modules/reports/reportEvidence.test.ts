@@ -38,6 +38,7 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
   packageJson: {
     dependencies: [],
     exists: false,
+    path: null,
     scripts: {
       build: createScriptSignal('build'),
       lint: createScriptSignal('lint'),

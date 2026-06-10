@@ -6,6 +6,8 @@ export type Styles = {
   fallbackCard: string;
   fallbackDescription: string;
   fallbackTitle: string;
+  refreshButton: string;
+  refreshIcon: string;
   reportPage: string;
   reuseNotice: string;
   reuseNoticeDescription: string;

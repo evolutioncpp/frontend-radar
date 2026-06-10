@@ -1,0 +1,187 @@
+@use 'app/styles/helpers' as *;
+
+.comparisonPanel {
+  display: grid;
+  gap: $space-5;
+}
+
+.description {
+  max-width: 56rem;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: $font-size-sm;
+  line-height: $line-height-md;
+}
+
+.totalDelta,
+.delta {
+  font-family: var(--font-family-mono);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  line-height: $line-height-sm;
+}
+
+.totalDelta {
+  white-space: nowrap;
+}
+
+.deltaPositive {
+  color: var(--color-success);
+}
+
+.deltaNegative {
+  color: var(--color-danger);
+}
+
+.deltaNeutral {
+  color: var(--color-text-muted);
+}
+
+.totalScore {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-3;
+  padding-block-end: $space-4;
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.totalScoreLabel {
+  color: var(--color-text-secondary);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+}
+
+.valuePair,
+.badgePair {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: $space-2;
+}
+
+.valuePair {
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-mono);
+  font-size: $font-size-sm;
+  line-height: $line-height-sm;
+
+  strong {
+    color: var(--color-text-primary);
+  }
+}
+
+.valueArrow {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
+}
+
+.sections {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: $space-5;
+}
+
+.section {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: $space-3;
+}
+
+.sectionTitle {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-md;
+  line-height: $line-height-sm;
+}
+
+.metricList,
+.checkList,
+.recommendationList {
+  display: grid;
+  gap: $space-3;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.metricItem,
+.checkItem,
+.recommendationItem {
+  min-width: 0;
+  padding-block: $space-3;
+  border-top: 1px solid var(--color-border-primary);
+}
+
+.metricItem,
+.checkItem {
+  display: grid;
+  gap: $space-3;
+}
+
+.itemMain {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-2 $space-4;
+}
+
+.itemTitle,
+.recommendationTitle {
+  min-width: 0;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-md;
+  overflow-wrap: anywhere;
+}
+
+.metricMeta {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-3;
+}
+
+.badgePair {
+  flex-wrap: wrap;
+}
+
+.recommendationStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2 $space-3;
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+}
+
+.recommendationItem {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-3;
+}
+
+.emptyState {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: $font-size-sm;
+  line-height: $line-height-md;
+}
+
+@include media-max($breakpoint-xl) {
+  .sections {
+    grid-template-columns: 1fr;
+  }
+}

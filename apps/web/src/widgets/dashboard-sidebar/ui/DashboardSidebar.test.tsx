@@ -29,6 +29,7 @@ vi.mock('react-i18next', () => ({
         'sidebar.items.settings': 'Settings',
         'sidebar.items.repository': 'Repository',
         'sidebar.items.healthScore': 'Health score',
+        'sidebar.items.comparison': 'Comparison',
         'sidebar.items.metrics': 'Metrics',
         'sidebar.items.checks': 'Checks',
         'sidebar.items.recommendations': 'Recommendations',
@@ -88,6 +89,11 @@ describe('DashboardSidebar', () => {
     expect(screen.getByRole('link', { name: 'Health score' })).toHaveAttribute(
       'href',
       `#${DashboardSectionIds.HEALTH_SCORE}`,
+    );
+
+    expect(screen.getByRole('link', { name: 'Comparison' })).toHaveAttribute(
+      'href',
+      `#${DashboardSectionIds.COMPARISON}`,
     );
 
     expect(screen.getByRole('link', { name: 'Metrics' })).toHaveAttribute(

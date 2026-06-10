@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams } from 'react-router-dom';
 
-import { useProjectReport } from '@/entities/report';
+import { useProjectReport, useReportComparison } from '@/entities/report';
 import {
   type ReportAnalysisNavigationState,
+  useReportForceRefresh,
   useRepositoryAnalysisSubmit,
 } from '@/features/repository-analysis';
 import { Card } from '@/shared/ui/Card';
@@ -40,6 +41,8 @@ export const ReportPage = () => {
   const location = useLocation();
   const reuseReason = getReportAnalysisReuseReason(location.state);
   const reportState = useProjectReport(id);
+  const comparisonState = useReportComparison(reportState.status === 'ready' ? id : undefined);
+  const reportForceRefresh = useReportForceRefresh(id);
   const repositoryAnalysisSubmit = useRepositoryAnalysisSubmit();
 
   return (
@@ -58,8 +61,20 @@ export const ReportPage = () => {
         />
       ) : null}
 
+      {reportForceRefresh.refreshNotice ? (
+        <ReportReuseNotice
+          description={t(`page.reportRefresh.${reportForceRefresh.refreshNotice}.description`)}
+          title={t(`page.reportRefresh.${reportForceRefresh.refreshNotice}.title`)}
+        />
+      ) : null}
+
       {reportState.status === 'ready' ? (
-        <DashboardReportView report={reportState.report} />
+        <DashboardReportView
+          comparison={comparisonState.status === 'available' ? comparisonState.comparison : null}
+          isRefreshing={reportForceRefresh.isRefreshing}
+          onForceRefresh={reportForceRefresh.refreshReport}
+          report={reportState.report}
+        />
       ) : reportState.status === 'loading' ? (
         <ReportStatusCard
           description={t('page.reportLoading.description')}

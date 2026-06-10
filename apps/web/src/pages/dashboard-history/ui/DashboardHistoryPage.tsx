@@ -37,6 +37,7 @@ export const DashboardHistoryPage = () => {
             checksCount={item.checksCount}
             key={item.id}
             metricsCount={item.metricsCount}
+            projectPath={item.projectPath}
             recommendationsCount={item.recommendationsCount}
             repositoryName={item.repositoryName}
             score={item.score}

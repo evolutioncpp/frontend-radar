@@ -65,6 +65,8 @@ describe('collectRepositorySignals', () => {
       branch: 'abc123',
       owner: 'owner',
       packageJson,
+      packageJsonPath: 'package.json',
+      projectPath: '',
       reader,
       repository: 'repo',
     });
@@ -94,12 +96,96 @@ describe('collectRepositorySignals', () => {
     expect(signals.bundler).toMatchObject({
       dependencies: ['vite'],
       found: true,
-      sources: ['vite'],
+      sources: ['package.json dependencies.vite'],
     });
     expect(signals.storybook).toMatchObject({
       dependencies: ['@storybook/react-vite'],
       found: true,
-      sources: ['@storybook/react-vite'],
+      sources: ['package.json devDependencies.@storybook/react-vite'],
+    });
+  });
+
+  it('collects project-scoped frontend signals from a nested workspace', async () => {
+    const packageJson: PackageJson = {
+      dependencies: {
+        react: '^19.0.0',
+      },
+      devDependencies: {
+        typescript: '^6.0.0',
+        vite: '^8.0.0',
+        vitest: '^4.0.0',
+      },
+      scripts: {
+        build: 'vite build',
+        lint: 'eslint .',
+        test: 'vitest run',
+      },
+    };
+    const reader = {
+      findFirstPath: async (
+        _owner: string,
+        _repository: string,
+        _branch: string,
+        paths: readonly string[],
+      ) => {
+        if (paths.includes('apps/web/tsconfig.json')) {
+          return 'apps/web/tsconfig.json';
+        }
+
+        if (paths.includes('package-lock.json')) {
+          return 'package-lock.json';
+        }
+
+        return null;
+      },
+      listDirectoryFiles: async () => ['ci.yml'],
+      readFirstTextFile: async (
+        _owner: string,
+        _repository: string,
+        _branch: string,
+        paths: readonly string[],
+      ) => ({
+        content: createSubstantialReadme(),
+        path: paths[0],
+      }),
+    } as unknown as GithubRepositoryReader;
+
+    const signals = await collectRepositorySignals({
+      branch: 'abc123',
+      owner: 'owner',
+      packageJson,
+      packageJsonPath: 'apps/web/package.json',
+      projectPath: 'apps/web',
+      reader,
+      repository: 'repo',
+    });
+
+    expect(signals.packageJson).toMatchObject({
+      exists: true,
+      path: 'apps/web/package.json',
+    });
+    expect(signals.packageJson.scripts.build).toMatchObject({
+      source: 'apps/web/package.json scripts.build',
+    });
+    expect(signals.readme.path).toBe('apps/web/README.md');
+    expect(signals.typescript).toMatchObject({
+      configPaths: ['apps/web/tsconfig.json'],
+      found: true,
+      sources: ['apps/web/tsconfig.json', 'apps/web/package.json devDependencies.typescript'],
+    });
+    expect(signals.bundler).toMatchObject({
+      dependencies: ['vite'],
+      found: true,
+      sources: ['apps/web/package.json devDependencies.vite'],
+    });
+    expect(signals.testingLibrary).toMatchObject({
+      dependencies: ['vitest'],
+      found: true,
+      sources: ['apps/web/package.json devDependencies.vitest'],
+    });
+    expect(signals.lockfile).toMatchObject({
+      exists: true,
+      path: 'package-lock.json',
     });
   });
 
@@ -119,6 +205,8 @@ describe('collectRepositorySignals', () => {
       branch: 'main',
       owner: 'owner',
       packageJson: null,
+      packageJsonPath: null,
+      projectPath: '',
       reader,
       repository: 'repo',
     });
@@ -149,6 +237,8 @@ describe('collectRepositorySignals', () => {
       branch: 'main',
       owner: 'owner',
       packageJson,
+      packageJsonPath: 'package.json',
+      projectPath: '',
       reader,
       repository: 'repo',
     });
@@ -156,12 +246,12 @@ describe('collectRepositorySignals', () => {
     expect(signals.a11yTooling).toMatchObject({
       dependencies: ['@axe-core/react'],
       found: true,
-      sources: ['@axe-core/react'],
+      sources: ['package.json optionalDependencies.@axe-core/react'],
     });
     expect(signals.bundler).toMatchObject({
       dependencies: ['next'],
       found: true,
-      sources: ['next'],
+      sources: ['package.json peerDependencies.next'],
     });
   });
 
@@ -176,6 +266,8 @@ describe('collectRepositorySignals', () => {
       branch: 'main',
       owner: 'owner',
       packageJson: null,
+      packageJsonPath: null,
+      projectPath: '',
       reader,
       repository: 'repo',
     });
@@ -199,6 +291,8 @@ describe('collectRepositorySignals', () => {
       branch: 'main',
       owner: 'owner',
       packageJson: null,
+      packageJsonPath: null,
+      projectPath: '',
       reader,
       repository: 'repo',
     });
@@ -221,6 +315,8 @@ describe('collectRepositorySignals', () => {
       branch: 'main',
       owner: 'owner',
       packageJson: null,
+      packageJsonPath: null,
+      projectPath: '',
       reader,
       repository: 'repo',
     });

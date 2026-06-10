@@ -153,6 +153,25 @@ describe('GET /openapi.json', () => {
       expect(JSON.stringify(body.paths['/reports/{id}'].get.parameters)).toContain(
         'accept-language',
       );
+      expect(body.paths['/reports/{id}/refresh']).toBeDefined();
+      expect(body.paths['/reports/{id}/refresh'].post.operationId).toBe(
+        'forceRefreshReportAnalysis',
+      );
+      expect(body.paths['/reports/{id}/refresh'].post.responses['409']).toBeDefined();
+      expect(
+        JSON.stringify(
+          body.paths['/reports/{id}/refresh'].post.responses['200'].content['application/json']
+            .schema,
+        ),
+      ).toContain('up_to_date');
+      expect(body.paths['/reports/{id}/comparison']).toBeDefined();
+      expect(body.paths['/reports/{id}/comparison'].get.operationId).toBe('getReportComparison');
+      expect(
+        JSON.stringify(
+          body.paths['/reports/{id}/comparison'].get.responses['200'].content['application/json']
+            .schema,
+        ),
+      ).toContain('persistentCount');
       expect(
         findFailedResponseSchema(
           body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,

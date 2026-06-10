@@ -107,6 +107,10 @@
   color: var(--color-text-muted);
 }
 
+.metaCode {
+  font-family: var(--font-family-mono);
+}
+
 .cardAside {
   display: grid;
   grid-template-columns: minmax(8rem, auto) minmax(10rem, 14rem);

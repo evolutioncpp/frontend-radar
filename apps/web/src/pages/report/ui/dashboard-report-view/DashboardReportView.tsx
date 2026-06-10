@@ -1,3 +1,4 @@
+import { RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { useDashboardSectionsReady } from '@/features/dashboard-section-navigation';
@@ -6,26 +7,36 @@ import {
   dashboardSectionPageLabelKeys,
   type DashboardSectionId,
 } from '@/shared/config/navigation/dashboardSections';
+import { Button } from '@/shared/ui/Button';
 import { ChecksList } from '@/widgets/checks-list';
 import { HealthScorePanel } from '@/widgets/health-score-panel';
 import { MetricsGrid } from '@/widgets/metrics-grid';
 import { RecommendationsPanel } from '@/widgets/recommendations-panel';
+import { ReportComparisonPanel } from '@/widgets/report-comparison-panel';
 import { RepositorySummary } from '@/widgets/repository-summary';
 
 import { DashboardReportSection } from '../dashboard-report-section/DashboardReportSection';
 import { DashboardSectionCopyButton } from '../dashboard-section-copy-button/DashboardSectionCopyButton';
 import s from '../ReportPage.module.scss';
 
-import type { ProjectReport } from '@/entities/report';
+import type { GetReportComparisonApiResponse, ProjectReport } from '@/entities/report';
 
 interface DashboardReportViewProps {
+  comparison?: Extract<GetReportComparisonApiResponse, { status: 'available' }> | null;
+  isRefreshing?: boolean;
+  onForceRefresh?: () => void;
   report: ProjectReport;
 }
 
-export const DashboardReportView = ({ report }: DashboardReportViewProps) => {
+export const DashboardReportView = ({
+  comparison = null,
+  isRefreshing = false,
+  onForceRefresh,
+  report,
+}: DashboardReportViewProps) => {
   const { t } = useTranslation('dashboard');
 
-  useDashboardSectionsReady();
+  useDashboardSectionsReady(comparison ? 'with-comparison' : 'without-comparison');
 
   const getSectionLabel = (sectionId: DashboardSectionId) => {
     return t(dashboardSectionPageLabelKeys[sectionId]);
@@ -38,6 +49,20 @@ export const DashboardReportView = ({ report }: DashboardReportViewProps) => {
         id={DashboardSectionIds.REPOSITORY}
       >
         <RepositorySummary
+          asideAction={
+            onForceRefresh ? (
+              <Button
+                className={s.refreshButton}
+                disabled={isRefreshing}
+                onClick={onForceRefresh}
+                type="button"
+                variant="secondary"
+              >
+                <RefreshCw className={s.refreshIcon} aria-hidden="true" strokeWidth={2} />
+                {isRefreshing ? t('repository.refreshLoading') : t('repository.refresh')}
+              </Button>
+            ) : null
+          }
           headerAction={<DashboardSectionCopyButton sectionId={DashboardSectionIds.REPOSITORY} />}
           repository={report.repository}
         />
@@ -52,6 +77,18 @@ export const DashboardReportView = ({ report }: DashboardReportViewProps) => {
           score={report.totalScore}
         />
       </DashboardReportSection>
+
+      {comparison ? (
+        <DashboardReportSection
+          ariaLabel={getSectionLabel(DashboardSectionIds.COMPARISON)}
+          id={DashboardSectionIds.COMPARISON}
+        >
+          <ReportComparisonPanel
+            comparison={comparison}
+            headerAction={<DashboardSectionCopyButton sectionId={DashboardSectionIds.COMPARISON} />}
+          />
+        </DashboardReportSection>
+      ) : null}
 
       <DashboardReportSection
         ariaLabel={getSectionLabel(DashboardSectionIds.METRICS)}

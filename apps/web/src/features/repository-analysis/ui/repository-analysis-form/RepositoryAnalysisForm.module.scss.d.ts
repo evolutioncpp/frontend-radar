@@ -1,5 +1,8 @@
 export type Styles = {
+  fields: string;
   input: string;
+  projectPathInput: string;
+  projectPathToggle: string;
   repositoryAnalysisForm: string;
   submitButton: string;
 };

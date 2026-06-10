@@ -21,6 +21,7 @@ export const getReportHistoryItemViewModel = (item: ReportHistoryItem, language:
     checksCount: item.checksCount ?? 0,
     id: item.id,
     metricsCount: item.metricsCount ?? 0,
+    projectPath: item.projectPath,
     recommendationsCount: item.recommendationsCount ?? 0,
     repositoryName: `${item.owner}/${item.repository}`,
     score: item.score,

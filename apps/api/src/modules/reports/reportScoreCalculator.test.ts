@@ -41,6 +41,7 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
   packageJson: {
     dependencies: [],
     exists: true,
+    path: 'package.json',
     scripts: {
       build: createScriptSignal('build'),
       lint: createScriptSignal('lint'),
@@ -101,6 +102,7 @@ describe('buildScoreBreakdown', () => {
         packageJson: {
           dependencies: [],
           exists: true,
+          path: 'package.json',
           scripts: {
             build: createScriptSignal('build', 'vite build'),
             lint: createScriptSignal('lint'),

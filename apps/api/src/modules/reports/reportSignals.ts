@@ -4,9 +4,16 @@ import {
   repositorySignalConfig,
 } from './reportAnalysisConfig.js';
 
+import { joinRepositoryPath } from './githubRepositoryReader.js';
+
 import type { GithubRepositoryReader, PackageJson } from './githubRepositoryReader.js';
 
 type ScriptName = 'build' | 'lint' | 'test';
+type DependencySection =
+  | 'dependencies'
+  | 'devDependencies'
+  | 'optionalDependencies'
+  | 'peerDependencies';
 
 export interface PathSignal {
   exists: boolean;
@@ -42,6 +49,7 @@ export interface RepositorySignals {
   packageJson: {
     dependencies: string[];
     exists: boolean;
+    path: string | null;
     scripts: Record<ScriptName, ScriptSignal>;
   };
   readme: PathSignal & {
@@ -72,6 +80,32 @@ const getDependencyNames = (packageJson: PackageJson | null) => {
   return [...new Set(dependencyNames)].sort((left, right) => left.localeCompare(right));
 };
 
+const dependencySections = [
+  'dependencies',
+  'devDependencies',
+  'optionalDependencies',
+  'peerDependencies',
+] as const satisfies readonly DependencySection[];
+
+const getDependencySourceMap = (
+  packageJson: PackageJson | null,
+  packageJsonPath: string | null,
+) => {
+  const sourceMap = new Map<string, string>();
+
+  if (!packageJson || !packageJsonPath) {
+    return sourceMap;
+  }
+
+  for (const section of dependencySections) {
+    for (const dependencyName of Object.keys(packageJson[section] ?? {})) {
+      sourceMap.set(dependencyName, `${packageJsonPath} ${section}.${dependencyName}`);
+    }
+  }
+
+  return sourceMap;
+};
+
 const getMatchingDependencies = (
   dependencyNames: readonly string[],
   expectedDependencyNames: readonly string[],
@@ -81,8 +115,18 @@ const getMatchingDependencies = (
   return expectedDependencyNames.filter((dependencyName) => dependencies.has(dependencyName));
 };
 
+const getDependencySources = (
+  dependencyNames: readonly string[],
+  dependencySourceMap: ReadonlyMap<string, string>,
+) => {
+  return dependencyNames.map(
+    (dependencyName) => dependencySourceMap.get(dependencyName) ?? dependencyName,
+  );
+};
+
 const createScriptSignal = (
   packageJson: PackageJson | null,
+  packageJsonPath: string | null,
   scriptName: ScriptName,
 ): ScriptSignal => {
   const value = getScript(packageJson, scriptName);
@@ -90,7 +134,7 @@ const createScriptSignal = (
   return {
     exists: value !== null,
     name: scriptName,
-    source: value ? `package.json scripts.${scriptName}` : null,
+    source: packageJsonPath ? `${packageJsonPath} scripts.${scriptName}` : null,
     value,
   };
 };
@@ -103,17 +147,19 @@ const createPathSignal = (path: string | null): PathSignal => ({
 const createToolSignal = ({
   configPaths = [],
   dependencies,
+  sources,
 }: {
   configPaths?: string[];
   dependencies: string[];
+  sources?: string[];
 }): ToolSignal => {
-  const sources = [...configPaths, ...dependencies];
+  const signalSources = sources ?? [...configPaths, ...dependencies];
 
   return {
     configPaths,
     dependencies,
-    found: sources.length > 0,
-    sources,
+    found: signalSources.length > 0,
+    sources: signalSources,
   };
 };
 
@@ -121,8 +167,18 @@ const hasTextPattern = (content: string, patterns: readonly RegExp[]) => {
   return patterns.some((pattern) => pattern.test(content));
 };
 
+const prefixPaths = (projectPath: string, paths: readonly string[]) => {
+  return paths.map((path) => joinRepositoryPath(projectPath, path));
+};
+
+const withProjectFallbackPaths = (projectPath: string, paths: readonly string[]) => {
+  return [...new Set([...prefixPaths(projectPath, paths), ...paths])];
+};
+
 const getPackageManager = (lockfilePath: string | null) => {
-  switch (lockfilePath) {
+  const lockfileName = lockfilePath?.split('/').at(-1) ?? null;
+
+  switch (lockfileName) {
     case 'bun.lock':
     case 'bun.lockb':
       return 'bun';
@@ -162,26 +218,56 @@ export const collectRepositorySignals = async ({
   branch,
   owner,
   packageJson,
+  packageJsonPath,
+  projectPath,
   reader,
   repository,
 }: {
   branch: string;
   owner: string;
   packageJson: PackageJson | null;
+  packageJsonPath: string | null;
+  projectPath: string;
   reader: GithubRepositoryReader;
   repository: string;
 }) => {
   const [readmeFile, typescriptPath, workflowNames, envExamplePath, lockfilePath, storybookPath] =
     await Promise.all([
-      reader.readFirstTextFile(owner, repository, branch, repositorySignalConfig.readmePaths),
-      reader.findFirstPath(owner, repository, branch, repositorySignalConfig.typescriptPaths),
+      reader.readFirstTextFile(
+        owner,
+        repository,
+        branch,
+        withProjectFallbackPaths(projectPath, repositorySignalConfig.readmePaths),
+      ),
+      reader.findFirstPath(
+        owner,
+        repository,
+        branch,
+        withProjectFallbackPaths(projectPath, repositorySignalConfig.typescriptPaths),
+      ),
       reader.listDirectoryFiles(owner, repository, branch, repositorySignalConfig.workflowsPath),
-      reader.findFirstPath(owner, repository, branch, repositorySignalConfig.envExamplePaths),
-      reader.findFirstPath(owner, repository, branch, repositorySignalConfig.lockfilePaths),
-      reader.findFirstPath(owner, repository, branch, repositorySignalConfig.storybookPaths),
+      reader.findFirstPath(
+        owner,
+        repository,
+        branch,
+        withProjectFallbackPaths(projectPath, repositorySignalConfig.envExamplePaths),
+      ),
+      reader.findFirstPath(
+        owner,
+        repository,
+        branch,
+        withProjectFallbackPaths(projectPath, repositorySignalConfig.lockfilePaths),
+      ),
+      reader.findFirstPath(
+        owner,
+        repository,
+        branch,
+        withProjectFallbackPaths(projectPath, repositorySignalConfig.storybookPaths),
+      ),
     ]);
 
   const dependencies = getDependencyNames(packageJson);
+  const dependencySourceMap = getDependencySourceMap(packageJson, packageJsonPath);
   const validWorkflowNames = getValidWorkflowNames(workflowNames);
   const a11yDependencies = getMatchingDependencies(
     dependencies,
@@ -207,9 +293,11 @@ export const collectRepositorySignals = async ({
   return {
     a11yTooling: createToolSignal({
       dependencies: a11yDependencies,
+      sources: getDependencySources(a11yDependencies, dependencySourceMap),
     }),
     bundler: createToolSignal({
       dependencies: bundlerDependencies,
+      sources: getDependencySources(bundlerDependencies, dependencySourceMap),
     }),
     ci: {
       exists: validWorkflowNames.length > 0,
@@ -224,10 +312,11 @@ export const collectRepositorySignals = async ({
     packageJson: {
       dependencies,
       exists: packageJson !== null,
+      path: packageJsonPath,
       scripts: {
-        build: createScriptSignal(packageJson, 'build'),
-        lint: createScriptSignal(packageJson, 'lint'),
-        test: createScriptSignal(packageJson, 'test'),
+        build: createScriptSignal(packageJson, packageJsonPath, 'build'),
+        lint: createScriptSignal(packageJson, packageJsonPath, 'lint'),
+        test: createScriptSignal(packageJson, packageJsonPath, 'test'),
       },
     },
     readme: {
@@ -246,13 +335,22 @@ export const collectRepositorySignals = async ({
     storybook: createToolSignal({
       configPaths: storybookPath ? [storybookPath] : [],
       dependencies: storybookDependencies,
+      sources: [
+        ...(storybookPath ? [storybookPath] : []),
+        ...getDependencySources(storybookDependencies, dependencySourceMap),
+      ],
     }),
     testingLibrary: createToolSignal({
       dependencies: testingDependencies,
+      sources: getDependencySources(testingDependencies, dependencySourceMap),
     }),
     typescript: createToolSignal({
       configPaths: typescriptPath ? [typescriptPath] : [],
       dependencies: typescriptDependencies,
+      sources: [
+        ...(typescriptPath ? [typescriptPath] : []),
+        ...getDependencySources(typescriptDependencies, dependencySourceMap),
+      ],
     }),
   } satisfies RepositorySignals;
 };

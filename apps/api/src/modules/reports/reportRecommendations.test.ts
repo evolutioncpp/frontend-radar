@@ -41,6 +41,7 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
   packageJson: {
     dependencies: ['@testing-library/react', 'eslint-plugin-jsx-a11y', 'typescript', 'vite'],
     exists: true,
+    path: 'package.json',
     scripts: {
       build: createScriptSignal('build', 'vite build'),
       lint: createScriptSignal('lint', 'eslint .'),
@@ -81,6 +82,7 @@ describe('buildRecommendations', () => {
         packageJson: {
           dependencies: [],
           exists: true,
+          path: 'package.json',
           scripts: {
             build: createScriptSignal('build'),
             lint: createScriptSignal('lint'),

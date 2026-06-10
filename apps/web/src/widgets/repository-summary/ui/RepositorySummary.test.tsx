@@ -15,6 +15,7 @@ vi.mock('react-i18next', () => ({
         'repository.metadata.stars': 'Stars',
         'repository.metadata.forks': 'Forks',
         'repository.metadata.branch': 'Branch',
+        'repository.metadata.projectPath': 'Frontend path',
         'repository.metadata.license': 'License',
         'repository.metadata.unknown': 'Unknown',
       };
@@ -32,6 +33,7 @@ const repository: ReportRepository = {
   stars: 128,
   forks: 14,
   defaultBranch: 'main',
+  projectPath: null,
   latestCommitSha: 'abc123',
   latestCommitDate: '2026-06-02T00:00:00.000Z',
   license: 'MIT',
@@ -70,6 +72,13 @@ describe('RepositorySummary', () => {
 
     expect(screen.getByText('License')).toBeInTheDocument();
     expect(screen.getByText('MIT')).toBeInTheDocument();
+  });
+
+  test('renders project path when repository was analyzed from a nested package', () => {
+    render(<RepositorySummary repository={{ ...repository, projectPath: 'apps/web' }} />);
+
+    expect(screen.getByText('Frontend path')).toBeInTheDocument();
+    expect(screen.getByText('apps/web')).toBeInTheDocument();
   });
 
   test('renders repository link', () => {

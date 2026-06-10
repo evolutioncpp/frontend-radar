@@ -1,5 +1,10 @@
 import { z } from 'zod/v4';
-import { githubOwnerPattern, githubRepositoryPattern } from '@frontend-radar/github-repository';
+import {
+  githubOwnerPattern,
+  githubRepositoryPattern,
+  isGithubProjectPath,
+  normalizeGithubProjectPath,
+} from '@frontend-radar/github-repository';
 
 export const reportAnalysisStatuses = ['queued', 'running', 'completed', 'failed'] as const;
 export const reportAnalysisErrorCodes = [
@@ -7,6 +12,7 @@ export const reportAnalysisErrorCodes = [
   'repository_forbidden',
   'github_rate_limited',
   'github_unavailable',
+  'project_path_not_found',
   'repository_verification_failed',
   'analysis_failed',
 ] as const;
@@ -38,11 +44,22 @@ export const createReportAnalysisRequestSchema = z.object({
   owner: z.string().regex(githubOwnerPattern),
   repository: z.string().regex(githubRepositoryPattern),
   normalizedUrl: z.string().url(),
+  projectPath: z
+    .string()
+    .refine(isGithubProjectPath)
+    .transform((value) => normalizeGithubProjectPath(value) ?? value)
+    .nullish(),
 });
 
 export const createReportAnalysisResponseSchema = z.object({
   id: z.string(),
   reuseReason: z.enum(['completed', 'active', 'retried']).nullable(),
+  status: z.enum(['queued', 'running', 'completed']),
+});
+
+export const refreshReportAnalysisResponseSchema = z.object({
+  id: z.string(),
+  refreshReason: z.enum(['up_to_date', 'reused', 'created']),
   status: z.enum(['queued', 'running', 'completed']),
 });
 
@@ -54,6 +71,7 @@ export const reportRepositorySchema = z.object({
   stars: z.number().int().nonnegative(),
   forks: z.number().int().nonnegative(),
   defaultBranch: z.string(),
+  projectPath: z.string().nullable().default(null),
   latestCommitSha: z.string().nullable().default(null),
   latestCommitDate: z.string().nullable(),
   license: z.string().nullable(),
@@ -136,6 +154,7 @@ export const reportAnalysisListItemSchema = z.object({
   owner: z.string(),
   repository: z.string(),
   normalizedUrl: z.string().url(),
+  projectPath: z.string().nullable(),
   status: reportAnalysisStatusSchema,
   latestCommitDate: z.string().nullable(),
   latestCommitSha: z.string().nullable(),
@@ -151,6 +170,54 @@ export const listReportAnalysesResponseSchema = z.object({
   items: z.array(reportAnalysisListItemSchema),
 });
 
+export const reportComparisonValueSchema = z.object({
+  current: z.number().int(),
+  previous: z.number().int(),
+  delta: z.number().int(),
+});
+
+export const reportComparisonMetricSchema = z.object({
+  category: z.enum(scoreCategories),
+  label: z.string(),
+  currentValue: z.number().int(),
+  previousValue: z.number().int(),
+  delta: z.number().int(),
+  currentStatus: z.enum(scoreStatuses),
+  previousStatus: z.enum(scoreStatuses),
+});
+
+export const reportComparisonCheckSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  previousStatus: z.enum(checkStatuses),
+  currentStatus: z.enum(checkStatuses),
+});
+
+export const reportComparisonRecommendationsSchema = z.object({
+  added: z.array(reportRecommendationSchema),
+  resolved: z.array(reportRecommendationSchema),
+  persistentCount: z.number().int().nonnegative(),
+});
+
+export const reportComparisonUnavailableResponseSchema = z.object({
+  status: z.literal('unavailable'),
+});
+
+export const reportComparisonAvailableResponseSchema = z.object({
+  status: z.literal('available'),
+  currentReportId: z.string(),
+  previousReportId: z.string(),
+  totalScore: reportComparisonValueSchema,
+  metrics: z.array(reportComparisonMetricSchema),
+  checks: z.array(reportComparisonCheckSchema),
+  recommendations: reportComparisonRecommendationsSchema,
+});
+
+export const getReportComparisonResponseSchema = z.discriminatedUnion('status', [
+  reportComparisonUnavailableResponseSchema,
+  reportComparisonAvailableResponseSchema,
+]);
+
 export const reportAnalysisParamsSchema = z.object({
   id: z.string().min(1),
 });
@@ -161,6 +228,7 @@ export const errorResponseSchema = z.object({
 });
 
 export type CreateReportAnalysisRequest = z.infer<typeof createReportAnalysisRequestSchema>;
+export type GetReportComparisonResponse = z.infer<typeof getReportComparisonResponseSchema>;
 export type ReportAnalysisErrorCode = z.infer<typeof reportAnalysisErrorCodeSchema>;
 export type ProjectReport = z.infer<typeof projectReportSchema>;
 export type ReportAnalysisStatus = z.infer<typeof reportAnalysisStatusSchema>;

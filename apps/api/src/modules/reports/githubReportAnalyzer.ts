@@ -3,6 +3,7 @@ import { GithubRepositoryReader, type RepositorySnapshot } from './githubReposit
 import { buildChecks } from './reportChecks.js';
 import { buildRecommendations } from './reportRecommendations.js';
 import { buildScoreBreakdown } from './reportScoreCalculator.js';
+import { resolveReportProject } from './reportProjectDetector.js';
 import { collectRepositorySignals } from './reportSignals.js';
 
 import type { CreateReportAnalysisRequest, ProjectReport } from './reportSchemas.js';
@@ -20,6 +21,7 @@ type ReportAnalysisInput = CreateReportAnalysisRequest & {
   createdAt: Date;
   latestCommitDate: string | null;
   latestCommitSha: string | null;
+  projectPath: string;
 };
 
 export type { RepositorySnapshot };
@@ -27,6 +29,12 @@ export type { RepositorySnapshot };
 export interface ReportAnalyzer {
   analyze(input: ReportAnalysisInput): Promise<ProjectReport>;
   getRepositorySnapshot(owner: string, repository: string): Promise<RepositorySnapshot>;
+  resolveProjectPath(
+    owner: string,
+    repository: string,
+    ref: string,
+    projectPath?: string | null,
+  ): Promise<string>;
 }
 
 export class GithubReportAnalyzer implements ReportAnalyzer {
@@ -36,6 +44,23 @@ export class GithubReportAnalyzer implements ReportAnalyzer {
     return this.reader.getRepositorySnapshot(owner, repository);
   }
 
+  async resolveProjectPath(
+    owner: string,
+    repository: string,
+    ref: string,
+    projectPath?: string | null,
+  ) {
+    const project = await resolveReportProject({
+      branch: ref,
+      owner,
+      projectPath,
+      reader: this.reader,
+      repository,
+    });
+
+    return project.projectPath;
+  }
+
   async analyze(input: ReportAnalysisInput): Promise<ProjectReport> {
     const repositoryMetadata = await this.reader.fetchRepositoryMetadata(
       input.owner,
@@ -43,15 +68,19 @@ export class GithubReportAnalyzer implements ReportAnalyzer {
     );
     const defaultBranch = repositoryMetadata.defaultBranch;
     const analysisRef = input.latestCommitSha ?? defaultBranch;
-    const packageJson = await this.reader.readPackageJson(
-      input.owner,
-      input.repository,
-      analysisRef,
-    );
+    const project = await resolveReportProject({
+      branch: analysisRef,
+      owner: input.owner,
+      projectPath: input.projectPath,
+      reader: this.reader,
+      repository: input.repository,
+    });
     const signals = await collectRepositorySignals({
       branch: analysisRef,
       owner: input.owner,
-      packageJson,
+      packageJson: project.packageJson,
+      packageJsonPath: project.packageJsonPath,
+      projectPath: project.projectPath,
       reader: this.reader,
       repository: input.repository,
     });
@@ -72,6 +101,7 @@ export class GithubReportAnalyzer implements ReportAnalyzer {
         stars: repositoryMetadata.stars,
         forks: repositoryMetadata.forks,
         defaultBranch,
+        projectPath: input.projectPath || null,
         latestCommitSha: input.latestCommitSha,
         latestCommitDate: input.latestCommitDate ?? repositoryMetadata.pushedAt,
         license: repositoryMetadata.license,

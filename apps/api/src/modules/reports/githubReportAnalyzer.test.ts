@@ -128,6 +128,7 @@ describe('GithubReportAnalyzer', () => {
       owner: 'owner',
       repository: 'repo',
       normalizedUrl: 'https://github.com/owner/repo',
+      projectPath: '',
       createdAt: new Date('2026-06-09T00:00:00.000Z'),
       latestCommitDate: '2026-06-09T00:00:00.000Z',
       latestCommitSha: 'abc123',
@@ -194,7 +195,7 @@ describe('GithubReportAnalyzer', () => {
           evidence: expect.arrayContaining([
             expect.objectContaining({
               id: 'bundler',
-              source: 'vite',
+              source: 'package.json devDependencies.vite',
               status: 'found',
             }),
           ]),
@@ -259,6 +260,7 @@ describe('GithubReportAnalyzer', () => {
       owner: 'owner',
       repository: 'repo',
       normalizedUrl: 'https://github.com/owner/repo',
+      projectPath: '',
       createdAt: new Date('2026-06-09T00:00:00.000Z'),
       latestCommitDate: null,
       latestCommitSha: null,
@@ -270,5 +272,195 @@ describe('GithubReportAnalyzer', () => {
     });
     expect(contentRefs.length).toBeGreaterThan(0);
     expect(contentRefs.every((ref) => ref === 'main')).toBe(true);
+  });
+
+  it('analyzes frontend signals from a nested workspace package', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = new URL(input.toString());
+      const path = decodeURIComponent(url.pathname);
+
+      if (path === '/repos/owner/repo') {
+        return createGithubJsonResponse({
+          default_branch: 'main',
+          forks_count: 0,
+          html_url: 'https://github.com/owner/repo',
+          name: 'repo',
+          owner: {
+            login: 'owner',
+          },
+          pushed_at: '2026-06-08T00:00:00.000Z',
+          stargazers_count: 1,
+        });
+      }
+
+      if (path === '/repos/owner/repo/contents/package.json') {
+        return createGithubJsonResponse({
+          content: encodeContent(
+            JSON.stringify({
+              scripts: {
+                build: 'npm run build:web',
+                test: 'npm run test:web',
+              },
+              workspaces: ['apps/*'],
+            }),
+          ),
+          encoding: 'base64',
+        });
+      }
+
+      if (path === '/repos/owner/repo/contents/apps') {
+        return createGithubJsonResponse([
+          {
+            name: 'api',
+            path: 'apps/api',
+            type: 'dir',
+          },
+          {
+            name: 'web',
+            path: 'apps/web',
+            type: 'dir',
+          },
+        ]);
+      }
+
+      if (path === '/repos/owner/repo/contents/apps/api/package.json') {
+        return createGithubJsonResponse({
+          content: encodeContent(
+            JSON.stringify({
+              dependencies: {
+                fastify: '^5.0.0',
+              },
+              name: '@scope/api',
+            }),
+          ),
+          encoding: 'base64',
+        });
+      }
+
+      if (path === '/repos/owner/repo/contents/apps/web/package.json') {
+        return createGithubJsonResponse({
+          content: encodeContent(
+            JSON.stringify({
+              dependencies: {
+                react: '^19.0.0',
+              },
+              devDependencies: {
+                '@testing-library/react': '^16.0.0',
+                'eslint-plugin-jsx-a11y': '^6.0.0',
+                typescript: '^6.0.0',
+                vite: '^8.0.0',
+                vitest: '^4.0.0',
+              },
+              name: '@scope/web',
+              scripts: {
+                build: 'vite build',
+                lint: 'eslint .',
+                test: 'vitest run',
+              },
+            }),
+          ),
+          encoding: 'base64',
+        });
+      }
+
+      if (path === '/repos/owner/repo/contents/apps/web/README.md') {
+        return createGithubJsonResponse({
+          content: encodeContent(
+            [
+              '# Web App',
+              '## Installation',
+              'Run npm install.',
+              '## Usage',
+              'Run npm run dev.',
+              'This README has enough project details. '.repeat(20),
+            ].join('\n'),
+          ),
+          encoding: 'base64',
+        });
+      }
+
+      if (
+        [
+          '/repos/owner/repo/contents/apps/web/.env.example',
+          '/repos/owner/repo/contents/apps/web/tsconfig.json',
+          '/repos/owner/repo/contents/package-lock.json',
+        ].includes(path)
+      ) {
+        return createGithubJsonResponse({});
+      }
+
+      if (path === '/repos/owner/repo/contents/.github/workflows') {
+        return createGithubJsonResponse([]);
+      }
+
+      return createGithubJsonResponse(
+        {
+          message: 'Not Found',
+        },
+        {
+          status: 404,
+        },
+      );
+    });
+
+    const analyzer = new GithubReportAnalyzer();
+    const report = await analyzer.analyze({
+      id: 'analysis-id',
+      owner: 'owner',
+      repository: 'repo',
+      normalizedUrl: 'https://github.com/owner/repo',
+      projectPath: 'apps/web',
+      createdAt: new Date('2026-06-09T00:00:00.000Z'),
+      latestCommitDate: '2026-06-09T00:00:00.000Z',
+      latestCommitSha: 'abc123',
+    });
+
+    expect(report.scoreBreakdown).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          category: 'testing',
+          evidence: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'package-json',
+              source: 'apps/web/package.json',
+              status: 'found',
+            }),
+            expect.objectContaining({
+              id: 'test-script',
+              source: 'apps/web/package.json scripts.test',
+              status: 'found',
+            }),
+          ]),
+        }),
+        expect.objectContaining({
+          category: 'maintainability',
+          evidence: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'typescript',
+              source: 'apps/web/tsconfig.json, apps/web/package.json devDependencies.typescript',
+              status: 'found',
+            }),
+          ]),
+        }),
+        expect.objectContaining({
+          category: 'performance',
+          evidence: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'bundler',
+              source: 'apps/web/package.json devDependencies.vite',
+              status: 'found',
+            }),
+          ]),
+        }),
+      ]),
+    );
+    expect(report.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'typescript-detected',
+          status: 'passed',
+        }),
+      ]),
+    );
   });
 });

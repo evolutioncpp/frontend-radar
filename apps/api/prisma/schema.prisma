@@ -19,6 +19,7 @@ model ReportAnalysis {
   owner            String
   repository       String
   repositoryKey    String
+  projectPath      String               @default("")
   normalizedUrl    String
   status           ReportAnalysisStatus @default(queued)
   snapshotKey      String
@@ -35,6 +36,6 @@ model ReportAnalysis {
 
   @@index([createdAt])
   @@index([updatedAt])
-  @@index([repositoryKey, status, updatedAt])
-  @@unique([repositoryKey, snapshotKey, analysisVersion])
+  @@index([repositoryKey, projectPath, status, updatedAt])
+  @@unique([repositoryKey, projectPath, snapshotKey, analysisVersion])
 }

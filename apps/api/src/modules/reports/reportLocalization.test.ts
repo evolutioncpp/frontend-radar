@@ -18,6 +18,7 @@ const createReport = (recommendations: ProjectReport['recommendations']): Projec
     license: null,
     name: 'repo',
     owner: 'owner',
+    projectPath: null,
     stars: 0,
     url: 'https://github.com/owner/repo',
   },

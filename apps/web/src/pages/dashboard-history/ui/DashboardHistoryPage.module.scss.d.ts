@@ -13,6 +13,7 @@ export type Styles = {
   header: string;
   historyCard: string;
   meta: string;
+  metaCode: string;
   metaSeparator: string;
   repository: string;
   repositoryName: string;

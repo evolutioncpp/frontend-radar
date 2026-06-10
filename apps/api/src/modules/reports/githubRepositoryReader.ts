@@ -15,6 +15,7 @@ export interface GithubRepositoryMetadata {
 }
 
 export interface RepositorySnapshot {
+  defaultBranch?: string;
   latestCommitDate: string | null;
   latestCommitSha: string | null;
 }
@@ -22,14 +23,30 @@ export interface RepositorySnapshot {
 export type PackageJson = {
   dependencies?: Record<string, unknown>;
   devDependencies?: Record<string, unknown>;
+  name?: string;
   optionalDependencies?: Record<string, unknown>;
   peerDependencies?: Record<string, unknown>;
   scripts?: Record<string, unknown>;
+  workspaces?: string[];
 };
 
 export type TextFileMatch = {
   content: string;
   path: string;
+};
+
+export type RepositoryDirectoryEntry = {
+  name: string;
+  path: string;
+  type: 'dir' | 'file';
+};
+
+export const joinRepositoryPath = (...segments: Array<string | null | undefined>) => {
+  return segments
+    .flatMap((segment) => segment?.split('/') ?? [])
+    .map((segment) => segment.trim())
+    .filter(Boolean)
+    .join('/');
 };
 
 const getObjectField = (value: unknown, field: string) => {
@@ -52,6 +69,27 @@ const getNumberField = (value: unknown, field: string) => {
   return typeof fieldValue === 'number' ? fieldValue : 0;
 };
 
+const getStringArray = (value: unknown) => {
+  if (!Array.isArray(value)) {
+    return null;
+  }
+
+  return value.filter((item): item is string => typeof item === 'string');
+};
+
+const getWorkspaces = (value: unknown) => {
+  const workspaces = getObjectField(value, 'workspaces');
+  const workspaceList = getStringArray(workspaces);
+
+  if (workspaceList) {
+    return workspaceList;
+  }
+
+  const workspacePackages = getObjectField(workspaces, 'packages');
+
+  return getStringArray(workspacePackages) ?? undefined;
+};
+
 export const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 };
@@ -66,13 +104,16 @@ const toPackageJson = (value: unknown): PackageJson | null => {
   const devDependencies = getObjectField(value, 'devDependencies');
   const optionalDependencies = getObjectField(value, 'optionalDependencies');
   const peerDependencies = getObjectField(value, 'peerDependencies');
+  const name = getStringField(value, 'name');
 
   return {
     dependencies: isRecord(dependencies) ? dependencies : undefined,
     devDependencies: isRecord(devDependencies) ? devDependencies : undefined,
+    name: name ?? undefined,
     optionalDependencies: isRecord(optionalDependencies) ? optionalDependencies : undefined,
     peerDependencies: isRecord(peerDependencies) ? peerDependencies : undefined,
     scripts: isRecord(scripts) ? scripts : undefined,
+    workspaces: getWorkspaces(value),
   };
 };
 
@@ -88,6 +129,7 @@ export class GithubRepositoryReader {
     );
 
     return {
+      defaultBranch: repositoryMetadata.defaultBranch,
       latestCommitDate: latestCommit?.date ?? repositoryMetadata.pushedAt,
       latestCommitSha: latestCommit?.sha ?? null,
     } satisfies RepositorySnapshot;
@@ -140,8 +182,13 @@ export class GithubRepositoryReader {
     }
   }
 
-  async readPackageJson(owner: string, repository: string, branch: string) {
-    const content = await this.readFile(owner, repository, branch, 'package.json');
+  async readPackageJson(owner: string, repository: string, branch: string, basePath = '') {
+    const content = await this.readFile(
+      owner,
+      repository,
+      branch,
+      joinRepositoryPath(basePath, 'package.json'),
+    );
 
     if (!content) {
       return null;
@@ -185,6 +232,17 @@ export class GithubRepositoryReader {
   }
 
   async listDirectoryFiles(owner: string, repository: string, branch: string, path: string) {
+    return (await this.listDirectoryEntries(owner, repository, branch, path))
+      .filter((entry) => entry.type === 'file')
+      .map((entry) => entry.name);
+  }
+
+  async listDirectoryEntries(
+    owner: string,
+    repository: string,
+    branch: string,
+    path: string,
+  ): Promise<RepositoryDirectoryEntry[]> {
     const body = await this.requestContents(owner, repository, branch, path);
 
     if (!Array.isArray(body)) {
@@ -199,14 +257,19 @@ export class GithubRepositoryReader {
 
         const type = getStringField(entry, 'type');
         const name = getStringField(entry, 'name');
+        const entryPath = getStringField(entry, 'path');
 
-        if (type !== 'file' || !name) {
+        if ((type !== 'file' && type !== 'dir') || !name) {
           return null;
         }
 
-        return name;
+        return {
+          name,
+          path: entryPath ?? joinRepositoryPath(path, name),
+          type,
+        };
       })
-      .filter((name): name is string => name !== null);
+      .filter((entry): entry is RepositoryDirectoryEntry => entry !== null);
   }
 
   async hasAnyPath(owner: string, repository: string, branch: string, paths: readonly string[]) {

@@ -13,6 +13,7 @@ vi.mock('react-i18next', () => ({
         'page.reportAria': 'Dashboard report',
         'page.sections.repository': 'Repository summary',
         'page.sections.healthScore': 'Health score',
+        'page.sections.comparison': 'Report comparison',
         'page.sections.metrics': 'Quality metrics',
         'page.sections.checks': 'Project checks',
         'page.sections.recommendations': 'Recommendations',
@@ -25,6 +26,7 @@ vi.mock('react-i18next', () => ({
         'repository.metadata.stars': 'Stars',
         'repository.metadata.forks': 'Forks',
         'repository.metadata.branch': 'Branch',
+        'repository.metadata.projectPath': 'Frontend path',
         'repository.metadata.license': 'License',
         'repository.metadata.unknown': 'Unknown',
 
@@ -111,6 +113,7 @@ const customReport: ProjectReport = {
     stars: 42,
     forks: 7,
     defaultBranch: 'develop',
+    projectPath: null,
     latestCommitSha: 'abc123',
     latestCommitDate: '2026-06-06T00:00:00.000Z',
     license: 'Apache-2.0',

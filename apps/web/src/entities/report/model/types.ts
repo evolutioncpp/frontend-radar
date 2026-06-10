@@ -31,6 +31,7 @@ export type ReportRepository = {
   stars: number;
   forks: number;
   defaultBranch: string;
+  projectPath: string | null;
   latestCommitSha: string | null;
   latestCommitDate: string | null;
   license: string | null;

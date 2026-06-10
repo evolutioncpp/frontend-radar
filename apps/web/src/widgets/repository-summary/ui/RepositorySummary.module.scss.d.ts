@@ -1,5 +1,6 @@
 export type Styles = {
   description: string;
+  headerAside: string;
   metaIcon: string;
   metaItem: string;
   metaLabel: string;

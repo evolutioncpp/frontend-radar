@@ -6,9 +6,11 @@ import {
   createReportAnalysisRequestSchema,
   createReportAnalysisResponseSchema,
   errorResponseSchema,
+  getReportComparisonResponseSchema,
   getReportAnalysisResponseSchema,
   listReportAnalysesResponseSchema,
   reportAnalysisParamsSchema,
+  refreshReportAnalysisResponseSchema,
 } from '../modules/reports/reportSchemas.js';
 import { isGithubApiError } from '../modules/reports/githubReportAnalyzer.js';
 import {
@@ -16,10 +18,13 @@ import {
   reportHistoryLimit,
 } from '../modules/reports/reportAnalysisConfig.js';
 import { createReportAnalysisSnapshotKey } from '../modules/reports/reportAnalysisSnapshot.js';
+import { isReportProjectPathNotFoundError } from '../modules/reports/reportProjectDetector.js';
+import { buildReportComparison } from '../modules/reports/reportComparison.js';
 import { getReportLanguage } from '../modules/reports/reportLanguage.js';
 import {
   getLocalizedReportErrorMessage,
   getLocalizedReportNotFoundMessage,
+  getLocalizedReportRefreshUnavailableMessage,
   localizeProjectReport,
 } from '../modules/reports/reportLocalization.js';
 
@@ -54,6 +59,23 @@ interface ReportRoutesOptions {
   startAnalysis?: (analysis: ReportAnalysisEntity) => void;
 }
 
+const createSnapshotLookup = (
+  repositoryKey: string,
+  projectPath: string,
+  latestCommitDate: string | null,
+  latestCommitSha: string | null,
+): ReportAnalysisSnapshotLookup => {
+  return {
+    analysisVersion: REPORT_ANALYSIS_VERSION,
+    projectPath,
+    repositoryKey,
+    snapshotKey: createReportAnalysisSnapshotKey({
+      latestCommitDate,
+      latestCommitSha,
+    }),
+  };
+};
+
 export const createReportRoutes = ({
   analyzer,
   repository,
@@ -85,6 +107,7 @@ export const createReportRoutes = ({
             403: errorResponseSchema,
             404: errorResponseSchema,
             429: errorResponseSchema,
+            422: errorResponseSchema,
             502: errorResponseSchema,
           },
         },
@@ -94,6 +117,8 @@ export const createReportRoutes = ({
         const repositoryKey = getGithubRepositoryKey(request.body.owner, request.body.repository);
         let latestCommitDate: string | null = null;
         let latestCommitSha: string | null = null;
+        let projectPath = '';
+        let analysisRef = 'main';
 
         try {
           const snapshot = await analyzer.getRepositorySnapshot(
@@ -103,7 +128,21 @@ export const createReportRoutes = ({
 
           latestCommitDate = snapshot.latestCommitDate;
           latestCommitSha = snapshot.latestCommitSha;
+          analysisRef = latestCommitSha ?? snapshot.defaultBranch ?? analysisRef;
+          projectPath = await analyzer.resolveProjectPath(
+            request.body.owner,
+            request.body.repository,
+            analysisRef,
+            request.body.projectPath,
+          );
         } catch (error) {
+          if (isReportProjectPathNotFoundError(error)) {
+            return reply.code(422).send({
+              code: 'project_path_not_found',
+              message: getLocalizedReportErrorMessage('project_path_not_found', language),
+            });
+          }
+
           if (isGithubApiError(error)) {
             return reply.code(getGithubErrorHttpStatus(error.code)).send({
               code: error.code,
@@ -126,14 +165,12 @@ export const createReportRoutes = ({
           });
         }
 
-        const snapshotLookup: ReportAnalysisSnapshotLookup = {
-          analysisVersion: REPORT_ANALYSIS_VERSION,
+        const snapshotLookup = createSnapshotLookup(
           repositoryKey,
-          snapshotKey: createReportAnalysisSnapshotKey({
-            latestCommitDate,
-            latestCommitSha,
-          }),
-        };
+          projectPath,
+          latestCommitDate,
+          latestCommitSha,
+        );
 
         const sendReusableAnalysis = async (analysis: ReportAnalysisEntity) => {
           if (analysis.status !== 'failed') {
@@ -183,6 +220,7 @@ export const createReportRoutes = ({
             ...snapshotLookup,
             latestCommitDate,
             latestCommitSha,
+            projectPath,
           });
         } catch (error) {
           if (isReportAnalysisAlreadyExistsError(error)) {
@@ -228,6 +266,7 @@ export const createReportRoutes = ({
             repository: analysis.repository,
             normalizedUrl: analysis.normalizedUrl,
             status: analysis.status,
+            projectPath: analysis.projectPath || null,
             latestCommitDate: analysis.latestCommitDate,
             latestCommitSha: analysis.latestCommitSha,
             createdAt: analysis.createdAt.toISOString(),
@@ -242,6 +281,223 @@ export const createReportRoutes = ({
               : {}),
           })),
         };
+      },
+    );
+
+    app.post(
+      '/reports/:id/refresh',
+      {
+        schema: {
+          tags: ['Reports'],
+          operationId: 'forceRefreshReportAnalysis',
+          headers: acceptLanguageHeadersSchema,
+          params: reportAnalysisParamsSchema,
+          response: {
+            200: refreshReportAnalysisResponseSchema,
+            201: refreshReportAnalysisResponseSchema,
+            403: errorResponseSchema,
+            404: errorResponseSchema,
+            409: errorResponseSchema,
+            429: errorResponseSchema,
+            422: errorResponseSchema,
+            502: errorResponseSchema,
+          },
+        },
+      },
+      async (request, reply) => {
+        const language = getReportLanguage(request.headers['accept-language']);
+        const currentAnalysis = await repository.findById(request.params.id);
+
+        if (!currentAnalysis) {
+          return reply.code(404).send({
+            message: getLocalizedReportNotFoundMessage(language),
+          });
+        }
+
+        if (currentAnalysis.status !== 'completed' || !currentAnalysis.report) {
+          return reply.code(409).send({
+            message: getLocalizedReportRefreshUnavailableMessage(language),
+          });
+        }
+
+        let latestCommitDate: string | null = null;
+        let latestCommitSha: string | null = null;
+        let analysisRef = 'main';
+
+        try {
+          const snapshot = await analyzer.getRepositorySnapshot(
+            currentAnalysis.owner,
+            currentAnalysis.repository,
+          );
+
+          latestCommitDate = snapshot.latestCommitDate;
+          latestCommitSha = snapshot.latestCommitSha;
+          analysisRef = latestCommitSha ?? snapshot.defaultBranch ?? analysisRef;
+
+          await analyzer.resolveProjectPath(
+            currentAnalysis.owner,
+            currentAnalysis.repository,
+            analysisRef,
+            currentAnalysis.projectPath,
+          );
+        } catch (error) {
+          if (isReportProjectPathNotFoundError(error)) {
+            return reply.code(422).send({
+              code: 'project_path_not_found',
+              message: getLocalizedReportErrorMessage('project_path_not_found', language),
+            });
+          }
+
+          if (isGithubApiError(error)) {
+            return reply.code(getGithubErrorHttpStatus(error.code)).send({
+              code: error.code,
+              message: getLocalizedReportErrorMessage(error.code, language),
+            });
+          }
+
+          request.log.warn(
+            {
+              error,
+              id: currentAnalysis.id,
+              owner: currentAnalysis.owner,
+              repository: currentAnalysis.repository,
+            },
+            'Failed to verify repository before report refresh',
+          );
+
+          return reply.code(502).send({
+            code: 'repository_verification_failed',
+            message: getLocalizedReportErrorMessage('repository_verification_failed', language),
+          });
+        }
+
+        const snapshotLookup = createSnapshotLookup(
+          currentAnalysis.repositoryKey,
+          currentAnalysis.projectPath,
+          latestCommitDate,
+          latestCommitSha,
+        );
+
+        if (snapshotLookup.snapshotKey === currentAnalysis.snapshotKey) {
+          return reply.code(200).send({
+            id: currentAnalysis.id,
+            refreshReason: 'up_to_date',
+            status: 'completed',
+          });
+        }
+
+        const sendRefreshReusableAnalysis = async (analysis: ReportAnalysisEntity) => {
+          if (analysis.status === 'failed') {
+            const retriedAnalysis = await repository.resetForRetry(analysis.id);
+
+            runAnalysis(retriedAnalysis);
+
+            return reply.code(200).send({
+              id: retriedAnalysis.id,
+              refreshReason: 'created',
+              status: 'queued',
+            });
+          }
+
+          const refreshedAnalysis = await repository.touch(analysis.id);
+
+          if (refreshedAnalysis.status === 'failed') {
+            const retriedAnalysis = await repository.resetForRetry(refreshedAnalysis.id);
+
+            runAnalysis(retriedAnalysis);
+
+            return reply.code(200).send({
+              id: retriedAnalysis.id,
+              refreshReason: 'created',
+              status: 'queued',
+            });
+          }
+
+          return reply.code(200).send({
+            id: refreshedAnalysis.id,
+            refreshReason: 'reused',
+            status: refreshedAnalysis.status,
+          });
+        };
+
+        const reusableAnalysis = await repository.findReusableBySnapshot(snapshotLookup);
+
+        if (reusableAnalysis) {
+          return sendRefreshReusableAnalysis(reusableAnalysis);
+        }
+
+        let newAnalysis: ReportAnalysisEntity;
+
+        try {
+          newAnalysis = await repository.create({
+            analysisVersion: REPORT_ANALYSIS_VERSION,
+            latestCommitDate,
+            latestCommitSha,
+            normalizedUrl: currentAnalysis.normalizedUrl,
+            owner: currentAnalysis.owner,
+            projectPath: currentAnalysis.projectPath,
+            repository: currentAnalysis.repository,
+            repositoryKey: currentAnalysis.repositoryKey,
+            snapshotKey: snapshotLookup.snapshotKey,
+          });
+        } catch (error) {
+          if (isReportAnalysisAlreadyExistsError(error)) {
+            const concurrentAnalysis = await repository.findReusableBySnapshot(snapshotLookup);
+
+            if (concurrentAnalysis) {
+              return sendRefreshReusableAnalysis(concurrentAnalysis);
+            }
+          }
+
+          throw error;
+        }
+
+        runAnalysis(newAnalysis);
+
+        return reply.code(201).send({
+          id: newAnalysis.id,
+          refreshReason: 'created',
+          status: 'queued',
+        });
+      },
+    );
+
+    app.get(
+      '/reports/:id/comparison',
+      {
+        schema: {
+          tags: ['Reports'],
+          operationId: 'getReportComparison',
+          headers: acceptLanguageHeadersSchema,
+          params: reportAnalysisParamsSchema,
+          response: {
+            200: getReportComparisonResponseSchema,
+            404: errorResponseSchema,
+          },
+        },
+      },
+      async (request, reply) => {
+        const language = getReportLanguage(request.headers['accept-language']);
+        const analysis = await repository.findById(request.params.id);
+
+        if (!analysis || analysis.status !== 'completed' || !analysis.report) {
+          return reply.code(404).send({
+            message: getLocalizedReportNotFoundMessage(language),
+          });
+        }
+
+        const previousAnalysis = await repository.findPreviousCompleted(analysis);
+
+        if (!previousAnalysis?.report) {
+          return {
+            status: 'unavailable' as const,
+          };
+        }
+
+        return buildReportComparison(
+          localizeProjectReport(analysis.report, language),
+          localizeProjectReport(previousAnalysis.report, language),
+        );
       },
     );
 

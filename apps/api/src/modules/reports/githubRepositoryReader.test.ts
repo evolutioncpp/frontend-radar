@@ -27,6 +27,28 @@ const createReader = () => {
         };
       }
 
+      if (path.includes('/contents/apps/web/package.json?')) {
+        return {
+          content: encodeContent('{"name":"@scope/web","scripts":{"build":"vite build"}}'),
+          encoding: 'base64',
+        };
+      }
+
+      if (path.includes('/contents/apps?')) {
+        return [
+          {
+            name: 'web',
+            path: 'apps/web',
+            type: 'dir',
+          },
+          {
+            name: 'README.md',
+            path: 'apps/README.md',
+            type: 'file',
+          },
+        ];
+      }
+
       if (path.includes('/contents/.github/workflows?')) {
         return [
           {
@@ -76,5 +98,35 @@ describe('GithubRepositoryReader', () => {
     await expect(
       reader.listDirectoryFiles('owner', 'repo', 'main', '.github/workflows'),
     ).resolves.toEqual(['ci.yml']);
+  });
+
+  it('reads package.json from a nested project path', async () => {
+    const { reader } = createReader();
+
+    await expect(reader.readPackageJson('owner', 'repo', 'main', 'apps/web')).resolves.toEqual(
+      expect.objectContaining({
+        name: '@scope/web',
+        scripts: {
+          build: 'vite build',
+        },
+      }),
+    );
+  });
+
+  it('lists directory entries with file and dir types', async () => {
+    const { reader } = createReader();
+
+    await expect(reader.listDirectoryEntries('owner', 'repo', 'main', 'apps')).resolves.toEqual([
+      {
+        name: 'web',
+        path: 'apps/web',
+        type: 'dir',
+      },
+      {
+        name: 'README.md',
+        path: 'apps/README.md',
+        type: 'file',
+      },
+    ]);
   });
 });

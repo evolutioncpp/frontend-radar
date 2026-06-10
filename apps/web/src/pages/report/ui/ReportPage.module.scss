@@ -39,6 +39,24 @@ $dashboard-section-scroll-offset: calc($space-10 + $space-10);
   line-height: $line-height-md;
 }
 
+.refreshButton {
+  min-height: 2rem;
+  padding: $space-1 $space-3;
+  font-size: $font-size-sm;
+  line-height: $line-height-sm;
+  white-space: nowrap;
+
+  &:not(:disabled):hover {
+    .refreshIcon {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.refreshIcon {
+  transition: transform $transition-fast;
+}
+
 .detailsGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

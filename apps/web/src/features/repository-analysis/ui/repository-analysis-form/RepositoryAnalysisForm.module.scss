@@ -14,6 +14,17 @@ $repository-analysis-submit-offset: calc($font-size-sm * $line-height-sm + $spac
   min-width: 0;
 }
 
+.fields {
+  display: grid;
+  gap: $space-3;
+  min-width: 0;
+}
+
+.projectPathToggle,
+.projectPathInput {
+  min-width: 0;
+}
+
 .submitButton {
   margin-top: $repository-analysis-submit-offset;
 }

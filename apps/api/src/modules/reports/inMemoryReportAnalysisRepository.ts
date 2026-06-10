@@ -23,9 +23,13 @@ const getReusableRank = (status: ReportAnalysisStatus) => {
 
 const matchesSnapshot = (
   analysis: ReportAnalysisEntity,
-  { analysisVersion, repositoryKey, snapshotKey }: ReportAnalysisSnapshotLookup,
+  { analysisVersion, projectPath, repositoryKey, snapshotKey }: ReportAnalysisSnapshotLookup,
 ) => {
-  if (analysis.repositoryKey !== repositoryKey || analysis.analysisVersion !== analysisVersion) {
+  if (
+    analysis.repositoryKey !== repositoryKey ||
+    analysis.projectPath !== projectPath ||
+    analysis.analysisVersion !== analysisVersion
+  ) {
     return false;
   }
 
@@ -70,6 +74,29 @@ export class InMemoryReportAnalysisRepository implements ReportAnalysisRepositor
     return Array.from(this.analyses.values())
       .filter((analysis) => analysis.status === 'queued' || analysis.status === 'running')
       .sort((left, right) => left.updatedAt.getTime() - right.updatedAt.getTime());
+  }
+
+  async findPreviousCompleted(analysis: ReportAnalysisEntity) {
+    const completedBefore = analysis.completedAt ?? analysis.updatedAt;
+
+    return (
+      Array.from(this.analyses.values())
+        .filter(
+          (candidate) =>
+            candidate.id !== analysis.id &&
+            candidate.repositoryKey === analysis.repositoryKey &&
+            candidate.projectPath === analysis.projectPath &&
+            candidate.status === 'completed' &&
+            candidate.completedAt !== null &&
+            candidate.completedAt.getTime() <= completedBefore.getTime(),
+        )
+        .sort((left, right) => {
+          const leftCompletedAt = left.completedAt?.getTime() ?? 0;
+          const rightCompletedAt = right.completedAt?.getTime() ?? 0;
+
+          return rightCompletedAt - leftCompletedAt;
+        })[0] ?? null
+    );
   }
 
   async findReusableBySnapshot(lookup: ReportAnalysisSnapshotLookup) {

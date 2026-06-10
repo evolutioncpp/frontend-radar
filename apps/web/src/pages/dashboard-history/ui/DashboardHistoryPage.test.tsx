@@ -64,6 +64,7 @@ const completedHistoryItem = {
   owner: 'evolutioncpp',
   repository: 'frontend-radar',
   normalizedUrl: 'https://github.com/evolutioncpp/frontend-radar',
+  projectPath: null as string | null,
   status: 'completed' as const,
   latestCommitDate: '2026-06-09T00:00:00.000Z',
   latestCommitSha: 'abc123',
@@ -80,6 +81,7 @@ const queuedHistoryItem = {
   owner: 'evolutioncpp',
   repository: 'frontend-radar',
   normalizedUrl: 'https://github.com/evolutioncpp/frontend-radar',
+  projectPath: null as string | null,
   status: 'queued' as const,
   latestCommitDate: '2026-06-09T00:01:00.000Z',
   latestCommitSha: 'def456',
@@ -167,6 +169,16 @@ describe('DashboardHistoryPage', () => {
     expectSummaryItem('Recommendations', '0');
     expect(screen.getByText(/Last activity/i)).toBeInTheDocument();
     expect(screen.getByText('Completed')).toBeInTheDocument();
+  });
+
+  test('renders project path for nested frontend history item', () => {
+    apiMocks.listReportAnalyses.mockReturnValue(
+      createHistoryResponse([{ ...completedHistoryItem, projectPath: 'apps/web' }]),
+    );
+
+    renderDashboardHistoryPage();
+
+    expect(screen.getByText('apps/web')).toBeInTheDocument();
   });
 
   test('renders repeated repository runs as separate cards', () => {

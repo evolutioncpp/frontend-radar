@@ -21,6 +21,18 @@ describe('parseRepositoryInput', () => {
   });
 
   test.each([
+    ['owner/repo/apps/web', 'owner', 'repo', 'apps/web'],
+    ['https://github.com/owner/repo/tree/main/apps/web', 'owner', 'repo', 'apps/web'],
+  ])('parses %s with project path', (value, owner, repository, projectPath) => {
+    expect(parseRepositoryInput(value)).toEqual({
+      normalizedUrl: `https://github.com/${owner}/${repository}`,
+      owner,
+      projectPath,
+      repository,
+    });
+  });
+
+  test.each([
     '',
     'github.com/owner',
     'https://gitlab.com/owner/repo',

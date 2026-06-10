@@ -152,7 +152,7 @@ export const buildReportEvidenceMap = (signals: RepositorySignals): ReportEviden
     description: signals.packageJson.exists ? undefined : 'package.json was not found.',
     id: 'package-json',
     label: 'package.json',
-    source: 'package.json',
+    source: signals.packageJson.path ?? 'package.json',
     status: signals.packageJson.exists ? 'found' : 'missing',
   }),
   readme: getReadmeEvidence(signals),

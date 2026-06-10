@@ -1,6 +1,7 @@
 import {
   Activity,
   BarChart3,
+  GitCompareArrows,
   GitBranch,
   History,
   LayoutDashboard,
@@ -18,6 +19,7 @@ export const navigationIcons: Record<DashboardNavigationIcon, LucideIcon> = {
   settings: Settings,
   repository: GitBranch,
   healthScore: Activity,
+  comparison: GitCompareArrows,
   metrics: BarChart3,
   checks: ListChecks,
   recommendations: Lightbulb,

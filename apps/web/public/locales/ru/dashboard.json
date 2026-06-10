@@ -17,6 +17,7 @@
       "settings": "Настройки",
       "repository": "Репозиторий",
       "healthScore": "Оценка здоровья",
+      "comparison": "Сравнение",
       "metrics": "Метрики",
       "checks": "Проверки",
       "recommendations": "Рекомендации"
@@ -111,9 +112,20 @@
         "description": "Предыдущая попытка для этого коммита завершилась ошибкой, поэтому Frontend Radar запустил анализ заново."
       }
     },
+    "reportRefresh": {
+      "upToDate": {
+        "title": "Отчёт уже актуален",
+        "description": "Последний коммит репозитория не изменился, поэтому новый запуск анализа не создан."
+      },
+      "error": {
+        "title": "Не удалось обновить отчёт",
+        "description": "Frontend Radar не смог проверить последний коммит репозитория. Попробуйте позже."
+      }
+    },
     "sections": {
       "repository": "Сводка репозитория",
       "healthScore": "Оценка здоровья",
+      "comparison": "Сравнение отчётов",
       "metrics": "Метрики качества",
       "checks": "Проверки проекта",
       "recommendations": "Рекомендации"
@@ -125,11 +137,14 @@
   "repository": {
     "label": "Репозиторий",
     "openRepository": "Открыть репозиторий",
+    "refresh": "Обновить",
+    "refreshLoading": "Проверяем...",
     "metadataAria": "Метаданные репозитория",
     "metadata": {
       "stars": "Звёзды",
       "forks": "Форки",
       "branch": "Ветка",
+      "projectPath": "Путь к frontend",
       "license": "Лицензия",
       "unknown": "Неизвестно"
     }
@@ -170,6 +185,31 @@
     "counter_other": "{{count}} рекомендации",
     "listAria": "Список рекомендаций",
     "empty": "Пока рекомендаций нет."
+  },
+  "comparison": {
+    "label": "Сравнение",
+    "title": "Изменения с прошлого отчёта",
+    "description": "Сравнение текущего готового отчёта с предыдущим готовым отчётом по этому же репозиторию.",
+    "totalScore": "Итоговая оценка",
+    "totalScoreDeltaAria": "Изменение итоговой оценки {{delta}}",
+    "metricsTitle": "Изменения метрик",
+    "changedChecksTitle": "Изменившиеся проверки",
+    "recommendationsTitle": "Рекомендации",
+    "noChangedChecks": "Проверки не изменились между отчётами.",
+    "addedRecommendations_one": "{{count}} новая",
+    "addedRecommendations_few": "{{count}} новые",
+    "addedRecommendations_many": "{{count}} новых",
+    "addedRecommendations_other": "{{count}} новых",
+    "resolvedRecommendations_one": "{{count}} решена",
+    "resolvedRecommendations_few": "{{count}} решены",
+    "resolvedRecommendations_many": "{{count}} решено",
+    "resolvedRecommendations_other": "{{count}} решено",
+    "persistentRecommendations_one": "{{count}} осталась",
+    "persistentRecommendations_few": "{{count}} остались",
+    "persistentRecommendations_many": "{{count}} осталось",
+    "persistentRecommendations_other": "{{count}} осталось",
+    "emptyRecommendations": "Изменений в рекомендациях нет.",
+    "resolvedBadge": "Решено"
   },
   "evidence": {
     "title": "Что найдено",

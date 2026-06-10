@@ -19,6 +19,7 @@ import {
 import { recoverReportAnalyses } from './modules/reports/reportAnalysisWorker.js';
 import {
   PrismaReportAnalysisRepository,
+  type ReportAnalysisEntity,
   type ReportAnalysisRepository,
 } from './modules/reports/reportAnalysisRepository.js';
 import { healthRoutes } from './routes/health.js';
@@ -28,6 +29,7 @@ interface AppDependencies {
   reportAnalysisRepository?: ReportAnalysisRepository;
   reportAnalyzer?: ReportAnalyzer;
   recoverOnStart?: boolean;
+  startReportAnalysis?: (analysis: ReportAnalysisEntity) => void;
 }
 
 export const buildApp = (
@@ -72,6 +74,7 @@ export const buildApp = (
     createReportRoutes({
       analyzer: reportAnalyzer,
       repository: reportAnalysisRepository,
+      startAnalysis: dependencies.startReportAnalysis,
     }),
   );
 

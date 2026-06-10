@@ -11,6 +11,7 @@ interface HistoryReportCardProps {
   activityLabel: string;
   checksCount: number;
   metricsCount: number;
+  projectPath?: string | null;
   recommendationsCount: number;
   repositoryName: string;
   score?: number;
@@ -23,6 +24,7 @@ export const HistoryReportCard = ({
   activityLabel,
   checksCount,
   metricsCount,
+  projectPath,
   recommendationsCount,
   repositoryName,
   score,
@@ -59,6 +61,12 @@ export const HistoryReportCard = ({
               </time>
               <span className={s.metaSeparator}>/</span>
               <span>{t(`card.statuses.${status}`)}</span>
+              {projectPath ? (
+                <>
+                  <span className={s.metaSeparator}>/</span>
+                  <span className={s.metaCode}>{projectPath}</span>
+                </>
+              ) : null}
             </p>
           </div>
         </div>
