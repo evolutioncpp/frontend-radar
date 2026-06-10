@@ -24,6 +24,12 @@ const evidenceStatusBadgeVariants = {
   warning: 'warning',
 } as const satisfies Record<ReportEvidenceStatus, 'success' | 'danger' | 'warning'>;
 
+const evidenceStatusOrder = {
+  missing: 0,
+  warning: 1,
+  found: 2,
+} as const satisfies Record<ReportEvidenceStatus, number>;
+
 export const ReportEvidenceList = ({ className, evidence }: ReportEvidenceListProps) => {
   const { t } = useTranslation('dashboard');
 
@@ -31,12 +37,16 @@ export const ReportEvidenceList = ({ className, evidence }: ReportEvidenceListPr
     return null;
   }
 
+  const sortedEvidence = [...evidence].sort(
+    (left, right) => evidenceStatusOrder[left.status] - evidenceStatusOrder[right.status],
+  );
+
   return (
     <details className={clsx(s.reportEvidenceList, className)}>
       <summary className={s.summary}>{t('evidence.title')}</summary>
 
       <ul className={s.list}>
-        {evidence.map((item) => (
+        {sortedEvidence.map((item) => (
           <li className={s.item} key={item.id}>
             <Badge className={s.status} variant={evidenceStatusBadgeVariants[item.status]}>
               {t(evidenceStatusLabelKeys[item.status])}

@@ -22,116 +22,172 @@ export type ReportEvidence = ProjectReport['scoreBreakdown'][number]['evidence']
 export type ReportEvidenceMap = Record<ReportEvidenceId, ReportEvidence>;
 
 const createEvidence = ({
-  found,
+  description,
   id,
   label,
-  missingDescription,
   source,
+  status,
 }: {
-  found: boolean;
+  description?: string;
   id: ReportEvidenceId;
   label: string;
-  missingDescription: string;
-  source: string;
+  source?: string | null;
+  status: ReportEvidence['status'];
 }): ReportEvidence => ({
   id,
   label,
-  status: found ? 'found' : 'missing',
-  ...(found ? {} : { description: missingDescription }),
-  source,
+  status,
+  ...(description ? { description } : {}),
+  ...(source ? { source } : {}),
+});
+
+const getToolSource = (sources: readonly string[], fallback: string) => {
+  return sources.length > 0 ? sources.join(', ') : fallback;
+};
+
+const getReadmeEvidence = (signals: RepositorySignals): ReportEvidence => {
+  if (!signals.readme.exists) {
+    return createEvidence({
+      description: 'README file was not found.',
+      id: 'readme',
+      label: 'README',
+      source: 'README',
+      status: 'missing',
+    });
+  }
+
+  if (
+    !signals.readme.isSubstantial ||
+    !signals.readme.hasUsageSection ||
+    !signals.readme.hasInstallSection
+  ) {
+    return createEvidence({
+      description: 'README was found, but it is short or misses setup and usage details.',
+      id: 'readme',
+      label: 'README',
+      source: signals.readme.path,
+      status: 'warning',
+    });
+  }
+
+  return createEvidence({
+    id: 'readme',
+    label: 'README',
+    source: signals.readme.path,
+    status: 'found',
+  });
+};
+
+const getScriptEvidence = ({
+  id,
+  label,
+  missingDescription,
+  script,
+}: {
+  id: ReportEvidenceId;
+  label: string;
+  missingDescription: string;
+  script: RepositorySignals['packageJson']['scripts']['build'];
+}): ReportEvidence => ({
+  id,
+  label,
+  status: script.exists ? 'found' : 'missing',
+  ...(script.exists ? {} : { description: missingDescription }),
+  source: script.source ?? `package.json scripts.${script.name}`,
 });
 
 export const buildReportEvidenceMap = (signals: RepositorySignals): ReportEvidenceMap => ({
   'a11y-tooling': createEvidence({
-    found: signals.hasA11yTooling,
+    description: signals.a11yTooling.found
+      ? undefined
+      : 'No accessibility-focused dependency was found.',
     id: 'a11y-tooling',
     label: 'Accessibility tooling',
-    missingDescription: 'No accessibility-focused dependency was found.',
-    source: 'package.json',
+    source: getToolSource(signals.a11yTooling.sources, 'package.json'),
+    status: signals.a11yTooling.found ? 'found' : 'missing',
   }),
-  'build-script': createEvidence({
-    found: signals.hasBuildScript,
+  'build-script': getScriptEvidence({
     id: 'build-script',
     label: 'Build script',
     missingDescription: 'package.json does not expose a build script.',
-    source: 'package.json scripts.build',
+    script: signals.packageJson.scripts.build,
   }),
   bundler: createEvidence({
-    found: signals.hasBundler,
+    description: signals.bundler.found
+      ? undefined
+      : 'No common frontend bundler dependency was found.',
     id: 'bundler',
     label: 'Frontend bundler',
-    missingDescription: 'No common frontend bundler dependency was found.',
-    source: 'package.json',
+    source: getToolSource(signals.bundler.sources, 'package.json'),
+    status: signals.bundler.found ? 'found' : 'missing',
   }),
   'env-example': createEvidence({
-    found: signals.hasEnvExample,
+    description: signals.envExample.exists ? undefined : 'No environment example file was found.',
     id: 'env-example',
     label: 'Environment example',
-    missingDescription: 'No environment example file was found.',
-    source: '.env.example',
+    source: signals.envExample.path ?? '.env.example',
+    status: signals.envExample.exists ? 'found' : 'missing',
   }),
   'github-actions': createEvidence({
-    found: signals.hasCi,
+    description: signals.ci.exists ? undefined : 'No GitHub Actions workflow was found.',
     id: 'github-actions',
     label: 'GitHub Actions workflow',
-    missingDescription: 'No GitHub Actions workflow was found.',
-    source: '.github/workflows',
+    source: signals.ci.source ?? '.github/workflows',
+    status: signals.ci.exists ? 'found' : 'missing',
   }),
-  'lint-script': createEvidence({
-    found: signals.hasLintScript,
+  'lint-script': getScriptEvidence({
     id: 'lint-script',
     label: 'Lint script',
     missingDescription: 'package.json does not expose a lint script.',
-    source: 'package.json scripts.lint',
+    script: signals.packageJson.scripts.lint,
   }),
   lockfile: createEvidence({
-    found: signals.hasLockfile,
+    description: signals.lockfile.exists ? undefined : 'No package lockfile was found.',
     id: 'lockfile',
     label: 'Package lockfile',
-    missingDescription: 'No package lockfile was found.',
-    source: 'lockfile',
+    source: signals.lockfile.path ?? 'lockfile',
+    status: signals.lockfile.exists ? 'found' : 'missing',
   }),
   'package-json': createEvidence({
-    found: signals.hasPackageJson,
+    description: signals.packageJson.exists ? undefined : 'package.json was not found.',
     id: 'package-json',
     label: 'package.json',
-    missingDescription: 'package.json was not found.',
     source: 'package.json',
+    status: signals.packageJson.exists ? 'found' : 'missing',
   }),
-  readme: createEvidence({
-    found: signals.hasReadme,
-    id: 'readme',
-    label: 'README',
-    missingDescription: 'README file was not found.',
-    source: 'README',
-  }),
+  readme: getReadmeEvidence(signals),
   storybook: createEvidence({
-    found: signals.hasStorybook,
+    description: signals.storybook.found
+      ? undefined
+      : 'Storybook configuration or dependency was not found.',
     id: 'storybook',
     label: 'Storybook',
-    missingDescription: 'Storybook configuration or dependency was not found.',
-    source: '.storybook / package.json',
+    source: getToolSource(signals.storybook.sources, '.storybook / package.json'),
+    status: signals.storybook.found ? 'found' : 'missing',
   }),
-  'test-script': createEvidence({
-    found: signals.hasTestScript,
+  'test-script': getScriptEvidence({
     id: 'test-script',
     label: 'Test script',
     missingDescription: 'package.json does not expose a test script.',
-    source: 'package.json scripts.test',
+    script: signals.packageJson.scripts.test,
   }),
   'testing-library': createEvidence({
-    found: signals.hasTestingLibrary,
+    description: signals.testingLibrary.found
+      ? undefined
+      : 'No common frontend testing dependency was found.',
     id: 'testing-library',
     label: 'Testing Library',
-    missingDescription: 'No common frontend testing dependency was found.',
-    source: 'package.json',
+    source: getToolSource(signals.testingLibrary.sources, 'package.json'),
+    status: signals.testingLibrary.found ? 'found' : 'missing',
   }),
   typescript: createEvidence({
-    found: signals.hasTypescript,
+    description: signals.typescript.found
+      ? undefined
+      : 'TypeScript configuration or dependency was not found.',
     id: 'typescript',
     label: 'TypeScript',
-    missingDescription: 'TypeScript configuration or dependency was not found.',
-    source: 'tsconfig.json / package.json',
+    source: getToolSource(signals.typescript.sources, 'tsconfig.json / package.json'),
+    status: signals.typescript.found ? 'found' : 'missing',
   }),
 });
 

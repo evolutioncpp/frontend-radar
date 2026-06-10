@@ -13,47 +13,52 @@ const createCheck = (id: string, label: string, passed: boolean, failedDescripti
 
 export const buildChecks = (signals: RepositorySignals) => {
   return [
-    createCheck('readme-exists', 'README exists', signals.hasReadme, 'README file was not found.'),
+    createCheck(
+      'readme-exists',
+      'README exists',
+      signals.readme.exists,
+      'README file was not found.',
+    ),
     createCheck(
       'package-json-exists',
       'package.json exists',
-      signals.hasPackageJson,
+      signals.packageJson.exists,
       'package.json was not found.',
     ),
     createCheck(
       'typescript-detected',
       'TypeScript detected',
-      signals.hasTypescript,
+      signals.typescript.found,
       'TypeScript configuration or dependency was not found.',
     ),
     createCheck(
       'lint-script-exists',
       'Lint script exists',
-      signals.hasLintScript,
+      signals.packageJson.scripts.lint.exists,
       'package.json does not expose a lint script.',
     ),
     createCheck(
       'test-script-exists',
       'Test script exists',
-      signals.hasTestScript,
+      signals.packageJson.scripts.test.exists,
       'package.json does not expose a test script.',
     ),
     createCheck(
       'build-script-exists',
       'Build script exists',
-      signals.hasBuildScript,
+      signals.packageJson.scripts.build.exists,
       'package.json does not expose a build script.',
     ),
     createCheck(
       'github-actions-exists',
       'GitHub Actions workflow exists',
-      signals.hasCi,
+      signals.ci.exists,
       'No GitHub Actions workflow was found.',
     ),
     createCheck(
       'env-example-exists',
       'Environment example exists',
-      signals.hasEnvExample,
+      signals.envExample.exists,
       'No environment example file was found.',
     ),
   ];

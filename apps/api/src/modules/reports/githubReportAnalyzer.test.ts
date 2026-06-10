@@ -68,18 +68,44 @@ describe('GithubReportAnalyzer', () => {
         });
       }
 
+      if (path === '/repos/owner/repo/contents/README.md') {
+        contentRefs.push(url.searchParams.get('ref'));
+
+        return createGithubJsonResponse({
+          content: encodeContent(
+            [
+              '# Repository',
+              '## Installation',
+              'Run npm install before starting development.',
+              '## Usage',
+              'Run npm run dev and open the local app.',
+              'This README has enough contributor-facing setup detail. '.repeat(20),
+            ].join('\n'),
+          ),
+          encoding: 'base64',
+        });
+      }
+
       if (
         [
           '/repos/owner/repo/contents/.env.example',
           '/repos/owner/repo/contents/.github/workflows',
-          '/repos/owner/repo/contents/README.md',
           '/repos/owner/repo/contents/package-lock.json',
           '/repos/owner/repo/contents/tsconfig.json',
         ].includes(path)
       ) {
         contentRefs.push(url.searchParams.get('ref'));
 
-        return createGithubJsonResponse(path.endsWith('/workflows') ? [{ name: 'ci.yml' }] : {});
+        return createGithubJsonResponse(
+          path.endsWith('/workflows')
+            ? [
+                {
+                  name: 'ci.yml',
+                  type: 'file',
+                },
+              ]
+            : {},
+        );
       }
 
       if (path.startsWith('/repos/owner/repo/contents/')) {
@@ -129,7 +155,7 @@ describe('GithubReportAnalyzer', () => {
           evidence: expect.arrayContaining([
             expect.objectContaining({
               id: 'readme',
-              source: 'README',
+              source: 'README.md',
               status: 'found',
             }),
             expect.objectContaining({
@@ -146,6 +172,30 @@ describe('GithubReportAnalyzer', () => {
               id: 'a11y-tooling',
               source: 'package.json',
               status: 'missing',
+            }),
+          ]),
+        }),
+      ]),
+    );
+    expect(report.scoreBreakdown).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          category: 'ci',
+          evidence: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'github-actions',
+              source: '.github/workflows/ci.yml',
+              status: 'found',
+            }),
+          ]),
+        }),
+        expect.objectContaining({
+          category: 'performance',
+          evidence: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'bundler',
+              source: 'vite',
+              status: 'found',
             }),
           ]),
         }),

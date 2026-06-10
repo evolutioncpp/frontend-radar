@@ -22,7 +22,14 @@ export interface RepositorySnapshot {
 export type PackageJson = {
   dependencies?: Record<string, unknown>;
   devDependencies?: Record<string, unknown>;
+  optionalDependencies?: Record<string, unknown>;
+  peerDependencies?: Record<string, unknown>;
   scripts?: Record<string, unknown>;
+};
+
+export type TextFileMatch = {
+  content: string;
+  path: string;
 };
 
 const getObjectField = (value: unknown, field: string) => {
@@ -57,10 +64,14 @@ const toPackageJson = (value: unknown): PackageJson | null => {
   const scripts = getObjectField(value, 'scripts');
   const dependencies = getObjectField(value, 'dependencies');
   const devDependencies = getObjectField(value, 'devDependencies');
+  const optionalDependencies = getObjectField(value, 'optionalDependencies');
+  const peerDependencies = getObjectField(value, 'peerDependencies');
 
   return {
     dependencies: isRecord(dependencies) ? dependencies : undefined,
     devDependencies: isRecord(devDependencies) ? devDependencies : undefined,
+    optionalDependencies: isRecord(optionalDependencies) ? optionalDependencies : undefined,
+    peerDependencies: isRecord(peerDependencies) ? peerDependencies : undefined,
     scripts: isRecord(scripts) ? scripts : undefined,
   };
 };
@@ -143,20 +154,67 @@ export class GithubRepositoryReader {
     }
   }
 
-  async hasAnyPath(owner: string, repository: string, branch: string, paths: readonly string[]) {
+  async findFirstPath(owner: string, repository: string, branch: string, paths: readonly string[]) {
     for (const path of paths) {
       if (await this.hasPath(owner, repository, branch, path)) {
-        return true;
+        return path;
       }
     }
 
-    return false;
+    return null;
+  }
+
+  async readFirstTextFile(
+    owner: string,
+    repository: string,
+    branch: string,
+    paths: readonly string[],
+  ): Promise<TextFileMatch | null> {
+    for (const path of paths) {
+      const content = await this.readFile(owner, repository, branch, path);
+
+      if (content !== null) {
+        return {
+          content,
+          path,
+        };
+      }
+    }
+
+    return null;
+  }
+
+  async listDirectoryFiles(owner: string, repository: string, branch: string, path: string) {
+    const body = await this.requestContents(owner, repository, branch, path);
+
+    if (!Array.isArray(body)) {
+      return [];
+    }
+
+    return body
+      .map((entry) => {
+        if (!isRecord(entry)) {
+          return null;
+        }
+
+        const type = getStringField(entry, 'type');
+        const name = getStringField(entry, 'name');
+
+        if (type !== 'file' || !name) {
+          return null;
+        }
+
+        return name;
+      })
+      .filter((name): name is string => name !== null);
+  }
+
+  async hasAnyPath(owner: string, repository: string, branch: string, paths: readonly string[]) {
+    return (await this.findFirstPath(owner, repository, branch, paths)) !== null;
   }
 
   async hasDirectory(owner: string, repository: string, branch: string, path: string) {
-    const body = await this.requestContents(owner, repository, branch, path);
-
-    return Array.isArray(body) && body.length > 0;
+    return (await this.listDirectoryFiles(owner, repository, branch, path)).length > 0;
   }
 
   private async hasPath(owner: string, repository: string, branch: string, path: string) {

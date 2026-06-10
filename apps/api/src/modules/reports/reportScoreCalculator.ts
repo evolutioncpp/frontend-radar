@@ -24,32 +24,42 @@ export const getStatusByScore = (score: number) => {
 export const buildScoreBreakdown = (signals: RepositorySignals) => {
   const evidenceMap = buildReportEvidenceMap(signals);
   const documentationScore = clampScore(
-    (signals.hasReadme ? 70 : 0) + (signals.hasEnvExample ? 15 : 0) + 15,
+    (signals.readme.exists ? 45 : 0) +
+      (signals.readme.isSubstantial ? 15 : 0) +
+      (signals.readme.hasUsageSection ? 10 : 0) +
+      (signals.readme.hasInstallSection ? 10 : 0) +
+      (signals.envExample.exists ? 15 : 0) +
+      5,
   );
   const testingScore = clampScore(
-    (signals.hasPackageJson ? 25 : 0) +
-      (signals.hasTestScript ? 55 : 0) +
-      (signals.hasTestingLibrary ? 20 : 0),
+    (signals.packageJson.exists ? 25 : 0) +
+      (signals.packageJson.scripts.test.exists ? 55 : 0) +
+      (signals.testingLibrary.found ? 20 : 0),
   );
-  const ciScore = clampScore(signals.hasCi ? 95 : signals.hasBuildScript ? 45 : 25);
+  const ciScore = clampScore(
+    (signals.ci.exists ? 60 : 0) + (signals.packageJson.scripts.build.exists ? 35 : 0) + 5,
+  );
   const dependenciesScore = clampScore(
-    (signals.hasPackageJson ? 45 : 0) + (signals.hasLockfile ? 35 : 0) + 20,
+    (signals.packageJson.exists ? 40 : 0) +
+      (signals.lockfile.exists ? 40 : 0) +
+      (signals.lockfile.packageManager ? 10 : 0) +
+      10,
   );
   const maintainabilityScore = clampScore(
-    (signals.hasTypescript ? 35 : 0) +
-      (signals.hasLintScript ? 35 : 0) +
-      (signals.hasPackageJson ? 20 : 0) +
-      (signals.hasStorybook ? 10 : 0),
+    (signals.typescript.found ? 35 : 0) +
+      (signals.packageJson.scripts.lint.exists ? 35 : 0) +
+      (signals.packageJson.exists ? 20 : 0) +
+      (signals.storybook.found ? 10 : 0),
   );
   const performanceScore = clampScore(
-    (signals.hasBuildScript ? 45 : 0) +
-      (signals.hasBundler ? 35 : 0) +
-      (signals.hasPackageJson ? 20 : 0),
+    (signals.packageJson.scripts.build.exists ? 45 : 0) +
+      (signals.bundler.found ? 35 : 0) +
+      (signals.packageJson.exists ? 20 : 0),
   );
   const accessibilityScore = clampScore(
-    (signals.hasA11yTooling ? 55 : 0) +
-      (signals.hasStorybook ? 25 : 0) +
-      (signals.hasTestingLibrary ? 20 : 0),
+    (signals.a11yTooling.found ? 55 : 0) +
+      (signals.storybook.found ? 25 : 0) +
+      (signals.testingLibrary.found ? 20 : 0),
   );
 
   return [

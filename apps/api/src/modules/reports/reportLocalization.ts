@@ -130,6 +130,7 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
         descriptions: {
           found: 'README file was found.',
           missing: 'README file was not found.',
+          warning: 'README was found, but it is short or misses setup and usage details.',
         },
       },
       storybook: {
@@ -192,6 +193,21 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
       },
     },
     recommendations: {
+      'add-a11y-tooling': {
+        title: 'Add accessibility checks',
+        description:
+          'Add eslint-plugin-jsx-a11y, axe-core or similar tooling so accessibility regressions are easier to catch.',
+      },
+      'add-build-script': {
+        title: 'Add a production build script',
+        description:
+          'Expose a build script in package.json so CI can verify that the frontend compiles before delivery.',
+      },
+      'add-bundler': {
+        title: 'Declare frontend build tooling',
+        description:
+          'Add or expose a frontend bundler such as Vite, Next.js, Webpack or Parcel so build readiness is easier to verify.',
+      },
       'add-env-example': {
         title: 'Document environment variables',
         description: 'Add an .env.example file so setup requirements are clear for contributors.',
@@ -204,6 +220,16 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
         title: 'Add a lint script',
         description: 'Expose linting in package.json to make code quality checks repeatable.',
       },
+      'add-package-metadata': {
+        title: 'Add package metadata',
+        description:
+          'Add package.json so scripts, dependencies and project tooling can be installed and checked consistently.',
+      },
+      'add-readme': {
+        title: 'Add a project README',
+        description:
+          'Add setup, usage and contribution notes so contributors can understand and run the project quickly.',
+      },
       'add-storybook': {
         title: 'Add component documentation',
         description:
@@ -213,9 +239,24 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
         title: 'Add an automated test script',
         description: 'Expose a test script in package.json so quality checks are easy to run.',
       },
+      'add-testing-library': {
+        title: 'Add frontend testing tooling',
+        description:
+          'Add Vitest, Jest, Playwright or Testing Library so the test script has a clear frontend testing stack behind it.',
+      },
+      'add-typescript': {
+        title: 'Add TypeScript coverage',
+        description:
+          'Add TypeScript configuration or dependencies so maintainability checks can catch interface and refactor issues earlier.',
+      },
       'commit-lockfile': {
         title: 'Commit a package lockfile',
         description: 'A lockfile keeps dependency installs reproducible across machines and CI.',
+      },
+      'improve-readme': {
+        title: 'Expand README setup and usage details',
+        description:
+          'Add installation/setup and usage/examples sections so the README explains how to run and validate the project.',
       },
     },
     reportNotFound: 'Report analysis not found',
@@ -325,6 +366,7 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
         descriptions: {
           found: 'README-файл найден.',
           missing: 'README-файл не найден.',
+          warning: 'README-файл найден, но он короткий или без деталей установки и использования.',
         },
       },
       storybook: {
@@ -387,6 +429,21 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
       },
     },
     recommendations: {
+      'add-a11y-tooling': {
+        title: 'Добавить проверки доступности',
+        description:
+          'Добавьте eslint-plugin-jsx-a11y, axe-core или похожий инструмент, чтобы раньше находить регрессии доступности.',
+      },
+      'add-build-script': {
+        title: 'Добавить production build-скрипт',
+        description:
+          'Добавьте build-скрипт в package.json, чтобы CI мог проверять сборку frontend перед поставкой.',
+      },
+      'add-bundler': {
+        title: 'Указать frontend build tooling',
+        description:
+          'Добавьте или явно подключите frontend bundler вроде Vite, Next.js, Webpack или Parcel, чтобы готовность сборки было проще проверять.',
+      },
       'add-env-example': {
         title: 'Описать переменные окружения',
         description:
@@ -401,6 +458,16 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
         title: 'Добавить lint-скрипт',
         description: 'Добавьте linting в package.json, чтобы проверки качества были повторяемыми.',
       },
+      'add-package-metadata': {
+        title: 'Добавить package metadata',
+        description:
+          'Добавьте package.json, чтобы скрипты, зависимости и инструменты проекта устанавливались и проверялись единообразно.',
+      },
+      'add-readme': {
+        title: 'Добавить README проекта',
+        description:
+          'Добавьте заметки по настройке, использованию и участию в проекте, чтобы контрибьюторы быстрее понимали, как его запустить.',
+      },
       'add-storybook': {
         title: 'Добавить документацию компонентов',
         description:
@@ -411,10 +478,25 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
         description:
           'Добавьте test-скрипт в package.json, чтобы проверки качества было легко запускать.',
       },
+      'add-testing-library': {
+        title: 'Добавить frontend testing tooling',
+        description:
+          'Добавьте Vitest, Jest, Playwright или Testing Library, чтобы за test-скриптом стоял понятный frontend test stack.',
+      },
+      'add-typescript': {
+        title: 'Добавить TypeScript-покрытие',
+        description:
+          'Добавьте TypeScript-конфигурацию или зависимости, чтобы проверки поддерживаемости раньше ловили проблемы интерфейсов и рефакторинга.',
+      },
       'commit-lockfile': {
         title: 'Закоммитить package lockfile',
         description:
           'Lockfile делает установку зависимостей воспроизводимой на разных машинах и CI.',
+      },
+      'improve-readme': {
+        title: 'Расширить README настройкой и примерами',
+        description:
+          'Добавьте разделы installation/setup и usage/examples, чтобы README объяснял, как запускать и проверять проект.',
       },
     },
     reportNotFound: 'Отчёт анализа не найден.',

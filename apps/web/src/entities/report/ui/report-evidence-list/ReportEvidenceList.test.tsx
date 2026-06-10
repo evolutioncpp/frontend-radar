@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, test, vi } from 'vitest';
 
@@ -40,6 +40,13 @@ const evidence: ReportEvidence[] = [
     description: 'No environment example file was found.',
     source: '.env.example',
   },
+  {
+    id: 'storybook',
+    label: 'Storybook',
+    status: 'warning',
+    description: 'Storybook is only partially configured.',
+    source: '.storybook/main.ts',
+  },
 ];
 
 describe('ReportEvidenceList', () => {
@@ -55,9 +62,21 @@ describe('ReportEvidenceList', () => {
     expect(screen.getByText('Evidence')).toBeInTheDocument();
     expect(screen.getByText('Found')).toBeInTheDocument();
     expect(screen.getByText('Missing')).toBeInTheDocument();
+    expect(screen.getByText('Warning')).toBeInTheDocument();
     expect(screen.getByText('README')).toBeInTheDocument();
     expect(screen.getByText('No environment example file was found.')).toBeInTheDocument();
     expect(screen.getByText('Source: .env.example')).toBeInTheDocument();
+  });
+
+  test('sorts evidence by missing, warning and found statuses', () => {
+    render(<ReportEvidenceList evidence={evidence} />);
+
+    const items = within(screen.getByRole('list')).getAllByRole('listitem');
+
+    expect(items).toHaveLength(3);
+    expect(items[0]).toHaveTextContent('Environment example');
+    expect(items[1]).toHaveTextContent('Storybook');
+    expect(items[2]).toHaveTextContent('README');
   });
 
   test('toggles evidence disclosure state', async () => {

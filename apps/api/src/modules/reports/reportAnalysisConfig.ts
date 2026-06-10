@@ -10,7 +10,7 @@ export const repositorySignalConfig = {
   a11yDependencies: ['eslint-plugin-jsx-a11y', '@axe-core/react', 'axe-core'],
   bundlerDependencies: ['vite', 'webpack', 'parcel', 'next', 'react-scripts'],
   envExamplePaths: ['.env.example', '.env.sample', 'env.example'],
-  lockfilePaths: ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'bun.lockb'],
+  lockfilePaths: ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'bun.lock', 'bun.lockb'],
   readmePaths: ['README.md', 'README', 'readme.md'],
   storybookDependencies: ['storybook', '@storybook/react', '@storybook/react-vite'],
   storybookPaths: [
@@ -23,6 +23,22 @@ export const repositorySignalConfig = {
   typescriptDependencies: ['typescript', '@types/react', 'ts-node'],
   typescriptPaths: ['tsconfig.json', 'jsconfig.json'],
   workflowsPath: '.github/workflows',
+} as const;
+
+export const readmeQualityConfig = {
+  installSectionPatterns: [
+    /\binstallation\b/i,
+    /\binstall\b/i,
+    /\bsetup\b/i,
+    /\bgetting started\b/i,
+    /\bquick start\b/i,
+  ],
+  minLength: 600,
+  usageSectionPatterns: [/\busage\b/i, /\bexample\b/i, /\bexamples\b/i, /\bapi\b/i],
+} as const;
+
+export const evidenceSourceConfig = {
+  workflowPreviewLimit: 3,
 } as const;
 
 export const scoreThresholds = {
