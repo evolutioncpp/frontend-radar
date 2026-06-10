@@ -5,6 +5,18 @@ import { useProjectReport } from './useProjectReport';
 
 import type { ProjectReport } from './types';
 
+const emptyTooling: ProjectReport['tooling'] = {
+  accessibility: [],
+  bundlers: [],
+  formatting: [],
+  frameworks: [],
+  linting: [],
+  packageManager: [],
+  testing: [],
+  typing: [],
+  uiReview: [],
+};
+
 const apiMocks = vi.hoisted(() => ({
   getReportAnalysis: vi.fn(),
 }));
@@ -14,6 +26,16 @@ vi.mock('@/shared/api/generatedApi', () => ({
 }));
 
 const testReport: ProjectReport = {
+  analysisSources: [
+    {
+      id: 'github-repository',
+      kind: 'github_api',
+      label: 'GitHub repository metadata',
+      scope: 'github',
+      status: 'found',
+      source: 'repos/evolutioncpp/frontend-radar',
+    },
+  ],
   id: 'analysis-id',
   createdAt: '2026-06-09T00:00:00.000Z',
   totalScore: 82,
@@ -71,6 +93,7 @@ const testReport: ProjectReport = {
     },
   ],
   recommendations: [],
+  tooling: emptyTooling,
 };
 
 describe('useProjectReport', () => {

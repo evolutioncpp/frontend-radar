@@ -6,12 +6,25 @@ import { DashboardReportView } from './DashboardReportView';
 
 import type { ProjectReport } from '@/entities/report';
 
+const emptyTooling: ProjectReport['tooling'] = {
+  accessibility: [],
+  bundlers: [],
+  formatting: [],
+  frameworks: [],
+  linting: [],
+  packageManager: [],
+  testing: [],
+  typing: [],
+  uiReview: [],
+};
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, string | number>) => {
       const translations: Record<string, string> = {
         'page.reportAria': 'Dashboard report',
         'page.sections.repository': 'Repository summary',
+        'page.sections.analysisDetails': 'Analysis details',
         'page.sections.healthScore': 'Health score',
         'page.sections.comparison': 'Report comparison',
         'page.sections.metrics': 'Quality metrics',
@@ -39,6 +52,28 @@ vi.mock('react-i18next', () => ({
         'repository.projectDetection.confidenceLevels.high': 'High',
         'repository.projectDetection.confidenceLevels.medium': 'Medium',
         'repository.projectDetection.confidenceLevels.low': 'Low',
+
+        'analysisDetails.label': 'Analysis details',
+        'analysisDetails.title': 'Project stack and sources',
+        'analysisDetails.empty': 'Not detected',
+        'analysisDetails.statuses.found': 'Found',
+        'analysisDetails.statuses.missing': 'Missing',
+        'analysisDetails.statuses.warning': 'Needs review',
+        'analysisDetails.tooling.title': 'Project stack',
+        'analysisDetails.tooling.groups.packageManager': 'Package manager',
+        'analysisDetails.tooling.groups.frameworks': 'Framework',
+        'analysisDetails.tooling.groups.bundlers': 'Bundler',
+        'analysisDetails.tooling.groups.testing': 'Testing',
+        'analysisDetails.tooling.groups.linting': 'Linting',
+        'analysisDetails.tooling.groups.formatting': 'Formatting',
+        'analysisDetails.tooling.groups.typing': 'Typing',
+        'analysisDetails.tooling.groups.uiReview': 'UI review',
+        'analysisDetails.tooling.groups.accessibility': 'Accessibility',
+        'analysisDetails.sources.title': 'Analysis sources',
+        'analysisDetails.sources.scopes.project': 'Project',
+        'analysisDetails.sources.scopes.root': 'Repository root',
+        'analysisDetails.sources.scopes.repository': 'Repository',
+        'analysisDetails.sources.scopes.github': 'GitHub',
 
         'healthScore.label': 'Frontend Health Score',
         'healthScore.title': 'Overall project quality',
@@ -86,6 +121,14 @@ vi.mock('react-i18next', () => ({
         return `Source: ${options?.source}`;
       }
 
+      if (key === 'analysisDetails.sources.counter') {
+        return `${options?.count} sources`;
+      }
+
+      if (key === 'analysisDetails.sources.source') {
+        return `Source: ${options?.source}`;
+      }
+
       if (key === 'healthScore.scoreAria') {
         return `Frontend health score ${options?.score} out of 100`;
       }
@@ -116,6 +159,16 @@ vi.mock('react-i18next', () => ({
 }));
 
 const customReport: ProjectReport = {
+  analysisSources: [
+    {
+      id: 'project-package-json',
+      kind: 'package_json',
+      label: 'Selected package.json',
+      scope: 'project',
+      status: 'found',
+      source: 'package.json',
+    },
+  ],
   id: 'custom-report',
   createdAt: '2026-06-06T00:00:00.000Z',
   totalScore: 47,
@@ -181,6 +234,17 @@ const customReport: ProjectReport = {
       description: 'Custom recommendation description',
     },
   ],
+  tooling: {
+    ...emptyTooling,
+    bundlers: [
+      {
+        id: 'vite',
+        label: 'Vite',
+        sources: ['package.json devDependencies.vite'],
+        status: 'found',
+      },
+    ],
+  },
 };
 
 const renderDashboardReportView = (report: ProjectReport) => {
@@ -197,6 +261,8 @@ describe('DashboardReportView', () => {
 
     expect(screen.getByRole('heading', { name: 'acme/custom-dashboard' })).toBeInTheDocument();
     expect(screen.getByText('Custom repository description')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Project stack and sources' })).toBeInTheDocument();
+    expect(screen.getByText('Vite')).toBeInTheDocument();
     expect(screen.getByText('Custom testing score')).toBeInTheDocument();
     expect(screen.getByText('Custom check label')).toBeInTheDocument();
     expect(screen.getByText('Custom recommendation title')).toBeInTheDocument();

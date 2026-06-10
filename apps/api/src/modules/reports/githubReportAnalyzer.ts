@@ -4,6 +4,8 @@ import { buildChecks } from './reportChecks.js';
 import { buildRecommendations } from './reportRecommendations.js';
 import { buildScoreBreakdown } from './reportScoreCalculator.js';
 import { resolveReportProject } from './reportProjectDetector.js';
+import { buildReportAnalysisSources } from './reportAnalysisSources.js';
+import { buildReportTooling } from './reportToolingAnalyzer.js';
 import { collectRepositorySignals } from './reportSignals.js';
 
 import type {
@@ -96,8 +98,11 @@ export class GithubReportAnalyzer implements ReportAnalyzer {
       projectPath: project.projectPath,
       reader: this.reader,
       repository: input.repository,
+      rootPackageJson: project.rootPackageJson,
     });
+    const analysisSources = buildReportAnalysisSources(signals);
     const scoreBreakdown = buildScoreBreakdown(signals);
+    const tooling = buildReportTooling(signals);
     const totalScore = Math.round(
       scoreBreakdown.reduce((sum, metric) => sum + metric.value, 0) / scoreBreakdown.length,
     );
@@ -105,7 +110,9 @@ export class GithubReportAnalyzer implements ReportAnalyzer {
     return {
       id: input.id,
       createdAt: input.createdAt.toISOString(),
+      analysisSources,
       totalScore,
+      tooling,
       repository: {
         owner: repositoryMetadata.owner,
         name: repositoryMetadata.name,

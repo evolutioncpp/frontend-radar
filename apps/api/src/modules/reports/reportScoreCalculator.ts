@@ -5,6 +5,42 @@ import type { RepositorySignals } from './reportSignals.js';
 
 const clampScore = (score: number) => Math.max(0, Math.min(100, Math.round(score)));
 
+const getScopedPathScore = (
+  signal: Pick<RepositorySignals['readme'], 'exists' | 'scope'>,
+  projectScore: number,
+  rootScore: number,
+) => {
+  if (!signal.exists) {
+    return 0;
+  }
+
+  return signal.scope === 'project' ? projectScore : rootScore;
+};
+
+const getScriptScore = (
+  script: RepositorySignals['packageJson']['scripts']['build'],
+  projectScore: number,
+  rootScore: number,
+) => {
+  if (!script.exists) {
+    return 0;
+  }
+
+  return script.scope === 'project' ? projectScore : rootScore;
+};
+
+const getToolScore = (
+  signal: RepositorySignals['typescript'],
+  projectScore: number,
+  rootScore: number,
+) => {
+  if (!signal.found) {
+    return 0;
+  }
+
+  return (signal.projectSources?.length ?? 0) > 0 ? projectScore : rootScore;
+};
+
 export const getStatusByScore = (score: number) => {
   if (score >= scoreThresholds.excellent) {
     return 'excellent' as const;
@@ -24,20 +60,20 @@ export const getStatusByScore = (score: number) => {
 export const buildScoreBreakdown = (signals: RepositorySignals) => {
   const evidenceMap = buildReportEvidenceMap(signals);
   const documentationScore = clampScore(
-    (signals.readme.exists ? 45 : 0) +
+    getScopedPathScore(signals.readme, 45, 25) +
       (signals.readme.isSubstantial ? 15 : 0) +
       (signals.readme.hasUsageSection ? 10 : 0) +
       (signals.readme.hasInstallSection ? 10 : 0) +
-      (signals.envExample.exists ? 15 : 0) +
+      getScopedPathScore(signals.envExample, 15, 8) +
       5,
   );
   const testingScore = clampScore(
     (signals.packageJson.exists ? 25 : 0) +
-      (signals.packageJson.scripts.test.exists ? 55 : 0) +
-      (signals.testingLibrary.found ? 20 : 0),
+      getScriptScore(signals.packageJson.scripts.test, 55, 30) +
+      getToolScore(signals.testingLibrary, 20, 10),
   );
   const ciScore = clampScore(
-    (signals.ci.exists ? 60 : 0) + (signals.packageJson.scripts.build.exists ? 35 : 0) + 5,
+    (signals.ci.exists ? 60 : 0) + getScriptScore(signals.packageJson.scripts.build, 35, 18) + 5,
   );
   const dependenciesScore = clampScore(
     (signals.packageJson.exists ? 40 : 0) +
@@ -46,20 +82,20 @@ export const buildScoreBreakdown = (signals: RepositorySignals) => {
       10,
   );
   const maintainabilityScore = clampScore(
-    (signals.typescript.found ? 35 : 0) +
-      (signals.packageJson.scripts.lint.exists ? 35 : 0) +
+    getToolScore(signals.typescript, 35, 18) +
+      getScriptScore(signals.packageJson.scripts.lint, 35, 18) +
       (signals.packageJson.exists ? 20 : 0) +
-      (signals.storybook.found ? 10 : 0),
+      getToolScore(signals.storybook, 10, 5),
   );
   const performanceScore = clampScore(
-    (signals.packageJson.scripts.build.exists ? 45 : 0) +
-      (signals.bundler.found ? 35 : 0) +
+    getScriptScore(signals.packageJson.scripts.build, 45, 25) +
+      getToolScore(signals.bundler, 35, 18) +
       (signals.packageJson.exists ? 20 : 0),
   );
   const accessibilityScore = clampScore(
-    (signals.a11yTooling.found ? 55 : 0) +
-      (signals.storybook.found ? 25 : 0) +
-      (signals.testingLibrary.found ? 20 : 0),
+    getToolScore(signals.a11yTooling, 55, 30) +
+      getToolScore(signals.storybook, 25, 12) +
+      getToolScore(signals.testingLibrary, 20, 10),
   );
 
   return [

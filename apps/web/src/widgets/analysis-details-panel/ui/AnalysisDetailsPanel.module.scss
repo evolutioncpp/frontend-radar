@@ -1,0 +1,227 @@
+@use 'app/styles/helpers' as *;
+
+.analysisDetailsPanel {
+  display: grid;
+  gap: $space-6;
+}
+
+.toolingSection {
+  display: grid;
+  gap: $space-4;
+}
+
+.subHeader {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+  color: var(--color-text-secondary);
+
+  h3 {
+    margin: 0;
+    color: var(--color-text-primary);
+    font-size: $font-size-md;
+    font-weight: $font-weight-semibold;
+    line-height: $line-height-md;
+  }
+}
+
+.subHeaderIcon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
+}
+
+.toolingGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: $space-3;
+  margin: 0;
+}
+
+.toolingItem {
+  display: grid;
+  min-width: 0;
+  gap: $space-2;
+  padding: $space-3;
+  border: 1px solid var(--color-border-secondary);
+  border-radius: $radius-sm;
+  background: var(--color-bg-subtle);
+
+  dt {
+    color: var(--color-text-muted);
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    line-height: $line-height-sm;
+  }
+
+  dd {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $space-2;
+    margin: 0;
+  }
+}
+
+.toolingName {
+  min-width: 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-md;
+  overflow-wrap: anywhere;
+}
+
+.toolingSource {
+  width: 100%;
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  line-height: $line-height-sm;
+  overflow-wrap: anywhere;
+}
+
+.sourcesDisclosure {
+  display: grid;
+  gap: $space-4;
+  padding-top: $space-4;
+  border-top: 1px solid var(--color-border-secondary);
+}
+
+.sourcesSummary {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: $space-2;
+  border-radius: $radius-sm;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-sm;
+  list-style: none;
+  user-select: none;
+
+  @include focus-visible;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &::marker {
+    content: '';
+  }
+}
+
+.sourcesSummaryIcon,
+.sourcesSummaryLeadingIcon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}
+
+.sourcesSummaryIcon {
+  transition: transform $transition-base;
+}
+
+.sourcesSummaryLeadingIcon {
+  color: var(--color-text-muted);
+}
+
+.sourcesDisclosure[open] .sourcesSummaryIcon {
+  transform: rotate(180deg);
+}
+
+.sourcesSummaryMeta {
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.sourcesGroups {
+  display: grid;
+  gap: $space-5;
+}
+
+.sourcesGroup {
+  display: grid;
+  gap: $space-2;
+
+  h3 {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    letter-spacing: 0;
+    line-height: $line-height-sm;
+    text-transform: uppercase;
+  }
+}
+
+.sourcesList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sourceItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: $space-3;
+  align-items: start;
+  padding: $space-3 0;
+  border-bottom: 1px solid var(--color-border-secondary);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.sourceMain {
+  display: grid;
+  min-width: 0;
+  gap: $space-1;
+}
+
+.sourceLabel,
+.sourceDescription,
+.sourcePath {
+  margin: 0;
+  font-size: $font-size-sm;
+  line-height: $line-height-md;
+}
+
+.sourceLabel {
+  color: var(--color-text-primary);
+  font-weight: $font-weight-semibold;
+}
+
+.sourceDescription {
+  color: var(--color-text-secondary);
+}
+
+.sourcePath {
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+@include media-max($breakpoint-md) {
+  .toolingGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@include media-max($breakpoint-sm) {
+  .toolingGrid,
+  .sourceItem {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sourcesSummaryIcon {
+    transition: none;
+  }
+}

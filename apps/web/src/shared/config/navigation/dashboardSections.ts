@@ -1,5 +1,6 @@
 export const DashboardSectionIds = {
   REPOSITORY: 'repository',
+  ANALYSIS_DETAILS: 'analysis-details',
   HEALTH_SCORE: 'health-score',
   COMPARISON: 'comparison',
   METRICS: 'metrics',
@@ -11,6 +12,7 @@ export type DashboardSectionId = (typeof DashboardSectionIds)[keyof typeof Dashb
 
 export type DashboardSectionNavigationIcon =
   | 'repository'
+  | 'analysisDetails'
   | 'healthScore'
   | 'comparison'
   | 'metrics'
@@ -19,6 +21,7 @@ export type DashboardSectionNavigationIcon =
 
 export const dashboardSectionPageLabelKeys = {
   [DashboardSectionIds.REPOSITORY]: 'page.sections.repository',
+  [DashboardSectionIds.ANALYSIS_DETAILS]: 'page.sections.analysisDetails',
   [DashboardSectionIds.HEALTH_SCORE]: 'page.sections.healthScore',
   [DashboardSectionIds.COMPARISON]: 'page.sections.comparison',
   [DashboardSectionIds.METRICS]: 'page.sections.metrics',
@@ -28,6 +31,7 @@ export const dashboardSectionPageLabelKeys = {
 
 export const dashboardSectionSidebarLabelKeys = {
   repository: 'sidebar.items.repository',
+  analysisDetails: 'sidebar.items.analysisDetails',
   healthScore: 'sidebar.items.healthScore',
   comparison: 'sidebar.items.comparison',
   metrics: 'sidebar.items.metrics',
@@ -58,6 +62,13 @@ export const dashboardSections = [
     pageLabelKey: dashboardSectionPageLabelKeys[DashboardSectionIds.REPOSITORY],
     sidebarLabelKey: dashboardSectionSidebarLabelKeys.repository,
     navigationIcon: 'repository',
+  },
+  {
+    id: DashboardSectionIds.ANALYSIS_DETAILS,
+    href: getDashboardSectionHref(DashboardSectionIds.ANALYSIS_DETAILS),
+    pageLabelKey: dashboardSectionPageLabelKeys[DashboardSectionIds.ANALYSIS_DETAILS],
+    sidebarLabelKey: dashboardSectionSidebarLabelKeys.analysisDetails,
+    navigationIcon: 'analysisDetails',
   },
   {
     id: DashboardSectionIds.HEALTH_SCORE,

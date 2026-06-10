@@ -16,6 +16,7 @@
       "history": "History",
       "settings": "Settings",
       "repository": "Repository",
+      "analysisDetails": "Analysis details",
       "healthScore": "Health score",
       "comparison": "Comparison",
       "metrics": "Metrics",
@@ -124,6 +125,7 @@
     },
     "sections": {
       "repository": "Repository summary",
+      "analysisDetails": "Analysis details",
       "healthScore": "Health score",
       "comparison": "Report comparison",
       "metrics": "Quality metrics",
@@ -163,6 +165,42 @@
         "high": "High",
         "medium": "Medium",
         "low": "Low"
+      }
+    }
+  },
+  "analysisDetails": {
+    "label": "Analysis details",
+    "title": "Project stack and sources",
+    "empty": "No data",
+    "statuses": {
+      "found": "Found",
+      "missing": "Missing",
+      "warning": "Root-level"
+    },
+    "tooling": {
+      "title": "Project stack",
+      "groups": {
+        "packageManager": "Package manager",
+        "frameworks": "Framework",
+        "bundlers": "Bundler",
+        "testing": "Testing",
+        "linting": "Linting",
+        "formatting": "Formatting",
+        "typing": "Typing",
+        "uiReview": "UI review",
+        "accessibility": "Accessibility"
+      }
+    },
+    "sources": {
+      "title": "Analysis sources",
+      "counter_one": "{{count}} source",
+      "counter_other": "{{count}} sources",
+      "source": "Source: {{source}}",
+      "scopes": {
+        "project": "Project",
+        "root": "Repository root",
+        "repository": "Repository",
+        "github": "GitHub"
       }
     }
   },

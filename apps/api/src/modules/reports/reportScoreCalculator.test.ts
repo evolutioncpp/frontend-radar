@@ -10,6 +10,7 @@ const createScriptSignal = (
 ): ScriptSignal => ({
   exists: value !== null,
   name,
+  scope: value ? 'project' : null,
   source: value ? `package.json scripts.${name}` : null,
   value,
 });
@@ -33,6 +34,10 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     exists: false,
     path: null,
   },
+  formatting: emptyToolSignal,
+  frameworks: emptyToolSignal,
+  isNestedProject: false,
+  linting: emptyToolSignal,
   lockfile: {
     exists: false,
     packageManager: null,
@@ -48,6 +53,7 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
       test: createScriptSignal('test'),
     },
   },
+  projectPath: '',
   readme: {
     exists: false,
     hasInstallSection: false,
@@ -55,6 +61,16 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     isSubstantial: false,
     length: 0,
     path: null,
+  },
+  rootPackageJson: {
+    dependencies: [],
+    exists: true,
+    path: 'package.json',
+    scripts: {
+      build: createScriptSignal('build'),
+      lint: createScriptSignal('lint'),
+      test: createScriptSignal('test'),
+    },
   },
   storybook: emptyToolSignal,
   testingLibrary: emptyToolSignal,
@@ -117,5 +133,47 @@ describe('buildScoreBreakdown', () => {
       status: 'excellent',
       value: 100,
     });
+  });
+
+  it('gives partial CI credit for a root build script in a nested project', () => {
+    const metric = getMetric(
+      createSignals({
+        ci: {
+          exists: true,
+          source: '.github/workflows/ci.yml',
+          workflowNames: ['ci.yml'],
+        },
+        isNestedProject: true,
+        packageJson: {
+          dependencies: [],
+          exists: true,
+          path: 'apps/web/package.json',
+          scripts: {
+            build: {
+              ...createScriptSignal('build', 'npm run build:web'),
+              scope: 'root',
+              source: 'package.json scripts.build',
+            },
+            lint: createScriptSignal('lint'),
+            test: createScriptSignal('test'),
+          },
+        },
+        projectPath: 'apps/web',
+      }),
+      'ci',
+    );
+
+    expect(metric).toMatchObject({
+      status: 'good',
+      value: 83,
+    });
+    expect(metric.evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'build-script',
+          status: 'warning',
+        }),
+      ]),
+    );
   });
 });

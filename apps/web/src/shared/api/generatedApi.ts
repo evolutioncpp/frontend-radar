@@ -196,6 +196,78 @@ export type GetReportAnalysisApiResponse =
           latestCommitTitle: string | null;
           license: string | null;
         };
+        analysisSources: {
+          id: string;
+          kind:
+            | 'github_api'
+            | 'file'
+            | 'directory'
+            | 'package_json'
+            | 'script'
+            | 'dependency'
+            | 'workflow';
+          scope: 'repository' | 'root' | 'project' | 'github';
+          status: 'found' | 'missing' | 'warning';
+          label: string;
+          description?: string;
+          source?: string;
+        }[];
+        tooling: {
+          packageManager: {
+            id: string;
+            label: string;
+            status: 'found' | 'missing' | 'warning';
+            sources: string[];
+          }[];
+          frameworks: {
+            id: string;
+            label: string;
+            status: 'found' | 'missing' | 'warning';
+            sources: string[];
+          }[];
+          bundlers: {
+            id: string;
+            label: string;
+            status: 'found' | 'missing' | 'warning';
+            sources: string[];
+          }[];
+          testing: {
+            id: string;
+            label: string;
+            status: 'found' | 'missing' | 'warning';
+            sources: string[];
+          }[];
+          linting: {
+            id: string;
+            label: string;
+            status: 'found' | 'missing' | 'warning';
+            sources: string[];
+          }[];
+          formatting: {
+            id: string;
+            label: string;
+            status: 'found' | 'missing' | 'warning';
+            sources: string[];
+          }[];
+          typing: {
+            id: string;
+            label: string;
+            status: 'found' | 'missing' | 'warning';
+            sources: string[];
+          }[];
+          uiReview: {
+            id: string;
+            label: string;
+            status: 'found' | 'missing' | 'warning';
+            sources: string[];
+          }[];
+          accessibility: {
+            id: string;
+            label: string;
+            status: 'found' | 'missing' | 'warning';
+            sources: string[];
+          }[];
+        };
         totalScore: number;
         scoreBreakdown: {
           category:

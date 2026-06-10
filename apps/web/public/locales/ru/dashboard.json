@@ -16,6 +16,7 @@
       "history": "История",
       "settings": "Настройки",
       "repository": "Репозиторий",
+      "analysisDetails": "Детали анализа",
       "healthScore": "Оценка здоровья",
       "comparison": "Сравнение",
       "metrics": "Метрики",
@@ -124,6 +125,7 @@
     },
     "sections": {
       "repository": "Сводка репозитория",
+      "analysisDetails": "Детали анализа",
       "healthScore": "Оценка здоровья",
       "comparison": "Сравнение отчётов",
       "metrics": "Метрики качества",
@@ -133,6 +135,44 @@
     "copySectionLink": "Скопировать ссылку на раздел «{{section}}»",
     "copySectionTitle": "Скопировать ссылку на раздел",
     "copied": "Скопировано"
+  },
+  "analysisDetails": {
+    "label": "Детали анализа",
+    "title": "Стек проекта и источники",
+    "empty": "Нет данных",
+    "statuses": {
+      "found": "Найдено",
+      "missing": "Не найдено",
+      "warning": "Корневой уровень"
+    },
+    "tooling": {
+      "title": "Стек проекта",
+      "groups": {
+        "packageManager": "Package manager",
+        "frameworks": "Фреймворк",
+        "bundlers": "Bundler",
+        "testing": "Тестирование",
+        "linting": "Linting",
+        "formatting": "Форматирование",
+        "typing": "Типизация",
+        "uiReview": "UI review",
+        "accessibility": "Доступность"
+      }
+    },
+    "sources": {
+      "title": "Источники анализа",
+      "counter_one": "{{count}} источник",
+      "counter_few": "{{count}} источника",
+      "counter_many": "{{count}} источников",
+      "counter_other": "{{count}} источника",
+      "source": "Источник: {{source}}",
+      "scopes": {
+        "project": "Проект",
+        "root": "Корень репозитория",
+        "repository": "Репозиторий",
+        "github": "GitHub"
+      }
+    }
   },
   "repository": {
     "label": "Репозиторий",

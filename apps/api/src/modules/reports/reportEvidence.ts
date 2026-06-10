@@ -45,6 +45,36 @@ const getToolSource = (sources: readonly string[], fallback: string) => {
   return sources.length > 0 ? sources.join(', ') : fallback;
 };
 
+const getToolEvidenceStatus = (
+  signal: RepositorySignals['typescript'],
+): ReportEvidence['status'] => {
+  if (!signal.found) {
+    return 'missing';
+  }
+
+  return (signal.projectSources?.length ?? 0) > 0 ? 'found' : 'warning';
+};
+
+const getToolMissingDescription = ({
+  foundDescription,
+  missingDescription,
+  signal,
+}: {
+  foundDescription?: string;
+  missingDescription: string;
+  signal: RepositorySignals['typescript'];
+}) => {
+  if (!signal.found) {
+    return missingDescription;
+  }
+
+  if ((signal.projectSources?.length ?? 0) === 0) {
+    return foundDescription ?? 'Only root-level monorepo signal was found for this project.';
+  }
+
+  return undefined;
+};
+
 const getReadmeEvidence = (signals: RepositorySignals): ReportEvidence => {
   if (!signals.readme.exists) {
     return createEvidence({
@@ -70,6 +100,16 @@ const getReadmeEvidence = (signals: RepositorySignals): ReportEvidence => {
     });
   }
 
+  if (signals.readme.scope === 'root' && signals.isNestedProject) {
+    return createEvidence({
+      description: 'Only a root README was found for this nested frontend project.',
+      id: 'readme',
+      label: 'README',
+      source: signals.readme.path,
+      status: 'warning',
+    });
+  }
+
   return createEvidence({
     id: 'readme',
     label: 'README',
@@ -88,23 +128,33 @@ const getScriptEvidence = ({
   label: string;
   missingDescription: string;
   script: RepositorySignals['packageJson']['scripts']['build'];
-}): ReportEvidence => ({
-  id,
-  label,
-  status: script.exists ? 'found' : 'missing',
-  ...(script.exists ? {} : { description: missingDescription }),
-  source: script.source ?? `package.json scripts.${script.name}`,
-});
+}): ReportEvidence => {
+  const isRootFallback = script.exists && script.scope === 'root';
+
+  return {
+    id,
+    label,
+    status: script.exists ? (isRootFallback ? 'warning' : 'found') : 'missing',
+    ...(script.exists
+      ? isRootFallback
+        ? { description: 'Only a root-level monorepo script was found.' }
+        : {}
+      : { description: missingDescription }),
+    source: script.source ?? `package.json scripts.${script.name}`,
+  };
+};
 
 export const buildReportEvidenceMap = (signals: RepositorySignals): ReportEvidenceMap => ({
   'a11y-tooling': createEvidence({
-    description: signals.a11yTooling.found
-      ? undefined
-      : 'No accessibility-focused dependency was found.',
+    description: getToolMissingDescription({
+      foundDescription: 'Only root-level accessibility tooling was found for this project.',
+      missingDescription: 'No accessibility-focused dependency was found.',
+      signal: signals.a11yTooling,
+    }),
     id: 'a11y-tooling',
     label: 'Accessibility tooling',
     source: getToolSource(signals.a11yTooling.sources, 'package.json'),
-    status: signals.a11yTooling.found ? 'found' : 'missing',
+    status: getToolEvidenceStatus(signals.a11yTooling),
   }),
   'build-script': getScriptEvidence({
     id: 'build-script',
@@ -113,20 +163,31 @@ export const buildReportEvidenceMap = (signals: RepositorySignals): ReportEviden
     script: signals.packageJson.scripts.build,
   }),
   bundler: createEvidence({
-    description: signals.bundler.found
-      ? undefined
-      : 'No common frontend bundler dependency was found.',
+    description: getToolMissingDescription({
+      foundDescription: 'Only root-level bundler dependency was found for this project.',
+      missingDescription: 'No common frontend bundler dependency was found.',
+      signal: signals.bundler,
+    }),
     id: 'bundler',
     label: 'Frontend bundler',
     source: getToolSource(signals.bundler.sources, 'package.json'),
-    status: signals.bundler.found ? 'found' : 'missing',
+    status: getToolEvidenceStatus(signals.bundler),
   }),
   'env-example': createEvidence({
-    description: signals.envExample.exists ? undefined : 'No environment example file was found.',
+    description: signals.envExample.exists
+      ? signals.envExample.scope === 'root' && signals.isNestedProject
+        ? 'Only a root environment example was found for this nested project.'
+        : undefined
+      : 'No environment example file was found.',
     id: 'env-example',
     label: 'Environment example',
     source: signals.envExample.path ?? '.env.example',
-    status: signals.envExample.exists ? 'found' : 'missing',
+    status:
+      signals.envExample.exists && signals.envExample.scope === 'root' && signals.isNestedProject
+        ? 'warning'
+        : signals.envExample.exists
+          ? 'found'
+          : 'missing',
   }),
   'github-actions': createEvidence({
     description: signals.ci.exists ? undefined : 'No GitHub Actions workflow was found.',
@@ -157,13 +218,15 @@ export const buildReportEvidenceMap = (signals: RepositorySignals): ReportEviden
   }),
   readme: getReadmeEvidence(signals),
   storybook: createEvidence({
-    description: signals.storybook.found
-      ? undefined
-      : 'Storybook configuration or dependency was not found.',
+    description: getToolMissingDescription({
+      foundDescription: 'Only root-level Storybook signal was found for this project.',
+      missingDescription: 'Storybook configuration or dependency was not found.',
+      signal: signals.storybook,
+    }),
     id: 'storybook',
     label: 'Storybook',
     source: getToolSource(signals.storybook.sources, '.storybook / package.json'),
-    status: signals.storybook.found ? 'found' : 'missing',
+    status: getToolEvidenceStatus(signals.storybook),
   }),
   'test-script': getScriptEvidence({
     id: 'test-script',
@@ -172,22 +235,26 @@ export const buildReportEvidenceMap = (signals: RepositorySignals): ReportEviden
     script: signals.packageJson.scripts.test,
   }),
   'testing-library': createEvidence({
-    description: signals.testingLibrary.found
-      ? undefined
-      : 'No common frontend testing dependency was found.',
+    description: getToolMissingDescription({
+      foundDescription: 'Only root-level testing dependency was found for this project.',
+      missingDescription: 'No common frontend testing dependency was found.',
+      signal: signals.testingLibrary,
+    }),
     id: 'testing-library',
     label: 'Testing Library',
     source: getToolSource(signals.testingLibrary.sources, 'package.json'),
-    status: signals.testingLibrary.found ? 'found' : 'missing',
+    status: getToolEvidenceStatus(signals.testingLibrary),
   }),
   typescript: createEvidence({
-    description: signals.typescript.found
-      ? undefined
-      : 'TypeScript configuration or dependency was not found.',
+    description: getToolMissingDescription({
+      foundDescription: 'Only root-level TypeScript signal was found for this project.',
+      missingDescription: 'TypeScript configuration or dependency was not found.',
+      signal: signals.typescript,
+    }),
     id: 'typescript',
     label: 'TypeScript',
     source: getToolSource(signals.typescript.sources, 'tsconfig.json / package.json'),
-    status: signals.typescript.found ? 'found' : 'missing',
+    status: getToolEvidenceStatus(signals.typescript),
   }),
 });
 

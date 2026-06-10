@@ -7,6 +7,7 @@ import type { RepositorySignals, ScriptSignal, ToolSignal } from './reportSignal
 const createScriptSignal = (name: ScriptSignal['name']): ScriptSignal => ({
   exists: false,
   name,
+  scope: null,
   source: null,
   value: null,
 });
@@ -30,6 +31,10 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     exists: false,
     path: null,
   },
+  formatting: emptyToolSignal,
+  frameworks: emptyToolSignal,
+  isNestedProject: false,
+  linting: emptyToolSignal,
   lockfile: {
     exists: false,
     packageManager: null,
@@ -45,6 +50,7 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
       test: createScriptSignal('test'),
     },
   },
+  projectPath: '',
   readme: {
     exists: false,
     hasInstallSection: false,
@@ -52,6 +58,16 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     isSubstantial: false,
     length: 0,
     path: null,
+  },
+  rootPackageJson: {
+    dependencies: [],
+    exists: false,
+    path: null,
+    scripts: {
+      build: createScriptSignal('build'),
+      lint: createScriptSignal('lint'),
+      test: createScriptSignal('test'),
+    },
   },
   storybook: emptyToolSignal,
   testingLibrary: emptyToolSignal,

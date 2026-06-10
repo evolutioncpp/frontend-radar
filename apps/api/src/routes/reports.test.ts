@@ -19,6 +19,18 @@ const DEFAULT_COMMIT_DATE = '2026-06-09T00:00:00.000Z';
 const DEFAULT_COMMIT_SHA = 'abc123';
 const DEFAULT_COMMIT_TITLE = 'Initial frontend quality pass';
 
+const emptyTooling: ProjectReport['tooling'] = {
+  accessibility: [],
+  bundlers: [],
+  formatting: [],
+  frameworks: [],
+  linting: [],
+  packageManager: [],
+  testing: [],
+  typing: [],
+  uiReview: [],
+};
+
 const createTestReport = (
   id: string,
   latestCommitDate: string | null = DEFAULT_COMMIT_DATE,
@@ -26,6 +38,7 @@ const createTestReport = (
   projectPath: string | null = null,
   latestCommitTitle: string | null = DEFAULT_COMMIT_TITLE,
 ): ProjectReport => ({
+  analysisSources: [],
   id,
   createdAt: '2026-06-09T00:00:00.000Z',
   totalScore: 100,
@@ -89,6 +102,7 @@ const createTestReport = (
       status: 'passed',
     },
   ],
+  tooling: emptyTooling,
   recommendations: [],
 });
 

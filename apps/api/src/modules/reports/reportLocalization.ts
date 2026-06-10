@@ -1,6 +1,7 @@
 import { normalizeSupportedLanguage } from '@frontend-radar/localization';
 
 import { reportEvidenceIds } from './reportEvidence.js';
+import { reportAnalysisSourceIds } from './reportAnalysisSources.js';
 import { reportProjectDetectionSignalIds } from './reportProjectDetector.js';
 
 import type { ProjectReport, ReportAnalysisErrorCode } from './reportSchemas.js';
@@ -12,8 +13,16 @@ type EvidenceStatus = ProjectReport['scoreBreakdown'][number]['evidence'][number
 type ProjectDetectionSignalStatus =
   ProjectReport['repository']['projectDetection']['signals'][number]['status'];
 type ProjectDetectionSignalId = (typeof reportProjectDetectionSignalIds)[number];
+type AnalysisSourceId = (typeof reportAnalysisSourceIds)[number];
 
 type ReportLocalizationCatalog = {
+  analysisSources: Record<
+    AnalysisSourceId,
+    {
+      label: string;
+      descriptions: Partial<Record<EvidenceStatus, string>>;
+    }
+  >;
   checks: Record<string, { label: string; description?: string }>;
   errors: Record<ReportAnalysisErrorCode, string>;
   evidence: Record<
@@ -31,6 +40,7 @@ type ReportLocalizationCatalog = {
       descriptions: Partial<Record<ProjectDetectionSignalStatus, string>>;
     }
   >;
+  toolingNotDetected: string;
   recommendations: Record<string, { title: string; description: string }>;
   reportNotFound: string;
   reportRefreshUnavailable: string;
@@ -38,6 +48,147 @@ type ReportLocalizationCatalog = {
 
 const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCatalog> = {
   en: {
+    analysisSources: {
+      'github-repository-metadata': {
+        label: 'GitHub repository metadata',
+        descriptions: {
+          found: 'Repository metadata was loaded from GitHub API.',
+        },
+      },
+      'project-package-json': {
+        label: 'Selected package.json',
+        descriptions: {
+          found: 'package.json was found for the selected frontend project.',
+          missing: 'Selected package.json was not found.',
+        },
+      },
+      'root-package-json': {
+        label: 'Root package.json',
+        descriptions: {
+          found: 'Root package.json was found for monorepo context.',
+          missing: 'Root package.json was not found for this monorepo project.',
+        },
+      },
+      readme: {
+        label: 'README',
+        descriptions: {
+          found: 'README was found for the selected project.',
+          warning: 'Only root-level README or incomplete README was found.',
+          missing: 'README file was not found.',
+        },
+      },
+      'env-example': {
+        label: 'Environment example',
+        descriptions: {
+          found: 'Environment example file was found.',
+          warning: 'Only root-level environment example was found.',
+          missing: 'Environment example file was not found.',
+        },
+      },
+      lockfile: {
+        label: 'Package lockfile',
+        descriptions: {
+          found: 'Package lockfile was found.',
+          warning: 'Only root-level package lockfile was found.',
+          missing: 'Package lockfile was not found.',
+        },
+      },
+      'github-actions': {
+        label: 'GitHub Actions workflows',
+        descriptions: {
+          found: 'GitHub Actions workflows were found.',
+          missing: 'GitHub Actions workflows were not found.',
+        },
+      },
+      'build-script': {
+        label: 'Build script',
+        descriptions: {
+          found: 'Project build script was found.',
+          warning: 'Only root-level build script was found.',
+          missing: 'Build script was not found.',
+        },
+      },
+      'test-script': {
+        label: 'Test script',
+        descriptions: {
+          found: 'Project test script was found.',
+          warning: 'Only root-level test script was found.',
+          missing: 'Test script was not found.',
+        },
+      },
+      'lint-script': {
+        label: 'Lint script',
+        descriptions: {
+          found: 'Project lint script was found.',
+          warning: 'Only root-level lint script was found.',
+          missing: 'Lint script was not found.',
+        },
+      },
+      typescript: {
+        label: 'TypeScript',
+        descriptions: {
+          found: 'Project TypeScript signal was found.',
+          warning: 'Only root-level TypeScript signal was found.',
+          missing: 'TypeScript signal was not found.',
+        },
+      },
+      storybook: {
+        label: 'Storybook',
+        descriptions: {
+          found: 'Project Storybook signal was found.',
+          warning: 'Only root-level Storybook signal was found.',
+          missing: 'Storybook signal was not found.',
+        },
+      },
+      frameworks: {
+        label: 'Frontend frameworks',
+        descriptions: {
+          found: 'Frontend framework dependency was found.',
+          warning: 'Only root-level framework dependency was found.',
+          missing: 'Frontend framework dependency was not found.',
+        },
+      },
+      bundler: {
+        label: 'Frontend bundler',
+        descriptions: {
+          found: 'Frontend bundler dependency was found.',
+          warning: 'Only root-level bundler dependency was found.',
+          missing: 'Frontend bundler dependency was not found.',
+        },
+      },
+      testing: {
+        label: 'Testing tooling',
+        descriptions: {
+          found: 'Testing tooling dependency was found.',
+          warning: 'Only root-level testing dependency was found.',
+          missing: 'Testing tooling dependency was not found.',
+        },
+      },
+      linting: {
+        label: 'Linting tooling',
+        descriptions: {
+          found: 'Linting tooling dependency was found.',
+          warning: 'Only root-level linting dependency was found.',
+          missing: 'Linting tooling dependency was not found.',
+        },
+      },
+      formatting: {
+        label: 'Formatting tooling',
+        descriptions: {
+          found: 'Formatting tooling dependency was found.',
+          warning: 'Only root-level formatting dependency was found.',
+          missing: 'Formatting tooling dependency was not found.',
+        },
+      },
+      accessibility: {
+        label: 'Accessibility tooling',
+        descriptions: {
+          found: 'Accessibility tooling dependency was found.',
+          warning: 'Only root-level accessibility dependency was found.',
+          missing: 'Accessibility tooling dependency was not found.',
+        },
+      },
+    },
     checks: {
       'readme-exists': {
         label: 'README exists',
@@ -256,6 +407,7 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
         },
       },
     },
+    toolingNotDetected: 'Not detected',
     recommendations: {
       'add-a11y-tooling': {
         title: 'Add accessibility checks',
@@ -327,6 +479,147 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
     reportRefreshUnavailable: 'Only completed reports can be refreshed.',
   },
   ru: {
+    analysisSources: {
+      'github-repository-metadata': {
+        label: 'Метаданные GitHub-репозитория',
+        descriptions: {
+          found: 'Метаданные репозитория загружены через GitHub API.',
+        },
+      },
+      'project-package-json': {
+        label: 'Выбранный package.json',
+        descriptions: {
+          found: 'package.json найден для выбранного frontend-проекта.',
+          missing: 'Выбранный package.json не найден.',
+        },
+      },
+      'root-package-json': {
+        label: 'Корневой package.json',
+        descriptions: {
+          found: 'Корневой package.json найден для контекста monorepo.',
+          missing: 'Корневой package.json не найден для этого monorepo-проекта.',
+        },
+      },
+      readme: {
+        label: 'README',
+        descriptions: {
+          found: 'README найден для выбранного проекта.',
+          warning: 'Найден только корневой README или README неполный.',
+          missing: 'README не найден.',
+        },
+      },
+      'env-example': {
+        label: 'Пример окружения',
+        descriptions: {
+          found: 'Файл с примером окружения найден.',
+          warning: 'Найден только корневой пример окружения.',
+          missing: 'Файл с примером окружения не найден.',
+        },
+      },
+      lockfile: {
+        label: 'Lockfile пакетов',
+        descriptions: {
+          found: 'Lockfile пакетов найден.',
+          warning: 'Найден только корневой lockfile пакетов.',
+          missing: 'Lockfile пакетов не найден.',
+        },
+      },
+      'github-actions': {
+        label: 'GitHub Actions workflows',
+        descriptions: {
+          found: 'Workflow GitHub Actions найдены.',
+          missing: 'Workflow GitHub Actions не найдены.',
+        },
+      },
+      'build-script': {
+        label: 'Build-скрипт',
+        descriptions: {
+          found: 'Build-скрипт проекта найден.',
+          warning: 'Найден только корневой build-скрипт.',
+          missing: 'Build-скрипт не найден.',
+        },
+      },
+      'test-script': {
+        label: 'Test-скрипт',
+        descriptions: {
+          found: 'Test-скрипт проекта найден.',
+          warning: 'Найден только корневой test-скрипт.',
+          missing: 'Test-скрипт не найден.',
+        },
+      },
+      'lint-script': {
+        label: 'Lint-скрипт',
+        descriptions: {
+          found: 'Lint-скрипт проекта найден.',
+          warning: 'Найден только корневой lint-скрипт.',
+          missing: 'Lint-скрипт не найден.',
+        },
+      },
+      typescript: {
+        label: 'TypeScript',
+        descriptions: {
+          found: 'TypeScript-сигнал проекта найден.',
+          warning: 'Найден только корневой TypeScript-сигнал.',
+          missing: 'TypeScript-сигнал не найден.',
+        },
+      },
+      storybook: {
+        label: 'Storybook',
+        descriptions: {
+          found: 'Storybook-сигнал проекта найден.',
+          warning: 'Найден только корневой Storybook-сигнал.',
+          missing: 'Storybook-сигнал не найден.',
+        },
+      },
+      frameworks: {
+        label: 'Frontend-фреймворки',
+        descriptions: {
+          found: 'Frontend-фреймворк найден в зависимостях.',
+          warning: 'Frontend-фреймворк найден только в корневых зависимостях.',
+          missing: 'Frontend-фреймворк не найден в зависимостях.',
+        },
+      },
+      bundler: {
+        label: 'Frontend bundler',
+        descriptions: {
+          found: 'Frontend bundler найден в зависимостях.',
+          warning: 'Bundler найден только в корневых зависимостях.',
+          missing: 'Frontend bundler не найден в зависимостях.',
+        },
+      },
+      testing: {
+        label: 'Инструменты тестирования',
+        descriptions: {
+          found: 'Инструмент тестирования найден в зависимостях.',
+          warning: 'Инструмент тестирования найден только в корневых зависимостях.',
+          missing: 'Инструмент тестирования не найден в зависимостях.',
+        },
+      },
+      linting: {
+        label: 'Инструменты linting',
+        descriptions: {
+          found: 'Инструмент linting найден в зависимостях.',
+          warning: 'Инструмент linting найден только в корневых зависимостях.',
+          missing: 'Инструмент linting не найден в зависимостях.',
+        },
+      },
+      formatting: {
+        label: 'Инструменты форматирования',
+        descriptions: {
+          found: 'Инструмент форматирования найден в зависимостях.',
+          warning: 'Инструмент форматирования найден только в корневых зависимостях.',
+          missing: 'Инструмент форматирования не найден в зависимостях.',
+        },
+      },
+      accessibility: {
+        label: 'Инструменты доступности',
+        descriptions: {
+          found: 'Инструмент доступности найден в зависимостях.',
+          warning: 'Инструмент доступности найден только в корневых зависимостях.',
+          missing: 'Инструмент доступности не найден в зависимостях.',
+        },
+      },
+    },
     checks: {
       'readme-exists': {
         label: 'README найден',
@@ -545,6 +838,7 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
         },
       },
     },
+    toolingNotDetected: 'Не обнаружено',
     recommendations: {
       'add-a11y-tooling': {
         title: 'Добавить проверки доступности',
@@ -633,6 +927,10 @@ const isProjectDetectionSignalId = (id: string): id is ProjectDetectionSignalId 
   return (reportProjectDetectionSignalIds as readonly string[]).includes(id);
 };
 
+const isAnalysisSourceId = (id: string): id is AnalysisSourceId => {
+  return (reportAnalysisSourceIds as readonly string[]).includes(id);
+};
+
 export const getLocalizedReportErrorMessage = (
   code: ReportAnalysisErrorCode,
   language: SupportedLanguage,
@@ -685,6 +983,36 @@ const localizeProjectDetection = (
   };
 };
 
+const localizeAnalysisSources = (
+  analysisSources: ProjectReport['analysisSources'],
+  catalog: ReportLocalizationCatalog,
+) => {
+  return analysisSources.map((source) => {
+    const translation = isAnalysisSourceId(source.id)
+      ? catalog.analysisSources[source.id]
+      : undefined;
+    const description = translation?.descriptions[source.status] ?? source.description;
+
+    return {
+      ...source,
+      label: translation?.label ?? source.label,
+      ...(description ? { description } : {}),
+    };
+  });
+};
+
+const localizeTooling = (tooling: ProjectReport['tooling'], catalog: ReportLocalizationCatalog) => {
+  return Object.fromEntries(
+    Object.entries(tooling).map(([group, items]) => [
+      group,
+      items.map((item) => ({
+        ...item,
+        label: item.status === 'missing' ? catalog.toolingNotDetected : item.label,
+      })),
+    ]),
+  ) as ProjectReport['tooling'];
+};
+
 export const localizeProjectReport = (
   report: ProjectReport,
   language: SupportedLanguage,
@@ -693,10 +1021,12 @@ export const localizeProjectReport = (
 
   return {
     ...report,
+    analysisSources: localizeAnalysisSources(report.analysisSources, catalog),
     repository: {
       ...report.repository,
       projectDetection: localizeProjectDetection(report.repository.projectDetection, catalog),
     },
+    tooling: localizeTooling(report.tooling, catalog),
     checks: report.checks.map((check) => {
       const translation = catalog.checks[check.id];
       const description = check.description

@@ -32,6 +32,27 @@ export const scoreCategories = [
 export const checkStatuses = ['passed', 'failed', 'warning'] as const;
 export const evidenceStatuses = ['found', 'missing', 'warning'] as const;
 export const recommendationSeverities = ['low', 'medium', 'high'] as const;
+export const analysisSourceKinds = [
+  'github_api',
+  'file',
+  'directory',
+  'package_json',
+  'script',
+  'dependency',
+  'workflow',
+] as const;
+export const analysisSourceScopes = ['repository', 'root', 'project', 'github'] as const;
+export const toolingGroups = [
+  'packageManager',
+  'frameworks',
+  'bundlers',
+  'testing',
+  'linting',
+  'formatting',
+  'typing',
+  'uiReview',
+  'accessibility',
+] as const;
 
 export const reportAnalysisStatusSchema = z.enum(reportAnalysisStatuses);
 export const reportProjectPathSourceSchema = z.enum(reportProjectPathSources);
@@ -107,6 +128,30 @@ export const reportEvidenceSchema = z.object({
   source: z.string().optional(),
 });
 
+export const analysisSourceSchema = z.object({
+  id: z.string(),
+  kind: z.enum(analysisSourceKinds),
+  scope: z.enum(analysisSourceScopes),
+  status: z.enum(evidenceStatuses),
+  label: z.string(),
+  description: z.string().optional(),
+  source: z.string().optional(),
+});
+
+export const toolingItemSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  status: z.enum(evidenceStatuses),
+  sources: z.array(z.string()),
+});
+
+export const reportToolingSchema = z.object(
+  Object.fromEntries(toolingGroups.map((group) => [group, z.array(toolingItemSchema)])) as Record<
+    (typeof toolingGroups)[number],
+    z.ZodArray<typeof toolingItemSchema>
+  >,
+);
+
 export const scoreBreakdownItemSchema = z.object({
   category: z.enum(scoreCategories),
   label: z.string(),
@@ -134,6 +179,8 @@ export const reportRecommendationSchema = z.object({
 export const projectReportSchema = z.object({
   id: z.string(),
   repository: reportRepositorySchema,
+  analysisSources: z.array(analysisSourceSchema),
+  tooling: reportToolingSchema,
   totalScore: z.number().int().min(0).max(100),
   scoreBreakdown: z.array(scoreBreakdownItemSchema),
   checks: z.array(reportCheckSchema),

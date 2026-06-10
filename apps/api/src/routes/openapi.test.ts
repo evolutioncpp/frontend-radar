@@ -120,6 +120,67 @@ const collectSchemasWithRequiredEvidence = (
   return schemas;
 };
 
+const collectSchemasWithRequiredProperties = (
+  schema: unknown,
+  document: unknown,
+  propertyNames: string[],
+  visitedRefs = new Set<string>(),
+): Array<Record<string, unknown>> => {
+  if (!isRecord(schema)) {
+    return [];
+  }
+
+  const ref = schema.$ref;
+
+  if (typeof ref === 'string') {
+    if (visitedRefs.has(ref)) {
+      return [];
+    }
+
+    const nextVisitedRefs = new Set(visitedRefs);
+    nextVisitedRefs.add(ref);
+
+    return collectSchemasWithRequiredProperties(
+      resolveJsonPointer(document, ref),
+      document,
+      propertyNames,
+      nextVisitedRefs,
+    );
+  }
+
+  const schemas: Array<Record<string, unknown>> = [];
+  const properties = schema.properties;
+  const required = schema.required;
+
+  if (isRecord(properties) && Array.isArray(required)) {
+    const hasAllProperties = propertyNames.every(
+      (propertyName) => propertyName in properties && required.includes(propertyName),
+    );
+
+    if (hasAllProperties) {
+      schemas.push(schema);
+    }
+  }
+
+  for (const value of Object.values(schema)) {
+    if (Array.isArray(value)) {
+      for (const child of value) {
+        schemas.push(
+          ...collectSchemasWithRequiredProperties(child, document, propertyNames, visitedRefs),
+        );
+      }
+
+      continue;
+    }
+
+    schemas.push(
+      ...collectSchemasWithRequiredProperties(value, document, propertyNames, visitedRefs),
+    );
+  }
+
+  return schemas;
+};
+
 describe('GET /openapi.json', () => {
   it('returns OpenAPI document with health and reports endpoints', async () => {
     const app = buildApp();
@@ -193,6 +254,13 @@ describe('GET /openapi.json', () => {
           body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,
         ),
       ).toContain('projectDetection');
+      expect(
+        collectSchemasWithRequiredProperties(
+          body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,
+          body,
+          ['analysisSources', 'tooling', 'totalScore'],
+        ).length,
+      ).toBeGreaterThan(0);
       expect(
         findFailedResponseSchema(
           body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,

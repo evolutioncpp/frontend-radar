@@ -19,6 +19,9 @@ export { useProjectReport } from './model/useProjectReport';
 export { ReportEvidenceList } from './ui/report-evidence-list/ReportEvidenceList';
 
 export type {
+  AnalysisSource,
+  AnalysisSourceKind,
+  AnalysisSourceScope,
   CheckStatus,
   ProjectReport,
   RecommendationSeverity,
@@ -27,9 +30,11 @@ export type {
   ReportEvidenceStatus,
   ReportRecommendation,
   ReportRepository,
+  ReportTooling,
   ScoreBreakdownItem,
   ScoreCategory,
   ScoreStatus,
+  ToolingItem,
 } from './model/types';
 export type { ReportAnalysisStatus } from './model/reportSelectors';
 export type {

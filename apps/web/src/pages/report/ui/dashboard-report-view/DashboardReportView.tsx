@@ -8,6 +8,7 @@ import {
   type DashboardSectionId,
 } from '@/shared/config/navigation/dashboardSections';
 import { Button } from '@/shared/ui/Button';
+import { AnalysisDetailsPanel } from '@/widgets/analysis-details-panel';
 import { ChecksList } from '@/widgets/checks-list';
 import { HealthScorePanel } from '@/widgets/health-score-panel';
 import { MetricsGrid } from '@/widgets/metrics-grid';
@@ -67,6 +68,19 @@ export const DashboardReportView = ({
           }
           headerAction={<DashboardSectionCopyButton sectionId={DashboardSectionIds.REPOSITORY} />}
           repository={report.repository}
+        />
+      </DashboardReportSection>
+
+      <DashboardReportSection
+        ariaLabel={getSectionLabel(DashboardSectionIds.ANALYSIS_DETAILS)}
+        id={DashboardSectionIds.ANALYSIS_DETAILS}
+      >
+        <AnalysisDetailsPanel
+          analysisSources={report.analysisSources}
+          headerAction={
+            <DashboardSectionCopyButton sectionId={DashboardSectionIds.ANALYSIS_DETAILS} />
+          }
+          tooling={report.tooling}
         />
       </DashboardReportSection>
 

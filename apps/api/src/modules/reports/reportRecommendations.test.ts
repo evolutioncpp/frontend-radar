@@ -10,6 +10,7 @@ const createScriptSignal = (
 ): ScriptSignal => ({
   exists: value !== null,
   name,
+  scope: value ? 'project' : null,
   source: value ? `package.json scripts.${name}` : null,
   value,
 });
@@ -18,6 +19,8 @@ const createToolSignal = (sources: string[] = []): ToolSignal => ({
   configPaths: [],
   dependencies: sources,
   found: sources.length > 0,
+  projectSources: sources,
+  rootSources: [],
   sources,
 });
 
@@ -33,6 +36,10 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     exists: true,
     path: '.env.example',
   },
+  formatting: createToolSignal(['prettier']),
+  frameworks: createToolSignal(['react']),
+  isNestedProject: false,
+  linting: createToolSignal(['eslint']),
   lockfile: {
     exists: true,
     packageManager: 'npm',
@@ -48,6 +55,7 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
       test: createScriptSignal('test', 'vitest run'),
     },
   },
+  projectPath: '',
   readme: {
     exists: true,
     hasInstallSection: true,
@@ -55,6 +63,16 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     isSubstantial: true,
     length: 900,
     path: 'README.md',
+  },
+  rootPackageJson: {
+    dependencies: ['@testing-library/react', 'eslint-plugin-jsx-a11y', 'typescript', 'vite'],
+    exists: true,
+    path: 'package.json',
+    scripts: {
+      build: createScriptSignal('build', 'vite build'),
+      lint: createScriptSignal('lint', 'eslint .'),
+      test: createScriptSignal('test', 'vitest run'),
+    },
   },
   storybook: createToolSignal(['storybook']),
   testingLibrary: createToolSignal(['@testing-library/react']),

@@ -189,6 +189,94 @@ describe('collectRepositorySignals', () => {
     });
   });
 
+  it('uses project and root config files as tooling signals', async () => {
+    const packageJson: PackageJson = {
+      scripts: {
+        build: 'vite build',
+      },
+    };
+    const reader = {
+      findFirstPath: async (
+        _owner: string,
+        _repository: string,
+        _branch: string,
+        paths: readonly string[],
+      ) => {
+        if (paths.includes('apps/web/vite.config.ts')) {
+          return 'apps/web/vite.config.ts';
+        }
+
+        if (paths.includes('apps/web/vitest.config.ts')) {
+          return 'apps/web/vitest.config.ts';
+        }
+
+        if (paths.includes('apps/web/axe.config.ts')) {
+          return 'apps/web/axe.config.ts';
+        }
+
+        if (paths.includes('eslint.config.js')) {
+          return 'eslint.config.js';
+        }
+
+        if (paths.includes('prettier.config.js')) {
+          return 'prettier.config.js';
+        }
+
+        if (paths.includes('next.config.js')) {
+          return 'next.config.js';
+        }
+
+        return null;
+      },
+      listDirectoryFiles: async () => [],
+      readFirstTextFile: async () => null,
+    } as unknown as GithubRepositoryReader;
+
+    const signals = await collectRepositorySignals({
+      branch: 'abc123',
+      owner: 'owner',
+      packageJson,
+      packageJsonPath: 'apps/web/package.json',
+      projectPath: 'apps/web',
+      reader,
+      repository: 'repo',
+    });
+
+    expect(signals.bundler).toMatchObject({
+      configPaths: ['apps/web/vite.config.ts'],
+      dependencies: [],
+      found: true,
+      projectSources: ['apps/web/vite.config.ts'],
+      sources: ['apps/web/vite.config.ts'],
+    });
+    expect(signals.testingLibrary).toMatchObject({
+      configPaths: ['apps/web/vitest.config.ts'],
+      found: true,
+      projectSources: ['apps/web/vitest.config.ts'],
+    });
+    expect(signals.a11yTooling).toMatchObject({
+      configPaths: ['apps/web/axe.config.ts'],
+      found: true,
+      projectSources: ['apps/web/axe.config.ts'],
+    });
+    expect(signals.linting).toMatchObject({
+      configPaths: ['eslint.config.js'],
+      found: true,
+      rootSources: ['eslint.config.js'],
+      sources: ['eslint.config.js'],
+    });
+    expect(signals.formatting).toMatchObject({
+      configPaths: ['prettier.config.js'],
+      found: true,
+      rootSources: ['prettier.config.js'],
+    });
+    expect(signals.frameworks).toMatchObject({
+      configPaths: ['next.config.js'],
+      found: true,
+      rootSources: ['next.config.js'],
+    });
+  });
+
   it('detects Bun from the current bun.lock file name', async () => {
     const reader = {
       findFirstPath: async (

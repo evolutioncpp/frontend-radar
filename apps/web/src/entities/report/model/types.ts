@@ -35,6 +35,46 @@ export type ProjectDetection = {
   signals: ReportEvidence[];
 };
 
+export type AnalysisSourceKind =
+  | 'github_api'
+  | 'file'
+  | 'directory'
+  | 'package_json'
+  | 'script'
+  | 'dependency'
+  | 'workflow';
+
+export type AnalysisSourceScope = 'repository' | 'root' | 'project' | 'github';
+
+export type AnalysisSource = {
+  id: string;
+  kind: AnalysisSourceKind;
+  scope: AnalysisSourceScope;
+  status: ReportEvidenceStatus;
+  label: string;
+  description?: string;
+  source?: string;
+};
+
+export type ToolingItem = {
+  id: string;
+  label: string;
+  status: ReportEvidenceStatus;
+  sources: string[];
+};
+
+export type ReportTooling = {
+  packageManager: ToolingItem[];
+  frameworks: ToolingItem[];
+  bundlers: ToolingItem[];
+  testing: ToolingItem[];
+  linting: ToolingItem[];
+  formatting: ToolingItem[];
+  typing: ToolingItem[];
+  uiReview: ToolingItem[];
+  accessibility: ToolingItem[];
+};
+
 export type ReportRepository = {
   owner: string;
   name: string;
@@ -78,6 +118,8 @@ export type ReportRecommendation = {
 export type ProjectReport = {
   id: string;
   repository: ReportRepository;
+  analysisSources: AnalysisSource[];
+  tooling: ReportTooling;
   totalScore: number;
   scoreBreakdown: ScoreBreakdownItem[];
   checks: ReportCheck[];

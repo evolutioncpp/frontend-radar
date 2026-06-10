@@ -8,6 +8,18 @@ import { ReportPage } from './ReportPage';
 
 import type { ProjectReport } from '@/entities/report';
 
+const emptyTooling: ProjectReport['tooling'] = {
+  accessibility: [],
+  bundlers: [],
+  formatting: [],
+  frameworks: [],
+  linting: [],
+  packageManager: [],
+  testing: [],
+  typing: [],
+  uiReview: [],
+};
+
 const apiMocks = vi.hoisted(() => ({
   createReportAnalysis: vi.fn(),
   forceRefreshReportAnalysis: vi.fn(),
@@ -63,6 +75,7 @@ vi.mock('react-i18next', () => ({
         'page.description':
           'Analyze repository quality, tooling, testing, documentation and delivery readiness in a single dashboard.',
         'page.sections.repository': 'Repository summary',
+        'page.sections.analysisDetails': 'Analysis details',
         'page.sections.healthScore': 'Health score',
         'page.sections.comparison': 'Report comparison',
         'page.sections.metrics': 'Quality metrics',
@@ -92,6 +105,28 @@ vi.mock('react-i18next', () => ({
         'repository.projectDetection.confidenceLevels.high': 'High',
         'repository.projectDetection.confidenceLevels.medium': 'Medium',
         'repository.projectDetection.confidenceLevels.low': 'Low',
+
+        'analysisDetails.label': 'Analysis details',
+        'analysisDetails.title': 'Project stack and sources',
+        'analysisDetails.empty': 'Not detected',
+        'analysisDetails.statuses.found': 'Found',
+        'analysisDetails.statuses.missing': 'Missing',
+        'analysisDetails.statuses.warning': 'Needs review',
+        'analysisDetails.tooling.title': 'Project stack',
+        'analysisDetails.tooling.groups.packageManager': 'Package manager',
+        'analysisDetails.tooling.groups.frameworks': 'Framework',
+        'analysisDetails.tooling.groups.bundlers': 'Bundler',
+        'analysisDetails.tooling.groups.testing': 'Testing',
+        'analysisDetails.tooling.groups.linting': 'Linting',
+        'analysisDetails.tooling.groups.formatting': 'Formatting',
+        'analysisDetails.tooling.groups.typing': 'Typing',
+        'analysisDetails.tooling.groups.uiReview': 'UI review',
+        'analysisDetails.tooling.groups.accessibility': 'Accessibility',
+        'analysisDetails.sources.title': 'Analysis sources',
+        'analysisDetails.sources.scopes.project': 'Project',
+        'analysisDetails.sources.scopes.root': 'Repository root',
+        'analysisDetails.sources.scopes.repository': 'Repository',
+        'analysisDetails.sources.scopes.github': 'GitHub',
 
         'healthScore.label': 'Frontend Health Score',
         'healthScore.title': 'Overall project quality',
@@ -220,6 +255,14 @@ vi.mock('react-i18next', () => ({
         return `Source: ${options?.source}`;
       }
 
+      if (key === 'analysisDetails.sources.counter') {
+        return `${options?.count} sources`;
+      }
+
+      if (key === 'analysisDetails.sources.source') {
+        return `Source: ${options?.source}`;
+      }
+
       if (key === 'healthScore.scoreAria') {
         return `Frontend health score ${options?.score} out of 100`;
       }
@@ -250,6 +293,16 @@ vi.mock('react-i18next', () => ({
 }));
 
 const testReport: ProjectReport = {
+  analysisSources: [
+    {
+      id: 'github-repository',
+      kind: 'github_api',
+      label: 'GitHub repository metadata',
+      scope: 'github',
+      status: 'found',
+      source: 'repos/evolutioncpp/frontend-radar',
+    },
+  ],
   id: 'analysis-id',
   createdAt: '2026-06-09T00:00:00.000Z',
   totalScore: 82,
@@ -307,6 +360,17 @@ const testReport: ProjectReport = {
     },
   ],
   recommendations: [],
+  tooling: {
+    ...emptyTooling,
+    frameworks: [
+      {
+        id: 'react',
+        label: 'React',
+        sources: ['package.json dependencies.react'],
+        status: 'found',
+      },
+    ],
+  },
 };
 
 const renderReportPage = (initialEntry: string | { pathname: string; state?: unknown }) => {
@@ -380,6 +444,7 @@ describe('ReportPage', () => {
     expect(
       screen.getByRole('heading', { name: /evolutioncpp\/frontend-radar/i }),
     ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Project stack and sources' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Overall project quality' })).toBeInTheDocument();
   });
 
