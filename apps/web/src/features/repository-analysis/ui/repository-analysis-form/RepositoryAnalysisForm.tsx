@@ -93,6 +93,16 @@ export const RepositoryAnalysisForm = ({
         shouldTouch: true,
       });
       clearErrors('projectPath');
+    } else if (!parsedRepository?.projectPath && !isProjectPathManual && isProjectPathEnabled) {
+      setValue('useProjectPath', false, {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+      setValue('projectPath', '', {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+      clearErrors('projectPath');
     }
 
     onChange?.();

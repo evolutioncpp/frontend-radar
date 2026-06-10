@@ -40,6 +40,12 @@ describe('github repository helpers', () => {
       'repo',
       'apps/web',
     ],
+    [
+      'https://github.com/owner/repo/tree/feature/foo/apps/web',
+      'owner',
+      'repo',
+      'foo/apps/web',
+    ],
     ['Owner/repo.name-1/frontend', 'Owner', 'repo.name-1', 'frontend'],
   ])('parses %s with project path', (value, owner, repository, projectPath) => {
     expect(parseGithubRepositoryInput(value)).toEqual({

@@ -140,6 +140,56 @@ describe('RepositoryAnalysisForm', () => {
     });
   });
 
+  test('clears autofilled project path when repository input no longer contains a path', async () => {
+    const onSubmit = vi.fn();
+
+    render(<RepositoryAnalysisForm onSubmit={onSubmit} />);
+
+    fillRepository('https://github.com/owner/repo/tree/main/apps/web');
+    fillRepository('https://github.com/owner/repo');
+
+    expect(screen.getByRole('checkbox', { name: 'Specify frontend path' })).not.toBeChecked();
+    expect(screen.queryByLabelText('Frontend path')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Analyze' }));
+
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith({
+        normalizedUrl: 'https://github.com/owner/repo',
+        owner: 'owner',
+        repository: 'repo',
+      });
+    });
+  });
+
+  test('keeps manually entered project path when repository input changes', async () => {
+    const onSubmit = vi.fn();
+
+    render(<RepositoryAnalysisForm onSubmit={onSubmit} />);
+
+    fillRepository('https://github.com/owner/repo/tree/main/apps/web');
+    fireEvent.change(screen.getByLabelText('Frontend path'), {
+      target: {
+        value: 'packages/site',
+      },
+    });
+    fillRepository('https://github.com/owner/repo');
+
+    expect(screen.getByRole('checkbox', { name: 'Specify frontend path' })).toBeChecked();
+    expect(screen.getByLabelText('Frontend path')).toHaveValue('packages/site');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Analyze' }));
+
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith({
+        normalizedUrl: 'https://github.com/owner/repo',
+        owner: 'owner',
+        projectPath: 'packages/site',
+        repository: 'repo',
+      });
+    });
+  });
+
   test('clears project path when checkbox is disabled', async () => {
     const onSubmit = vi.fn();
 
