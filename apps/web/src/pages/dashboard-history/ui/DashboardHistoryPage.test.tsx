@@ -33,6 +33,11 @@ vi.mock('react-i18next', () => ({
         'card.label': 'Analysis run',
         'card.latestRunLabel': 'Latest analysis run',
         'card.openReportAria': `Open report for ${options?.repository}`,
+        'card.metadataAria': 'Analysis run metadata',
+        'card.metadata.activityAt': 'Last activity',
+        'card.metadata.status': 'Status',
+        'card.metadata.branch': 'Branch',
+        'card.metadata.projectPath': 'Frontend path',
         'card.scoreLabel': 'Health score',
         'card.statuses.queued': 'Queued',
         'card.statuses.running': 'Running',
@@ -202,8 +207,10 @@ describe('DashboardHistoryPage', () => {
     expectSummaryItem('Metrics', '1');
     expectSummaryItem('Checks', '1');
     expectSummaryItem('Recommendations', '0');
-    expect(screen.getByText(/Last activity/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Last activity:/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('Status: Completed')).toBeInTheDocument();
     expect(screen.getByText('Completed')).toBeInTheDocument();
+    expect(screen.getByLabelText('Branch: main')).toBeInTheDocument();
     expect(screen.getByText('main')).toBeInTheDocument();
     expect(screen.getByText('Add frontend radar dashboard')).toBeInTheDocument();
   });
@@ -215,6 +222,7 @@ describe('DashboardHistoryPage', () => {
 
     renderDashboardHistoryPage();
 
+    expect(screen.getByLabelText('Frontend path: apps/web')).toBeInTheDocument();
     expect(screen.getByText('apps/web')).toBeInTheDocument();
   });
 

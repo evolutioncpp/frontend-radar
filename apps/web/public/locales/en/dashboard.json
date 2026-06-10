@@ -244,6 +244,7 @@
     "manualTitle": "Comparison with selected run",
     "description": "Compare the current completed report with the previous completed report for the same repository.",
     "manualDescription": "Compare the current completed report with the selected previous run from history.",
+    "branchContext": "Branch: {{branch}}",
     "totalScore": "Total score",
     "totalScoreDeltaAria": "Total score delta {{delta}}",
     "noDelta": "No change",

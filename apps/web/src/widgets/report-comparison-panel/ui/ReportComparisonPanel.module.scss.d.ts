@@ -6,6 +6,8 @@ export type Styles = {
   changeItem: string;
   changeList: string;
   comparisonPanel: string;
+  contextMeta: string;
+  contextMetaIcon: string;
   delta: string;
   deltaNegative: string;
   deltaNeutral: string;

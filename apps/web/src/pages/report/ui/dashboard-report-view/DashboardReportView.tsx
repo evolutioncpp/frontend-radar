@@ -100,6 +100,7 @@ export const DashboardReportView = ({
           id={DashboardSectionIds.COMPARISON}
         >
           <ReportComparisonPanel
+            branch={report.repository.branch || report.repository.defaultBranch}
             comparison={comparison}
             headerAction={<DashboardSectionCopyButton sectionId={DashboardSectionIds.COMPARISON} />}
             mode={comparisonMode}

@@ -47,6 +47,24 @@ const getApiErrorCode = (error: unknown) => {
   return null;
 };
 
+const repositoryAccessErrorMessageKeys = {
+  github_rate_limited: 'form.errors.githubRateLimited',
+  github_unavailable: 'form.errors.githubUnavailable',
+  repository_forbidden: 'form.errors.repositoryForbidden',
+  repository_not_found: 'form.errors.repositoryNotFound',
+  repository_verification_failed: 'form.errors.repositoryVerificationFailed',
+} as const;
+
+const getRepositoryAccessErrorMessageKey = (errorCode: string | null) => {
+  if (!errorCode || !(errorCode in repositoryAccessErrorMessageKeys)) {
+    return null;
+  }
+
+  return repositoryAccessErrorMessageKeys[
+    errorCode as keyof typeof repositoryAccessErrorMessageKeys
+  ];
+};
+
 export const RepositoryAnalysisForm = ({
   isSubmitting = false,
   onChange,
@@ -222,13 +240,17 @@ export const RepositoryAnalysisForm = ({
       })
       .catch((error) => {
         if (activeBranchRepositoryKeyRef.current === requestKey) {
+          const repositoryErrorMessageKey = getRepositoryAccessErrorMessageKey(
+            getApiErrorCode(error),
+          );
+
           setLoadedBranchesRepositoryKey(null);
           setLoadedBranchesData(null);
           setBranchLoadErrorRepositoryKey(requestKey);
 
-          if (getApiErrorCode(error) === 'repository_not_found') {
+          if (repositoryErrorMessageKey) {
             setError('repository', {
-              message: t('form.errors.repositoryNotFound'),
+              message: t(repositoryErrorMessageKey),
               type: 'manual',
             });
           }

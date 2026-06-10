@@ -118,22 +118,6 @@
   overflow-wrap: anywhere;
 }
 
-.meta {
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: $font-size-sm;
-  line-height: $line-height-md;
-}
-
-.metaSeparator {
-  margin: 0 $space-2;
-  color: var(--color-text-muted);
-}
-
-.metaCode {
-  font-family: var(--font-family-mono);
-}
-
 .commitTitle {
   display: inline-flex;
   flex: 0 1 auto;
@@ -153,6 +137,7 @@
   height: 0.875rem;
   flex: 0 0 auto;
   color: currentColor;
+  transform: translateY(0.0625rem);
 }
 
 .commitTitleText {
@@ -160,6 +145,44 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.metaList {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2 $space-3;
+  color: var(--color-text-secondary);
+  font-size: $font-size-sm;
+  line-height: $line-height-md;
+}
+
+.metaItem {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: $space-1;
+}
+
+.metaIcon {
+  display: block;
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
+  transform: translateY(0.0625rem);
+}
+
+.metaValue,
+.metaCode {
+  min-width: 0;
+  color: var(--color-text-primary);
+}
+
+.metaCode {
+  font-family: var(--font-family-mono);
+  overflow-wrap: anywhere;
 }
 
 .cardAside {
@@ -342,9 +365,9 @@
 .previousRunRow {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
+  align-items: stretch;
   min-width: 0;
-  gap: $space-2;
+  gap: 0;
 }
 
 .previousRunLink {
@@ -372,13 +395,12 @@
   align-items: center;
   justify-content: center;
   min-width: 0;
-  border-radius: $radius-sm;
   color: var(--color-text-muted);
   font-size: $font-size-xs;
   font-weight: $font-weight-semibold;
   gap: $space-2;
   line-height: $line-height-sm;
-  padding: $space-2;
+  padding: $space-3 $space-2;
   transition:
     background-color $transition-base,
     color $transition-base;
@@ -407,25 +429,57 @@
   gap: $space-2 $space-3;
 }
 
-.previousRunDate {
+.previousRunMetaItem {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: $space-1;
   color: var(--color-text-secondary);
   font-size: $font-size-sm;
   line-height: $line-height-sm;
+  white-space: nowrap;
 }
 
-.previousRunStatus {
+.previousRunMetaIcon {
+  display: block;
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: 0 0 auto;
   color: var(--color-text-muted);
-  font-size: $font-size-xs;
-  font-weight: $font-weight-semibold;
-  line-height: $line-height-sm;
+  transform: translateY(0.0625rem);
+}
+
+.previousRunMetaCode {
+  min-width: 0;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-mono);
 }
 
 .previousRunCommitTitle {
+  display: inline-flex;
+  max-width: min(100%, 30rem);
   min-width: 0;
+  align-items: center;
+  gap: $space-1;
   color: var(--color-text-secondary);
   font-size: $font-size-sm;
   line-height: $line-height-sm;
-  overflow-wrap: anywhere;
+}
+
+.previousRunCommitTitleIcon {
+  display: block;
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
+  transform: translateY(0.0625rem);
+}
+
+.previousRunCommitTitleText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .previousRunScore {
@@ -489,10 +543,6 @@
     max-width: 100%;
   }
 
-  .meta {
-    display: none;
-  }
-
   .cardAside {
     grid-template-columns: 1fr 1fr;
     align-items: start;
@@ -526,13 +576,13 @@
   .previousRunRow,
   .previousRunLink {
     grid-template-columns: 1fr;
-    align-items: start;
   }
 
   .previousRunCompareLink {
     gap: $space-2;
     justify-self: start;
-    margin: 0 0 $space-2 $space-2;
+    width: 100%;
+    justify-content: flex-start;
   }
 }
 

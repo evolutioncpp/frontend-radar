@@ -13,6 +13,25 @@
   line-height: $line-height-md;
 }
 
+.contextMeta {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  gap: $space-2;
+  margin: -$space-2 0 0;
+  color: var(--color-text-secondary);
+  font-size: $font-size-sm;
+  line-height: $line-height-sm;
+}
+
+.contextMetaIcon {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
+}
+
 .totalDelta,
 .delta,
 .summaryMeta,

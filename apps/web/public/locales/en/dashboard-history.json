@@ -14,6 +14,13 @@
     "latestRunLabel": "Latest analysis run",
     "analyzedAt": "Last activity {{date}}",
     "openReportAria": "Open report for {{repository}}",
+    "metadataAria": "Analysis run metadata",
+    "metadata": {
+      "activityAt": "Last activity",
+      "status": "Status",
+      "branch": "Branch",
+      "projectPath": "Frontend path"
+    },
     "scoreLabel": "Health score",
     "statuses": {
       "queued": "Queued",

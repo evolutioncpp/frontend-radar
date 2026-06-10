@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, GitBranch } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -24,6 +24,7 @@ type ReportComparison = Extract<
 >;
 
 interface ReportComparisonPanelProps {
+  branch?: string | null;
   comparison: ReportComparison;
   headerAction?: ReactNode;
   mode?: 'automatic' | 'manual';
@@ -118,6 +119,7 @@ const getChangeToneClassName = (improvedCount: number, worsenedCount: number) =>
 };
 
 export const ReportComparisonPanel = ({
+  branch,
   comparison,
   headerAction,
   mode = 'automatic',
@@ -234,6 +236,13 @@ export const ReportComparisonPanel = ({
       />
 
       <p className={s.description}>{t(descriptionKey)}</p>
+
+      {branch ? (
+        <p className={s.contextMeta}>
+          <GitBranch aria-hidden="true" className={s.contextMetaIcon} strokeWidth={2} />
+          <span>{t('comparison.branchContext', { branch })}</span>
+        </p>
+      ) : null}
 
       <div className={s.summaryGrid}>
         <div className={clsx(s.summaryItem, getToneClassName(comparison.totalScore.delta))}>

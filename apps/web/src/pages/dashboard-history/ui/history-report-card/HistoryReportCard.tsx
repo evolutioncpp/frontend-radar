@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { GitCommit } from 'lucide-react';
+import { CalendarClock, Folder, GitBranch, GitCommit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ import { normalizeScore } from '@/shared/lib/format-score';
 import { Card } from '@/shared/ui/Card';
 
 import s from '../DashboardHistoryPage.module.scss';
+import { historyStatusIconMap } from '../historyStatusIcons';
 
 import type { ReactNode } from 'react';
 
@@ -53,6 +54,40 @@ export const HistoryReportCard = ({
   const normalizedScore = typeof score === 'number' ? normalizeScore(score) : null;
   const scoreStatusClassName =
     normalizedScore === null ? undefined : scoreStatusClassMap[getScoreStatus(normalizedScore)];
+  const metadataItems = [
+    {
+      id: 'activityAt',
+      icon: CalendarClock,
+      isCode: false,
+      label: t('card.metadata.activityAt'),
+      value: activityLabel,
+    },
+    {
+      id: 'status',
+      icon: historyStatusIconMap[status],
+      isCode: false,
+      label: t('card.metadata.status'),
+      value: t(`card.statuses.${status}`),
+    },
+    {
+      id: 'branch',
+      icon: GitBranch,
+      isCode: true,
+      label: t('card.metadata.branch'),
+      value: branch,
+    },
+    ...(projectPath
+      ? [
+          {
+            id: 'projectPath',
+            icon: Folder,
+            isCode: true,
+            label: t('card.metadata.projectPath'),
+            value: projectPath,
+          },
+        ]
+      : []),
+  ];
 
   return (
     <Card className={s.historyCard}>
@@ -81,23 +116,28 @@ export const HistoryReportCard = ({
                 </p>
               ) : null}
             </div>
-            <p className={s.meta}>
-              <time dateTime={activityAt}>
-                {t('card.analyzedAt', {
-                  date: activityLabel,
-                })}
-              </time>
-              <span className={s.metaSeparator}>/</span>
-              <span>{t(`card.statuses.${status}`)}</span>
-              <span className={s.metaSeparator}>/</span>
-              <span className={s.metaCode}>{branch}</span>
-              {projectPath ? (
-                <>
-                  <span className={s.metaSeparator}>/</span>
-                  <span className={s.metaCode}>{projectPath}</span>
-                </>
-              ) : null}
-            </p>
+            <div aria-label={t('card.metadataAria')} className={s.metaList}>
+              {metadataItems.map((item) => {
+                const Icon = item.icon;
+                const itemLabel = `${item.label}: ${item.value}`;
+
+                return (
+                  <span
+                    aria-label={itemLabel}
+                    className={s.metaItem}
+                    key={item.id}
+                    title={itemLabel}
+                  >
+                    <Icon aria-hidden="true" className={s.metaIcon} strokeWidth={2} />
+                    {item.id === 'activityAt' ? (
+                      <time dateTime={activityAt}>{item.value}</time>
+                    ) : (
+                      <span className={item.isCode ? s.metaCode : s.metaValue}>{item.value}</span>
+                    )}
+                  </span>
+                );
+              })}
+            </div>
           </div>
         </div>
 

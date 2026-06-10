@@ -14,6 +14,13 @@
     "latestRunLabel": "Последний запуск анализа",
     "analyzedAt": "Последняя активность {{date}}",
     "openReportAria": "Открыть отчет для {{repository}}",
+    "metadataAria": "Метаданные запуска анализа",
+    "metadata": {
+      "activityAt": "Последняя активность",
+      "status": "Статус",
+      "branch": "Ветка",
+      "projectPath": "Путь к frontend"
+    },
     "scoreLabel": "Оценка здоровья",
     "statuses": {
       "queued": "В очереди",

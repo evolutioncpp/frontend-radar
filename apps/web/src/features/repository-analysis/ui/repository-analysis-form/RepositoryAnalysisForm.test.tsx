@@ -38,7 +38,8 @@ vi.mock('react-i18next', () => ({
         'form.branchDefault': 'default',
         'form.branchHint': 'Choose the GitHub branch to analyze.',
         'form.branchLabel': 'Branch',
-        'form.branchLoadFailedHint': 'Branch list is unavailable. The default branch will be used.',
+        'form.branchLoadFailedHint':
+          'Branch list is unavailable. You can run analysis without selecting a branch; Frontend Radar will use the repository default branch if GitHub access is available.',
         'form.branchLoadFailedOption': 'Could not load branches',
         'form.branchLoading': 'Loading branches...',
         'form.branchPlaceholder': 'Select branch',
@@ -61,6 +62,8 @@ vi.mock('react-i18next', () => ({
         'form.errors.branchLoadFailed': 'Could not load repository branches.',
         'form.errors.invalidProjectPath': 'Enter a valid repo-relative folder path.',
         'form.errors.repositoryNotFound': 'Repository was not found on GitHub.',
+        'form.errors.repositoryForbidden':
+          'This repository is private, or the configured GitHub token does not have access.',
       };
 
       return translations[key] ?? key;
@@ -431,5 +434,33 @@ describe('RepositoryAnalysisForm', () => {
     fireEvent.click(screen.getByLabelText('Branch'));
 
     expect(screen.getByText('Could not load branches')).toBeInTheDocument();
+  });
+
+  test('shows access message when branch loading is forbidden', async () => {
+    const repositoryForbiddenError = Object.assign(new Error('Repository forbidden'), {
+      data: {
+        code: 'repository_forbidden',
+      },
+    });
+
+    branchApiMocks.loadRepositoryBranches.mockReturnValueOnce({
+      unwrap: () => Promise.reject(repositoryForbiddenError),
+    });
+
+    render(<RepositoryAnalysisForm onSubmit={vi.fn()} />);
+
+    fillRepository('owner/private-repo');
+    fireEvent.click(screen.getByLabelText('Branch'));
+
+    expect(
+      await screen.findByText(
+        'This repository is private, or the configured GitHub token does not have access.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Branch list is unavailable. You can run analysis without selecting a branch; Frontend Radar will use the repository default branch if GitHub access is available.',
+      ),
+    ).toBeInTheDocument();
   });
 });

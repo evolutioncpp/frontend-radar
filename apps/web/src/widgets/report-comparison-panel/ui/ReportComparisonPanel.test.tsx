@@ -14,6 +14,7 @@ vi.mock('react-i18next', () => ({
         'comparison.manualTitle': 'Comparison with selected run',
         'comparison.description': 'Compare current and previous reports.',
         'comparison.manualDescription': 'Compare current report with selected history run.',
+        'comparison.branchContext': `Branch: ${options?.branch}`,
         'comparison.totalScore': 'Total score',
         'comparison.noDelta': 'No change',
         'comparison.metricsTitle': 'Metric changes',
@@ -154,12 +155,13 @@ const comparison: Extract<GetReportComparisonApiResponse, { status: 'available' 
 
 describe('ReportComparisonPanel', () => {
   test('groups score, metric, check and recommendation changes by meaning', () => {
-    render(<ReportComparisonPanel comparison={comparison} />);
+    render(<ReportComparisonPanel branch="main" comparison={comparison} />);
 
     expect(
       screen.getByRole('heading', { name: 'Changes since previous report' }),
     ).toBeInTheDocument();
     expect(screen.getByLabelText('Total score delta +12')).toHaveTextContent('+12');
+    expect(screen.getByText('Branch: main')).toBeInTheDocument();
     expect(screen.getByText('1 improved')).toBeInTheDocument();
     expect(screen.getByText('1 regressed')).toBeInTheDocument();
     expect(screen.getByText('1 unchanged metrics')).toBeInTheDocument();

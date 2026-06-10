@@ -12,7 +12,7 @@
     "branchUnavailablePlaceholder": "Ветки недоступны",
     "branchLoadFailedOption": "Не удалось загрузить ветки",
     "branchDefault": "по умолчанию",
-    "branchLoadFailedHint": "Список веток недоступен. Будет использована ветка по умолчанию.",
+    "branchLoadFailedHint": "Список веток недоступен. Можно запустить анализ без выбора ветки: Frontend Radar использует ветку по умолчанию, если доступ к GitHub есть.",
     "projectPathToggle": "Указать путь к frontend",
     "projectPathToggleHint": "Используйте, если frontend-приложение лежит внутри monorepo.",
     "projectPathLabel": "Путь к frontend",
@@ -30,10 +30,10 @@
       "invalidProjectPath": "Введите корректный путь к папке внутри репозитория.",
       "repositoryNotFound": "Репозиторий не найден на GitHub.",
       "projectPathNotFound": "В указанной папке frontend не найден package.json.",
-      "repositoryForbidden": "Этот репозиторий приватный или GitHub запретил доступ.",
-      "githubRateLimited": "Достигнут лимит GitHub API. Попробуйте позже.",
+      "repositoryForbidden": "Этот репозиторий приватный или у настроенного GitHub-токена нет доступа.",
+      "githubRateLimited": "Достигнут лимит GitHub API. Проверьте GitHub-токен или попробуйте позже.",
       "githubUnavailable": "GitHub сейчас недоступен. Попробуйте позже.",
-      "repositoryVerificationFailed": "GitHub не смог проверить этот репозиторий. Попробуйте чуть позже.",
+      "repositoryVerificationFailed": "GitHub не смог проверить этот репозиторий. Проверьте доступ и попробуйте чуть позже.",
       "unknown": "Не удалось запустить анализ репозитория. Попробуйте еще раз."
     }
   }

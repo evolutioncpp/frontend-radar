@@ -12,7 +12,7 @@
     "branchUnavailablePlaceholder": "Branches unavailable",
     "branchLoadFailedOption": "Could not load branches",
     "branchDefault": "default",
-    "branchLoadFailedHint": "Branch list is unavailable. The default branch will be used.",
+    "branchLoadFailedHint": "Branch list is unavailable. You can run analysis without selecting a branch; Frontend Radar will use the repository default branch if GitHub access is available.",
     "projectPathToggle": "Specify frontend path",
     "projectPathToggleHint": "Use this when the frontend app lives inside a monorepo.",
     "projectPathLabel": "Frontend path",
@@ -30,10 +30,10 @@
       "invalidProjectPath": "Enter a valid repo-relative folder path.",
       "repositoryNotFound": "Repository was not found on GitHub.",
       "projectPathNotFound": "package.json was not found in the selected frontend path.",
-      "repositoryForbidden": "This repository is private or GitHub access is forbidden.",
-      "githubRateLimited": "GitHub rate limit was reached. Try again later.",
+      "repositoryForbidden": "This repository is private, or the configured GitHub token does not have access.",
+      "githubRateLimited": "GitHub API rate limit was reached. Check the GitHub token or try again later.",
       "githubUnavailable": "GitHub is unavailable right now. Try again later.",
-      "repositoryVerificationFailed": "GitHub could not verify this repository. Try again in a moment.",
+      "repositoryVerificationFailed": "GitHub could not verify this repository. Check access and try again in a moment.",
       "unknown": "Could not start repository analysis. Try again."
     }
   }
