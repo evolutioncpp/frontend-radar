@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildRecommendations } from './reportRecommendations.js';
+import { createDependencyNameSource } from './reportToolingSources.js';
 
 import type { RepositorySignals, ScriptSignal, ToolSignal } from './reportSignals.js';
 
@@ -15,14 +16,18 @@ const createScriptSignal = (
   value,
 });
 
-const createToolSignal = (sources: string[] = []): ToolSignal => ({
-  configPaths: [],
-  dependencies: sources,
-  found: sources.length > 0,
-  projectSources: sources,
-  rootSources: [],
-  sources,
-});
+const createToolSignal = (sources: string[] = []): ToolSignal => {
+  const toolingSources = sources.map(createDependencyNameSource);
+
+  return {
+    configPaths: [],
+    dependencies: sources,
+    found: sources.length > 0,
+    projectSources: toolingSources,
+    rootSources: [],
+    sources: toolingSources,
+  };
+};
 
 const createCiCheck = (sources: string[] = ['.github/workflows/ci.yml']) => ({
   found: sources.length > 0,

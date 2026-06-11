@@ -28,5 +28,5 @@
       "@locales/*": ["./public/locales/*"]
     }
   },
-  "include": ["src", "public/locales/**/*.json"]
+  "include": ["src", "e2e", "public/locales/**/*.json"]
 }

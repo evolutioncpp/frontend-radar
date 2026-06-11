@@ -1,10 +1,6 @@
 import { formatDateTime } from '@/shared/lib/format-date';
 
-import type { ListReportAnalysesApiResponse } from './reportApi';
-
-export type ReportAnalysisStatus = 'queued' | 'running' | 'completed' | 'failed';
-
-type ReportHistoryItem = ListReportAnalysesApiResponse['items'][number];
+import type { ReportAnalysisStatus, ReportHistoryItem } from './types';
 
 export interface ReportHistoryItemViewModel {
   activityAt: string;

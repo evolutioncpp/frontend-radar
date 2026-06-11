@@ -1,129 +1,78 @@
-export type ScoreStatus = 'excellent' | 'good' | 'warning' | 'critical';
+import type {
+  GetReportAnalysisApiResponse,
+  GetReportComparisonApiResponse,
+  ListReportAnalysesApiResponse,
+} from './reportApi';
 
-export type ScoreCategory =
-  | 'documentation'
-  | 'testing'
-  | 'ci'
-  | 'dependencies'
-  | 'maintainability'
-  | 'performance'
-  | 'accessibility';
+export type CompletedReportAnalysisResponse = Extract<
+  GetReportAnalysisApiResponse,
+  {
+    status: 'completed';
+  }
+>;
 
-export type RecommendationSeverity = 'low' | 'medium' | 'high';
+export type FailedReportAnalysisResponse = Extract<
+  GetReportAnalysisApiResponse,
+  {
+    status: 'failed';
+  }
+>;
 
-export type CheckStatus = 'passed' | 'failed' | 'warning';
+export type ProcessingReportAnalysisResponse = Extract<
+  GetReportAnalysisApiResponse,
+  {
+    status: 'queued' | 'running';
+  }
+>;
 
-export type ReportEvidenceStatus = 'found' | 'missing' | 'warning';
+export type AvailableReportComparison = Extract<
+  GetReportComparisonApiResponse,
+  {
+    status: 'available';
+  }
+>;
 
-export type ReportEvidence = {
-  id: string;
-  status: ReportEvidenceStatus;
-  label: string;
-  description?: string;
-  source?: string;
-};
+export type UnavailableReportComparison = Extract<
+  GetReportComparisonApiResponse,
+  {
+    status: 'unavailable';
+  }
+>;
 
-export type ProjectPathSource = 'autodetect' | 'url' | 'manual';
+export type ProjectReport = CompletedReportAnalysisResponse['report'];
+export type ReportRepository = ProjectReport['repository'];
+export type ProjectDetection = ReportRepository['projectDetection'];
+export type ProjectPathSource = ProjectDetection['source'];
+export type ProjectDetectionConfidence = ProjectDetection['confidence'];
+export type ReportSignal = ProjectDetection['signals'][number];
+export type ReportSignalStatus = ReportSignal['status'];
 
-export type ProjectDetectionConfidence = 'high' | 'medium' | 'low';
+export type AnalysisSource = ProjectReport['analysisSources'][number];
+export type AnalysisSourceKind = AnalysisSource['kind'];
+export type AnalysisSourceScope = AnalysisSource['scope'];
 
-export type ProjectDetection = {
-  source: ProjectPathSource;
-  path: string | null;
-  packageJsonPath: string | null;
-  confidence: ProjectDetectionConfidence;
-  signals: ReportEvidence[];
-};
+export type ReportTooling = ProjectReport['tooling'];
+export type ToolingGroup = keyof ReportTooling;
+export type ToolingItem = ReportTooling[ToolingGroup][number];
+export type ToolingSource = ToolingItem['sources'][number];
+export type ToolingSourceKind = ToolingSource['kind'];
+export type ToolingSourceSection = NonNullable<ToolingSource['section']>;
 
-export type AnalysisSourceKind =
-  | 'github_api'
-  | 'file'
-  | 'directory'
-  | 'package_json'
-  | 'script'
-  | 'dependency'
-  | 'workflow';
+export type ScoreBreakdownItem = ProjectReport['scoreBreakdown'][number];
+export type ScoreCategory = ScoreBreakdownItem['category'];
+export type ScoreStatus = ScoreBreakdownItem['status'];
+export type ScoreDetails = ScoreBreakdownItem['scoreDetails'];
+export type ScoreCap = NonNullable<ScoreDetails['cap']>;
+export type ScoringCheck = ScoreDetails['checks'][number];
+export type ScoringCheckStatus = ScoringCheck['status'];
+export type ScoringCheckSeverity = ScoringCheck['severity'];
+export type ScoringCheckScope = ScoringCheck['scope'];
+export type ScoringCheckConfidence = ScoringCheck['confidence'];
 
-export type AnalysisSourceScope = 'repository' | 'root' | 'project' | 'github';
+export type ReportCheck = ProjectReport['checks'][number];
+export type CheckStatus = ReportCheck['status'];
+export type ReportRecommendation = ProjectReport['recommendations'][number];
+export type RecommendationSeverity = ReportRecommendation['severity'];
 
-export type AnalysisSource = {
-  id: string;
-  kind: AnalysisSourceKind;
-  scope: AnalysisSourceScope;
-  status: ReportEvidenceStatus;
-  label: string;
-  description?: string;
-  source?: string;
-};
-
-export type ToolingItem = {
-  id: string;
-  label: string;
-  status: ReportEvidenceStatus;
-  sources: string[];
-};
-
-export type ReportTooling = {
-  packageManager: ToolingItem[];
-  frameworks: ToolingItem[];
-  bundlers: ToolingItem[];
-  testing: ToolingItem[];
-  linting: ToolingItem[];
-  formatting: ToolingItem[];
-  typing: ToolingItem[];
-  uiReview: ToolingItem[];
-  accessibility: ToolingItem[];
-};
-
-export type ReportRepository = {
-  owner: string;
-  name: string;
-  url: string;
-  description: string | null;
-  stars: number;
-  forks: number;
-  defaultBranch: string;
-  branch: string;
-  projectPath: string | null;
-  projectDetection: ProjectDetection;
-  latestCommitSha: string | null;
-  latestCommitDate: string | null;
-  latestCommitTitle: string | null;
-  license: string | null;
-};
-
-export type ScoreBreakdownItem = {
-  category: ScoreCategory;
-  label: string;
-  value: number;
-  maxValue: number;
-  status: ScoreStatus;
-  description: string;
-  evidence: ReportEvidence[];
-};
-
-export type ReportCheck = {
-  id: string;
-  label: string;
-  status: CheckStatus;
-  description?: string;
-};
-
-export type ReportRecommendation = {
-  id: string;
-  severity: RecommendationSeverity;
-  title: string;
-  description: string;
-};
-
-export type ProjectReport = {
-  id: string;
-  repository: ReportRepository;
-  analysisSources: AnalysisSource[];
-  tooling: ReportTooling;
-  totalScore: number;
-  scoreBreakdown: ScoreBreakdownItem[];
-  checks: ReportCheck[];
-  recommendations: ReportRecommendation[];
-  createdAt: string;
-};
+export type ReportHistoryItem = ListReportAnalysesApiResponse['items'][number];
+export type ReportAnalysisStatus = ReportHistoryItem['status'];

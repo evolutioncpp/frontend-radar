@@ -143,8 +143,20 @@ describe('buildScoreBreakdown', () => {
 
     expect(metric).toMatchObject({
       status: 'critical',
-      value: 15,
+      value: 27,
     });
+    expect(metric.scoreDetails.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'github-actions',
+          status: 'passed',
+        }),
+        expect.objectContaining({
+          id: 'ci-test-step',
+          status: 'failed',
+        }),
+      ]),
+    );
   });
 
   it('marks CI as excellent when workflow runs PR install lint test and build steps', () => {
@@ -176,7 +188,7 @@ describe('buildScoreBreakdown', () => {
     });
   });
 
-  it('gives partial CI credit for a root build script in a nested project', () => {
+  it('caps monorepo CI below excellent when workflow does not target the selected project', () => {
     const metric = getMetric(
       createSignals({
         ci: {
@@ -210,16 +222,19 @@ describe('buildScoreBreakdown', () => {
 
     expect(metric).toMatchObject({
       status: 'good',
-      value: 88,
+      value: 89,
     });
-    expect(metric.evidence).toEqual(
+    expect(metric.scoreDetails.checks).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: 'build-script',
-          status: 'warning',
+          id: 'ci-project-scope',
+          status: 'partial',
         }),
       ]),
     );
+    expect(metric.scoreDetails.cap).toMatchObject({
+      value: 89,
+    });
   });
 
   it('penalizes dependencies when lockfiles are mixed or package manager metadata mismatches', () => {
@@ -256,8 +271,107 @@ describe('buildScoreBreakdown', () => {
     );
 
     expect(metric).toMatchObject({
+      status: 'warning',
+      value: 67,
+    });
+  });
+
+  it('scores documentation as zero when README and environment example are missing', () => {
+    const metric = getMetric(createSignals(), 'documentation');
+
+    expect(metric).toMatchObject({
+      status: 'critical',
+      value: 0,
+    });
+  });
+
+  it('scores CI as zero when GitHub Actions workflows are missing', () => {
+    const metric = getMetric(createSignals(), 'ci');
+
+    expect(metric).toMatchObject({
+      status: 'critical',
+      value: 0,
+    });
+  });
+
+  it('allows a root lockfile to be excellent when the selected package is workspace-managed', () => {
+    const metric = getMetric(
+      createSignals({
+        dependencyHealth: {
+          declaredPackageManager: null,
+          declaredPackageManagerSource: null,
+          hasMixedLockfiles: false,
+          lockfiles: [
+            {
+              packageManager: 'npm',
+              path: 'package-lock.json',
+              scope: 'root',
+            },
+          ],
+          misplacedDevDependencies: [],
+          misplacedDevDependencySources: [],
+          packageManagerMismatch: false,
+          primaryPackageManager: 'npm',
+        },
+        isNestedProject: true,
+        lockfile: {
+          exists: true,
+          packageManager: 'npm',
+          path: 'package-lock.json',
+          scope: 'root',
+        },
+        projectPath: 'apps/web',
+        workspace: {
+          matched: true,
+          source: 'package.json workspaces.apps/*',
+        },
+      }),
+      'dependencies',
+    );
+
+    expect(metric).toMatchObject({
+      status: 'excellent',
+      value: 100,
+    });
+  });
+
+  it('caps dependencies below excellent when only an unrelated root lockfile is found', () => {
+    const metric = getMetric(
+      createSignals({
+        dependencyHealth: {
+          declaredPackageManager: null,
+          declaredPackageManagerSource: null,
+          hasMixedLockfiles: false,
+          lockfiles: [
+            {
+              packageManager: 'npm',
+              path: 'package-lock.json',
+              scope: 'root',
+            },
+          ],
+          misplacedDevDependencies: [],
+          misplacedDevDependencySources: [],
+          packageManagerMismatch: false,
+          primaryPackageManager: 'npm',
+        },
+        isNestedProject: true,
+        lockfile: {
+          exists: true,
+          packageManager: 'npm',
+          path: 'package-lock.json',
+          scope: 'root',
+        },
+        projectPath: 'apps/web',
+      }),
+      'dependencies',
+    );
+
+    expect(metric).toMatchObject({
       status: 'good',
-      value: 75,
+      value: 87,
+    });
+    expect(metric.scoreDetails.cap).toMatchObject({
+      value: 89,
     });
   });
 });

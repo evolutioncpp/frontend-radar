@@ -10,10 +10,14 @@ import {
 import { InMemoryReportAnalysisRepository } from '../modules/reports/inMemoryReportAnalysisRepository.js';
 import { REPORT_ANALYSIS_VERSION } from '../modules/reports/reportAnalysisConfig.js';
 import { createReportAnalysisSnapshotKey } from '../modules/reports/reportAnalysisSnapshot.js';
+import { startReportAnalysis } from '../modules/reports/reportAnalysisWorker.js';
 import { ReportProjectPathNotFoundError } from '../modules/reports/reportProjectDetector.js';
 
 import type { ReportAnalyzer } from '../modules/reports/githubReportAnalyzer.js';
-import type { CreateReportAnalysisRecordInput } from '../modules/reports/reportAnalysisRepository.js';
+import type {
+  CreateReportAnalysisRecordInput,
+  ReportAnalysisFailure,
+} from '../modules/reports/reportAnalysisRepository.js';
 import type { ProjectReport } from '../modules/reports/reportSchemas.js';
 
 const DEFAULT_COMMIT_DATE = '2026-06-09T00:00:00.000Z';
@@ -32,6 +36,16 @@ const emptyTooling: ProjectReport['tooling'] = {
   typing: [],
   uiReview: [],
 };
+
+const createScoreDetails = (
+  value: number,
+): ProjectReport['scoreBreakdown'][number]['scoreDetails'] => ({
+  rawValue: value,
+  finalValue: value,
+  weight: 1,
+  impactLevel: 'supporting',
+  checks: [],
+});
 
 const createTestReport = (
   id: string,
@@ -82,21 +96,7 @@ const createTestReport = (
       maxValue: 100,
       status: 'excellent',
       description: 'Documentation is present.',
-      evidence: [
-        {
-          id: 'readme',
-          label: 'README',
-          status: 'found',
-          source: 'README',
-        },
-        {
-          id: 'env-example',
-          label: 'Environment example',
-          status: 'missing',
-          description: 'No environment example file was found.',
-          source: '.env.example',
-        },
-      ],
+      scoreDetails: createScoreDetails(100),
     },
   ],
   checks: [
@@ -162,9 +162,94 @@ const createAnalyzer = (overrides: Partial<ReportAnalyzer> = {}): ReportAnalyzer
   ...overrides,
 });
 
+const createAnalyzerWithScoreDetails = (): ReportAnalyzer =>
+  createAnalyzer({
+    analyze: async (input) => {
+      const report = createTestReport(
+        input.id,
+        input.latestCommitDate,
+        input.latestCommitSha,
+        input.projectPath || null,
+        input.latestCommitTitle,
+        input.branch,
+      );
+      const documentationMetric = report.scoreBreakdown[0];
+
+      if (documentationMetric) {
+        documentationMetric.scoreDetails = {
+          rawValue: 50,
+          finalValue: 50,
+          weight: 10,
+          impactLevel: 'supporting',
+          checks: [
+            {
+              confidence: 'high',
+              description: 'No environment example file was found.',
+              earned: 0,
+              id: 'env-example',
+              label: 'Environment example',
+              max: 20,
+              scope: 'repository',
+              severity: 'minor',
+              source: '.env.example',
+              status: 'failed',
+            },
+          ],
+        };
+      }
+
+      return report;
+    },
+  });
+
 const waitForQueuedWorker = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 const waitForClockTick = () => new Promise((resolve) => setTimeout(resolve, 1));
+
+const claimAnalysisForTest = async (
+  repository: InMemoryReportAnalysisRepository,
+  analysisId: string,
+  leaseOwner = `test-${analysisId}`,
+) => {
+  const claimedAnalysis = await repository.claimForProcessing({
+    id: analysisId,
+    leaseExpiresAt: new Date(Date.now() + 5 * 60 * 1000),
+    leaseOwner,
+    now: new Date(),
+  });
+
+  if (!claimedAnalysis) {
+    throw new Error(`Report analysis ${analysisId} was not claimed`);
+  }
+
+  return {
+    analysis: claimedAnalysis,
+    leaseOwner,
+  };
+};
+
+const completeAnalysisForTest = async (
+  repository: InMemoryReportAnalysisRepository,
+  analysisId: string,
+  report: ProjectReport = createTestReport(analysisId),
+) => {
+  const { leaseOwner } = await claimAnalysisForTest(repository, analysisId);
+
+  return repository.complete(analysisId, report, { leaseOwner });
+};
+
+const failAnalysisForTest = async (
+  repository: InMemoryReportAnalysisRepository,
+  analysisId: string,
+  failure: ReportAnalysisFailure = {
+    errorCode: 'analysis_failed',
+    errorMessage: 'Failed',
+  },
+) => {
+  const { leaseOwner } = await claimAnalysisForTest(repository, analysisId);
+
+  return repository.fail(analysisId, failure, { leaseOwner });
+};
 
 describe('reports routes', () => {
   it('lists repository branches for branch selector', async () => {
@@ -503,7 +588,7 @@ describe('reports routes', () => {
       );
 
       if (status === 'running') {
-        await repository.updateStatus(analysis.id, 'running');
+        await claimAnalysisForTest(repository, analysis.id);
       }
 
       try {
@@ -541,7 +626,7 @@ describe('reports routes', () => {
       {},
       {
         reportAnalysisRepository: repository,
-        reportAnalyzer: createAnalyzer(),
+        reportAnalyzer: createAnalyzerWithScoreDetails(),
       },
     );
 
@@ -575,15 +660,17 @@ describe('reports routes', () => {
           scoreBreakdown: [
             expect.objectContaining({
               category: 'documentation',
-              evidence: expect.arrayContaining([
-                expect.objectContaining({
-                  id: 'env-example',
-                  status: 'missing',
-                  label: expect.not.stringMatching(/^Environment example$/),
-                  description: expect.not.stringMatching(/^No environment example file/),
-                  source: '.env.example',
-                }),
-              ]),
+              scoreDetails: expect.objectContaining({
+                checks: expect.arrayContaining([
+                  expect.objectContaining({
+                    id: 'env-example',
+                    status: 'failed',
+                    label: expect.not.stringMatching(/^Environment example$/),
+                    description: expect.not.stringMatching(/^No environment example file/),
+                    source: '.env.example',
+                  }),
+                ]),
+              }),
               label: 'Документация',
               description: 'Сигналы README и документации окружения, найденные в репозитории.',
             }),
@@ -730,7 +817,7 @@ describe('reports routes', () => {
   it('returns refreshed terminal status when active run completes during reuse', async () => {
     class CompletingOnTouchRepository extends InMemoryReportAnalysisRepository {
       override async touch(id: string) {
-        await this.complete(id, createTestReport(id));
+        await completeAnalysisForTest(this, id, createTestReport(id));
 
         const analysis = await this.findById(id);
 
@@ -912,7 +999,7 @@ describe('reports routes', () => {
     const repository = new InMemoryReportAnalysisRepository();
     const failedAnalysis = await repository.create(createTestRecordInput());
 
-    await repository.fail(failedAnalysis.id, {
+    await failAnalysisForTest(repository, failedAnalysis.id, {
       errorCode: 'github_unavailable',
       errorMessage: 'GitHub is unavailable right now.',
     });
@@ -959,7 +1046,7 @@ describe('reports routes', () => {
     const repository = new InMemoryReportAnalysisRepository();
     const runningAnalysis = await repository.create(createTestRecordInput());
 
-    await repository.updateStatus(runningAnalysis.id, 'running');
+    await claimAnalysisForTest(repository, runningAnalysis.id);
 
     const startReportAnalysis = vi.fn();
     const app = buildApp(
@@ -1144,7 +1231,8 @@ describe('reports routes', () => {
       }),
     );
 
-    await repository.complete(
+    await completeAnalysisForTest(
+      repository,
       currentAnalysis.id,
       createTestReport(
         currentAnalysis.id,
@@ -1205,7 +1293,11 @@ describe('reports routes', () => {
     const repository = new InMemoryReportAnalysisRepository();
     const currentAnalysis = await repository.create(createTestRecordInput());
 
-    await repository.complete(currentAnalysis.id, createTestReport(currentAnalysis.id));
+    await completeAnalysisForTest(
+      repository,
+      currentAnalysis.id,
+      createTestReport(currentAnalysis.id),
+    );
 
     const latestCommitDate = '2026-06-10T00:00:00.000Z';
     const latestCommitSha = 'def456';
@@ -1306,7 +1398,11 @@ describe('reports routes', () => {
     const repository = new InMemoryReportAnalysisRepository();
     const currentAnalysis = await repository.create(createTestRecordInput());
 
-    await repository.complete(currentAnalysis.id, createTestReport(currentAnalysis.id));
+    await completeAnalysisForTest(
+      repository,
+      currentAnalysis.id,
+      createTestReport(currentAnalysis.id),
+    );
 
     const app = buildApp(
       {},
@@ -1607,7 +1703,11 @@ describe('reports routes', () => {
     const repository = new InMemoryReportAnalysisRepository();
     const currentAnalysis = await repository.create(createTestRecordInput());
 
-    await repository.complete(currentAnalysis.id, createTestReport(currentAnalysis.id));
+    await completeAnalysisForTest(
+      repository,
+      currentAnalysis.id,
+      createTestReport(currentAnalysis.id),
+    );
 
     const app = buildApp(
       {},
@@ -1652,7 +1752,7 @@ describe('reports routes', () => {
           maxValue: 100,
           status: options.score >= 75 ? 'good' : 'warning',
           description: 'Documentation signals.',
-          evidence: [],
+          scoreDetails: createScoreDetails(options.score),
         },
       ],
       checks: [
@@ -1671,7 +1771,8 @@ describe('reports routes', () => {
       }),
     );
 
-    await repository.complete(
+    await completeAnalysisForTest(
+      repository,
       previousAnalysis.id,
       createComparisonReport(previousAnalysis.id, {
         checkStatus: 'failed',
@@ -1702,7 +1803,8 @@ describe('reports routes', () => {
       }),
     );
 
-    await repository.complete(
+    await completeAnalysisForTest(
+      repository,
       currentAnalysis.id,
       createComparisonReport(currentAnalysis.id, {
         checkStatus: 'passed',
@@ -1802,16 +1904,21 @@ describe('reports routes', () => {
 
   it('returns comparison against explicit previous completed report', async () => {
     const repository = new InMemoryReportAnalysisRepository();
-    const createScoredReport = (id: string, score: number): ProjectReport => ({
-      ...createTestReport(id),
-      totalScore: score,
-      scoreBreakdown: [
-        {
-          ...createTestReport(id).scoreBreakdown[0],
-          value: score,
-        },
-      ],
-    });
+    const createScoredReport = (id: string, score: number): ProjectReport => {
+      const report = createTestReport(id);
+
+      return {
+        ...report,
+        totalScore: score,
+        scoreBreakdown: [
+          {
+            ...report.scoreBreakdown[0],
+            value: score,
+            scoreDetails: createScoreDetails(score),
+          },
+        ],
+      };
+    };
     const explicitPreviousAnalysis = await repository.create(
       createTestRecordInput({
         latestCommitDate: '2026-06-07T00:00:00.000Z',
@@ -1819,7 +1926,8 @@ describe('reports routes', () => {
       }),
     );
 
-    await repository.complete(
+    await completeAnalysisForTest(
+      repository,
       explicitPreviousAnalysis.id,
       createScoredReport(explicitPreviousAnalysis.id, 50),
     );
@@ -1833,7 +1941,8 @@ describe('reports routes', () => {
       }),
     );
 
-    await repository.complete(
+    await completeAnalysisForTest(
+      repository,
       automaticPreviousAnalysis.id,
       createScoredReport(automaticPreviousAnalysis.id, 70),
     );
@@ -1847,7 +1956,11 @@ describe('reports routes', () => {
       }),
     );
 
-    await repository.complete(currentAnalysis.id, createScoredReport(currentAnalysis.id, 90));
+    await completeAnalysisForTest(
+      repository,
+      currentAnalysis.id,
+      createScoredReport(currentAnalysis.id, 90),
+    );
 
     const app = buildApp(
       {},
@@ -1903,8 +2016,13 @@ describe('reports routes', () => {
       }),
     );
 
-    await repository.complete(currentAnalysis.id, createTestReport(currentAnalysis.id));
-    await repository.complete(
+    await completeAnalysisForTest(
+      repository,
+      currentAnalysis.id,
+      createTestReport(currentAnalysis.id),
+    );
+    await completeAnalysisForTest(
+      repository,
       otherProjectAnalysis.id,
       createTestReport(
         otherProjectAnalysis.id,
@@ -1913,7 +2031,8 @@ describe('reports routes', () => {
         'apps/docs',
       ),
     );
-    await repository.complete(
+    await completeAnalysisForTest(
+      repository,
       otherBranchAnalysis.id,
       createTestReport(
         otherBranchAnalysis.id,
@@ -1984,5 +2103,231 @@ describe('reports routes', () => {
     } finally {
       await app.close();
     }
+  });
+
+  it('claims recoverable analysis runs with a lease before recovery', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const queuedAnalysis = await repository.create(createTestRecordInput());
+    const now = new Date('2026-06-09T00:00:00.000Z');
+    const leaseExpiresAt = new Date('2026-06-09T00:05:00.000Z');
+
+    const firstClaim = await repository.claimRecoverable({
+      leaseExpiresAt,
+      leaseOwnerPrefix: 'worker-a',
+      limit: 10,
+      now,
+    });
+
+    expect(firstClaim).toHaveLength(1);
+    expect(firstClaim[0]).toMatchObject({
+      id: queuedAnalysis.id,
+      leaseExpiresAt,
+    });
+    expect(firstClaim[0]?.leaseOwner).toMatch(/^worker-a-/u);
+
+    const secondClaim = await repository.claimRecoverable({
+      leaseExpiresAt: new Date('2026-06-09T00:06:00.000Z'),
+      leaseOwnerPrefix: 'worker-b',
+      limit: 10,
+      now,
+    });
+
+    expect(secondClaim).toHaveLength(0);
+
+    const expiredClaim = await repository.claimRecoverable({
+      leaseExpiresAt: new Date('2026-06-09T00:11:00.000Z'),
+      leaseOwnerPrefix: 'worker-b',
+      limit: 10,
+      now: new Date('2026-06-09T00:06:00.000Z'),
+    });
+
+    expect(expiredClaim).toHaveLength(1);
+    expect(expiredClaim[0]).toMatchObject({
+      id: queuedAnalysis.id,
+    });
+    expect(expiredClaim[0]?.leaseOwner).toMatch(/^worker-b-/u);
+    expect(expiredClaim[0]?.leaseOwner).not.toBe(firstClaim[0]?.leaseOwner);
+
+    const completedAnalysis = await repository.complete(
+      queuedAnalysis.id,
+      createTestReport(queuedAnalysis.id),
+      {
+        leaseOwner: expiredClaim[0]?.leaseOwner ?? '',
+      },
+    );
+
+    expect(completedAnalysis.leaseOwner).toBeNull();
+    expect(completedAnalysis.leaseExpiresAt).toBeNull();
+  });
+
+  it('does not let stale workers refresh another worker lease', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const queuedAnalysis = await repository.create(createTestRecordInput());
+
+    await repository.claimForProcessing({
+      id: queuedAnalysis.id,
+      leaseExpiresAt: new Date('2026-06-09T00:05:00.000Z'),
+      leaseOwner: 'worker-a',
+      now: new Date('2026-06-09T00:00:00.000Z'),
+    });
+
+    const refreshedAnalysis = await repository.refreshLease({
+      id: queuedAnalysis.id,
+      leaseExpiresAt: new Date('2026-06-09T00:10:00.000Z'),
+      leaseOwner: 'worker-b',
+    });
+
+    expect(refreshedAnalysis).toBeNull();
+    await expect(repository.findById(queuedAnalysis.id)).resolves.toMatchObject({
+      leaseExpiresAt: new Date('2026-06-09T00:05:00.000Z'),
+      leaseOwner: 'worker-a',
+    });
+  });
+
+  it('claims direct worker runs before analyzing', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const queuedAnalysis = await repository.create(createTestRecordInput());
+    let observedLeaseOwner: string | null = null;
+
+    await startReportAnalysis({
+      analysis: queuedAnalysis,
+      analyzer: createAnalyzer({
+        analyze: async (analysis) => {
+          const runningAnalysis = await repository.findById(analysis.id);
+          observedLeaseOwner = runningAnalysis?.leaseOwner ?? null;
+
+          return createTestReport(analysis.id);
+        },
+      }),
+      logger: {
+        error: vi.fn(),
+      },
+      lease: {
+        expiresAt: new Date('2026-06-09T00:05:00.000Z'),
+        owner: 'worker-a',
+      },
+      repository,
+    });
+
+    const completedAnalysis = await repository.findById(queuedAnalysis.id);
+
+    expect(observedLeaseOwner).toBe('worker-a');
+    expect(completedAnalysis).toMatchObject({
+      status: 'completed',
+      leaseOwner: null,
+      leaseExpiresAt: null,
+    });
+  });
+
+  it('refreshes worker lease while analysis is running', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-09T00:00:00.000Z'));
+
+    try {
+      const repository = new InMemoryReportAnalysisRepository();
+      const queuedAnalysis = await repository.create(createTestRecordInput());
+      const analysisControl: {
+        finish?: () => void;
+      } = {};
+      let resolveAnalysisStarted: (() => void) | null = null;
+      const startedPromise = new Promise<void>((resolve) => {
+        resolveAnalysisStarted = resolve;
+      });
+      const runPromise = startReportAnalysis({
+        analysis: queuedAnalysis,
+        analyzer: createAnalyzer({
+          analyze: async (analysis) => {
+            resolveAnalysisStarted?.();
+
+            await new Promise<void>((resolve) => {
+              analysisControl.finish = resolve;
+            });
+
+            return createTestReport(analysis.id);
+          },
+        }),
+        logger: {
+          error: vi.fn(),
+        },
+        lease: {
+          expiresAt: new Date('2026-06-09T00:05:00.000Z'),
+          owner: 'worker-a',
+        },
+        repository,
+      });
+
+      await startedPromise;
+      await vi.advanceTimersByTimeAsync(110_000);
+
+      const runningAnalysis = await repository.findById(queuedAnalysis.id);
+
+      expect(runningAnalysis?.leaseExpiresAt?.getTime()).toBeGreaterThan(
+        new Date('2026-06-09T00:05:00.000Z').getTime(),
+      );
+
+      analysisControl.finish?.();
+      await runPromise;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not recover a running analysis with an active lease', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const queuedAnalysis = await repository.create(createTestRecordInput());
+    const now = new Date('2026-06-09T00:00:00.000Z');
+
+    await repository.claimForProcessing({
+      id: queuedAnalysis.id,
+      leaseExpiresAt: new Date('2026-06-09T00:05:00.000Z'),
+      leaseOwner: 'worker-a',
+      now,
+    });
+
+    const recoveredAnalyses = await repository.claimRecoverable({
+      leaseExpiresAt: new Date('2026-06-09T00:06:00.000Z'),
+      leaseOwnerPrefix: 'worker-b',
+      limit: 10,
+      now: new Date('2026-06-09T00:01:00.000Z'),
+    });
+
+    expect(recoveredAnalyses).toHaveLength(0);
+  });
+
+  it('does not let stale workers complete or fail another worker lease', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const queuedAnalysis = await repository.create(createTestRecordInput());
+    const claimedAnalysis = await repository.claimForProcessing({
+      id: queuedAnalysis.id,
+      leaseExpiresAt: new Date('2026-06-09T00:05:00.000Z'),
+      leaseOwner: 'worker-a',
+      now: new Date('2026-06-09T00:00:00.000Z'),
+    });
+
+    expect(claimedAnalysis?.leaseOwner).toBe('worker-a');
+    await expect(
+      repository.complete(queuedAnalysis.id, createTestReport(queuedAnalysis.id), {
+        leaseOwner: 'worker-b',
+      }),
+    ).rejects.toThrow(/lease/u);
+    await expect(
+      repository.fail(
+        queuedAnalysis.id,
+        {
+          errorCode: 'analysis_failed',
+          errorMessage: 'Failed',
+        },
+        {
+          leaseOwner: 'worker-b',
+        },
+      ),
+    ).rejects.toThrow(/lease/u);
+
+    const stillRunningAnalysis = await repository.findById(queuedAnalysis.id);
+
+    expect(stillRunningAnalysis).toMatchObject({
+      status: 'running',
+      leaseOwner: 'worker-a',
+    });
   });
 });

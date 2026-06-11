@@ -1,13 +1,7 @@
 import { useGetReportComparisonQuery } from './reportApi';
 
-import type { GetReportComparisonApiArg, GetReportComparisonApiResponse } from './reportApi';
-
-type AvailableReportComparison = Extract<
-  GetReportComparisonApiResponse,
-  {
-    status: 'available';
-  }
->;
+import type { GetReportComparisonApiArg } from './reportApi';
+import type { AvailableReportComparison } from './types';
 
 export type ReportComparisonState =
   | {

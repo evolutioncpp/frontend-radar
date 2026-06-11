@@ -8,6 +8,8 @@ import {
   normalizeGithubProjectPath,
 } from '@frontend-radar/github-repository';
 
+import { reportScoreCheckIds } from './reportScoreCheckIds.js';
+
 export const reportAnalysisStatuses = ['queued', 'running', 'completed', 'failed'] as const;
 export const reportProjectPathSources = ['autodetect', 'url', 'manual'] as const;
 export const projectDetectionConfidences = ['high', 'medium', 'low'] as const;
@@ -33,7 +35,18 @@ export const scoreCategories = [
   'accessibility',
 ] as const;
 export const checkStatuses = ['passed', 'failed', 'warning'] as const;
-export const evidenceStatuses = ['found', 'missing', 'warning'] as const;
+export const signalStatuses = ['found', 'missing', 'warning'] as const;
+export const scoringCheckStatuses = [
+  'passed',
+  'partial',
+  'failed',
+  'unknown',
+  'not_applicable',
+] as const;
+export const scoringCheckSeverities = ['critical', 'major', 'minor'] as const;
+export const scoringCheckScopes = ['project', 'root', 'workspace', 'repository', 'github'] as const;
+export const scoringCheckConfidences = ['high', 'medium', 'low'] as const;
+export const scoreImpactLevels = ['key', 'important', 'supporting'] as const;
 export const recommendationSeverities = ['low', 'medium', 'high'] as const;
 export const analysisSourceKinds = [
   'github_api',
@@ -55,6 +68,22 @@ export const toolingGroups = [
   'typing',
   'uiReview',
   'accessibility',
+] as const;
+export const toolingSourceKinds = [
+  'file',
+  'dependency',
+  'script',
+  'workflow',
+  'github_api',
+  'directory',
+  'workspace',
+] as const;
+export const toolingSourceSections = [
+  'dependencies',
+  'devDependencies',
+  'optionalDependencies',
+  'peerDependencies',
+  'scripts',
 ] as const;
 
 export const reportAnalysisStatusSchema = z.enum(reportAnalysisStatuses);
@@ -104,7 +133,7 @@ export const retryReportAnalysisResponseSchema = z.object({
 
 export const projectDetectionSignalSchema = z.object({
   id: z.string(),
-  status: z.enum(evidenceStatuses),
+  status: z.enum(signalStatuses),
   label: z.string(),
   description: z.string().optional(),
   source: z.string().optional(),
@@ -135,29 +164,59 @@ export const reportRepositorySchema = z.object({
   license: z.string().nullable(),
 });
 
-export const reportEvidenceSchema = z.object({
-  id: z.string(),
-  status: z.enum(evidenceStatuses),
+export const scoringCheckSchema = z.object({
+  id: z.enum(reportScoreCheckIds),
   label: z.string(),
+  status: z.enum(scoringCheckStatuses),
+  severity: z.enum(scoringCheckSeverities),
+  scope: z.enum(scoringCheckScopes),
+  confidence: z.enum(scoringCheckConfidences),
+  earned: z.number().min(0),
+  max: z.number().positive(),
   description: z.string().optional(),
   source: z.string().optional(),
+});
+
+export const scoreCapSchema = z.object({
+  value: z.number().int().min(0).max(100),
+  reason: z.string(),
+  source: z.string().optional(),
+});
+
+export const scoreDetailsSchema = z.object({
+  rawValue: z.number().int().min(0).max(100),
+  finalValue: z.number().int().min(0).max(100),
+  weight: z.number().positive(),
+  impactLevel: z.enum(scoreImpactLevels),
+  cap: scoreCapSchema.optional(),
+  checks: z.array(scoringCheckSchema),
 });
 
 export const analysisSourceSchema = z.object({
   id: z.string(),
   kind: z.enum(analysisSourceKinds),
   scope: z.enum(analysisSourceScopes),
-  status: z.enum(evidenceStatuses),
+  status: z.enum(signalStatuses),
   label: z.string(),
   description: z.string().optional(),
   source: z.string().optional(),
 });
 
+export const toolingSourceSchema = z.object({
+  raw: z.string(),
+  kind: z.enum(toolingSourceKinds),
+  label: z.string(),
+  path: z.string().optional(),
+  section: z.enum(toolingSourceSections).optional(),
+  name: z.string().optional(),
+  detail: z.string().optional(),
+});
+
 export const toolingItemSchema = z.object({
   id: z.string(),
   label: z.string(),
-  status: z.enum(evidenceStatuses),
-  sources: z.array(z.string()),
+  status: z.enum(signalStatuses),
+  sources: z.array(toolingSourceSchema),
 });
 
 export const reportToolingSchema = z.object(
@@ -174,7 +233,7 @@ export const scoreBreakdownItemSchema = z.object({
   maxValue: z.number().int().positive(),
   status: z.enum(scoreStatuses),
   description: z.string(),
-  evidence: z.array(reportEvidenceSchema),
+  scoreDetails: scoreDetailsSchema,
 });
 
 export const reportCheckSchema = z.object({

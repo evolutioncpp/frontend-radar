@@ -95,7 +95,17 @@ const tooling: ProjectReport['tooling'] = {
     {
       id: 'vite',
       label: 'Vite',
-      sources: ['apps/web/package.json devDependencies.vite'],
+      sources: [
+        {
+          detail: 'apps/web/package.json / devDependencies',
+          kind: 'dependency',
+          label: 'vite',
+          name: 'vite',
+          path: 'apps/web/package.json',
+          raw: 'apps/web/package.json devDependencies.vite',
+          section: 'devDependencies',
+        },
+      ],
       status: 'found',
     },
   ],
@@ -103,7 +113,17 @@ const tooling: ProjectReport['tooling'] = {
     {
       id: 'react',
       label: 'React',
-      sources: ['apps/web/package.json dependencies.react'],
+      sources: [
+        {
+          detail: 'apps/web/package.json / dependencies',
+          kind: 'dependency',
+          label: 'react',
+          name: 'react',
+          path: 'apps/web/package.json',
+          raw: 'apps/web/package.json dependencies.react',
+          section: 'dependencies',
+        },
+      ],
       status: 'found',
     },
   ],
@@ -112,9 +132,31 @@ const tooling: ProjectReport['tooling'] = {
       id: 'eslint',
       label: 'ESLint',
       sources: [
-        'apps/web/eslint.config.js',
-        'apps/web/package.json devDependencies.eslint',
-        'apps/web/package.json devDependencies.@eslint/js',
+        {
+          detail: 'apps/web/eslint.config.js',
+          kind: 'file',
+          label: 'eslint.config.js',
+          path: 'apps/web/eslint.config.js',
+          raw: 'apps/web/eslint.config.js',
+        },
+        {
+          detail: 'apps/web/package.json / devDependencies',
+          kind: 'dependency',
+          label: 'eslint',
+          name: 'eslint',
+          path: 'apps/web/package.json',
+          raw: 'apps/web/package.json devDependencies.eslint',
+          section: 'devDependencies',
+        },
+        {
+          detail: 'apps/web/package.json / devDependencies',
+          kind: 'dependency',
+          label: '@eslint/js',
+          name: '@eslint/js',
+          path: 'apps/web/package.json',
+          raw: 'apps/web/package.json devDependencies.@eslint/js',
+          section: 'devDependencies',
+        },
       ],
       status: 'found',
     },
@@ -129,7 +171,7 @@ describe('AnalysisDetailsPanel', () => {
     expect(screen.getByText('React')).toBeInTheDocument();
     expect(screen.getByText('Vite')).toBeInTheDocument();
     expect(screen.getByText('ESLint')).toBeInTheDocument();
-    expect(screen.getAllByText('apps/web/eslint.config.js').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('eslint.config.js').length).toBeGreaterThan(0);
     expect(screen.queryByText('+2 more')).not.toBeInTheDocument();
   });
 

@@ -4,7 +4,7 @@ import { forwardRef, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import s from './Select.module.scss';
 
-import type { ChangeEvent, FocusEventHandler, KeyboardEvent, ReactNode } from 'react';
+import type { FocusEventHandler, KeyboardEvent, ReactNode } from 'react';
 
 export interface SelectOption {
   disabled?: boolean;
@@ -24,8 +24,8 @@ interface SelectProps {
   hint?: ReactNode;
   name?: string;
   onBlur?: FocusEventHandler<HTMLButtonElement>;
-  onChange?: (event: ChangeEvent<HTMLSelectElement>) => void;
   onOpen?: () => void;
+  onValueChange?: (value: string) => void;
   placeholder?: string;
   required?: boolean;
   emptyMessage?: string;
@@ -57,8 +57,8 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
       label,
       name,
       onBlur,
-      onChange,
       onOpen,
+      onValueChange,
       options,
       placeholder,
       required,
@@ -82,6 +82,7 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
     const errorId = `${selectId}-error`;
     const wrapperRef = useRef<HTMLDivElement | null>(null);
     const searchInputRef = useRef<HTMLInputElement | null>(null);
+    const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const normalizedValue = typeof value === 'string' ? value : '';
@@ -105,9 +106,7 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
       .filter(Boolean)
       .join(' ');
     const activeOptionId =
-      isOpen && activeIndex >= 0
-        ? `${selectId}-option-${filteredOptions[activeIndex]?.value}`
-        : undefined;
+      isOpen && activeIndex >= 0 ? `${selectId}-option-${activeIndex}` : undefined;
     const visibleValue = selectedOption?.label ?? placeholder ?? '';
     const isPlaceholderShown = !selectedOption;
     const resolvedSearchPlaceholder = searchPlaceholder ?? label;
@@ -163,6 +162,16 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
       }
     }, [isOpen, searchable]);
 
+    useEffect(() => {
+      if (!isOpen || activeIndex < 0) {
+        return;
+      }
+
+      optionRefs.current[activeIndex]?.scrollIntoView?.({
+        block: 'nearest',
+      });
+    }, [activeIndex, isOpen]);
+
     const openList = () => {
       if (disabled) {
         return;
@@ -177,25 +186,12 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
       setSearchQuery('');
     };
 
-    const emitChange = (nextValue: string) => {
-      onChange?.({
-        currentTarget: {
-          name,
-          value: nextValue,
-        },
-        target: {
-          name,
-          value: nextValue,
-        },
-      } as ChangeEvent<HTMLSelectElement>);
-    };
-
     const handleOptionSelect = (option: SelectOption) => {
       if (option.disabled) {
         return;
       }
 
-      emitChange(option.value);
+      onValueChange?.(option.value);
       closeList();
     };
 
@@ -298,7 +294,7 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
           />
           <button
             aria-activedescendant={activeOptionId}
-            aria-controls={listboxId}
+            aria-controls={isOpen ? listboxId : undefined}
             aria-describedby={descriptionIds || undefined}
             aria-expanded={isOpen}
             aria-haspopup="listbox"
@@ -365,9 +361,12 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
                         option.disabled && s.optionDisabled,
                       )}
                       disabled={option.disabled}
-                      id={`${selectId}-option-${option.value}`}
+                      id={`${selectId}-option-${index}`}
                       key={option.value}
                       onClick={() => handleOptionSelect(option)}
+                      ref={(element) => {
+                        optionRefs.current[index] = element;
+                      }}
                       role="option"
                       type="button"
                     >

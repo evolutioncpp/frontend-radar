@@ -26,26 +26,26 @@ describe('Select', () => {
     expect(screen.getByRole('option', { name: 'develop' })).toBeInTheDocument();
   });
 
-  test('calls onChange when selected value changes', () => {
-    const handleChange = vi.fn();
+  test('calls onValueChange when selected value changes', () => {
+    const handleValueChange = vi.fn();
 
-    render(<Select label="Branch" onChange={handleChange} options={options} value="main" />);
+    render(
+      <Select label="Branch" onValueChange={handleValueChange} options={options} value="main" />,
+    );
 
     fireEvent.click(screen.getByRole('combobox', { name: 'Branch' }));
     fireEvent.click(screen.getByRole('option', { name: 'develop' }));
 
-    expect(handleChange).toHaveBeenCalledTimes(1);
-    expect(handleChange.mock.calls[0]?.[0]).toMatchObject({
-      target: {
-        value: 'develop',
-      },
-    });
+    expect(handleValueChange).toHaveBeenCalledTimes(1);
+    expect(handleValueChange).toHaveBeenCalledWith('develop');
   });
 
   test('supports keyboard selection', () => {
-    const handleChange = vi.fn();
+    const handleValueChange = vi.fn();
 
-    render(<Select label="Branch" onChange={handleChange} options={options} value="main" />);
+    render(
+      <Select label="Branch" onValueChange={handleValueChange} options={options} value="main" />,
+    );
 
     const select = screen.getByRole('combobox', { name: 'Branch' });
 
@@ -59,10 +59,29 @@ describe('Select', () => {
       key: 'Enter',
     });
 
-    expect(handleChange.mock.calls[0]?.[0]).toMatchObject({
-      target: {
-        value: 'develop',
-      },
+    expect(handleValueChange).toHaveBeenCalledWith('develop');
+  });
+
+  test('scrolls active option into view during keyboard navigation', () => {
+    const scrollIntoView = vi.fn();
+
+    render(<Select label="Branch" options={options} value="main" />);
+
+    const select = screen.getByRole('combobox', { name: 'Branch' });
+
+    fireEvent.keyDown(select, {
+      key: 'ArrowDown',
+    });
+    Object.defineProperty(screen.getByRole('option', { name: 'develop' }), 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    });
+    fireEvent.keyDown(select, {
+      key: 'ArrowDown',
+    });
+
+    expect(scrollIntoView).toHaveBeenCalledWith({
+      block: 'nearest',
     });
   });
 
@@ -90,12 +109,12 @@ describe('Select', () => {
   });
 
   test('selects filtered option from search input with Enter', () => {
-    const handleChange = vi.fn();
+    const handleValueChange = vi.fn();
 
     render(
       <Select
         label="Branch"
-        onChange={handleChange}
+        onValueChange={handleValueChange}
         options={options}
         searchable
         searchPlaceholder="Search branch"
@@ -113,11 +132,7 @@ describe('Select', () => {
       key: 'Enter',
     });
 
-    expect(handleChange.mock.calls[0]?.[0]).toMatchObject({
-      target: {
-        value: 'develop',
-      },
-    });
+    expect(handleValueChange).toHaveBeenCalledWith('develop');
   });
 
   test('renders empty search state', () => {
@@ -140,6 +155,34 @@ describe('Select', () => {
     });
 
     expect(screen.getByRole('option', { name: 'No branches found' })).toBeDisabled();
+  });
+
+  test('does not select empty state option', () => {
+    const handleValueChange = vi.fn();
+
+    render(
+      <Select
+        emptySearchMessage="No branches found"
+        label="Branch"
+        onValueChange={handleValueChange}
+        options={options}
+        searchable
+        searchPlaceholder="Search branch"
+        value="main"
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('combobox', { name: 'Branch' }));
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Search branch' }), {
+      target: {
+        value: 'release',
+      },
+    });
+    fireEvent.keyDown(screen.getByRole('searchbox', { name: 'Search branch' }), {
+      key: 'Enter',
+    });
+
+    expect(handleValueChange).not.toHaveBeenCalled();
   });
 
   test('supports disabled state and error text', () => {

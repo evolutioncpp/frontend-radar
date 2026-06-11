@@ -16,7 +16,7 @@ export {
 export { useReportHistory } from './model/useReportHistory';
 export { useReportComparison } from './model/useReportComparison';
 export { useProjectReport } from './model/useProjectReport';
-export { ReportEvidenceList } from './ui/report-evidence-list/ReportEvidenceList';
+export { ReportScoreDetailsList } from './ui/report-score-details-list/ReportScoreDetailsList';
 
 export type {
   AnalysisSource,
@@ -26,17 +26,27 @@ export type {
   ProjectReport,
   RecommendationSeverity,
   ReportCheck,
-  ReportEvidence,
-  ReportEvidenceStatus,
   ReportRecommendation,
   ReportRepository,
+  ReportSignal,
+  ReportSignalStatus,
   ReportTooling,
+  ReportAnalysisStatus,
+  ScoreCap,
   ScoreBreakdownItem,
   ScoreCategory,
+  ScoreDetails,
   ScoreStatus,
+  ScoringCheck,
+  ScoringCheckConfidence,
+  ScoringCheckScope,
+  ScoringCheckSeverity,
+  ScoringCheckStatus,
   ToolingItem,
+  ToolingSource,
+  ToolingSourceKind,
+  ToolingSourceSection,
 } from './model/types';
-export type { ReportAnalysisStatus } from './model/reportSelectors';
 export type {
   ReportHistoryGroupViewModel,
   ReportHistoryItemViewModel,

@@ -103,12 +103,28 @@ describe('collectRepositorySignals', () => {
     expect(signals.bundler).toMatchObject({
       dependencies: ['vite'],
       found: true,
-      sources: ['package.json dependencies.vite'],
+      sources: [
+        expect.objectContaining({
+          kind: 'dependency',
+          name: 'vite',
+          path: 'package.json',
+          raw: 'package.json dependencies.vite',
+          section: 'dependencies',
+        }),
+      ],
     });
     expect(signals.storybook).toMatchObject({
       dependencies: ['@storybook/react-vite'],
       found: true,
-      sources: ['package.json devDependencies.@storybook/react-vite'],
+      sources: [
+        expect.objectContaining({
+          kind: 'dependency',
+          name: '@storybook/react-vite',
+          path: 'package.json',
+          raw: 'package.json devDependencies.@storybook/react-vite',
+          section: 'devDependencies',
+        }),
+      ],
     });
   });
 
@@ -185,17 +201,39 @@ describe('collectRepositorySignals', () => {
     expect(signals.typescript).toMatchObject({
       configPaths: ['apps/web/tsconfig.json'],
       found: true,
-      sources: ['apps/web/tsconfig.json', 'apps/web/package.json devDependencies.typescript'],
+      sources: [
+        expect.objectContaining({
+          kind: 'file',
+          raw: 'apps/web/tsconfig.json',
+        }),
+        expect.objectContaining({
+          kind: 'dependency',
+          name: 'typescript',
+          raw: 'apps/web/package.json devDependencies.typescript',
+        }),
+      ],
     });
     expect(signals.bundler).toMatchObject({
       dependencies: ['vite'],
       found: true,
-      sources: ['apps/web/package.json devDependencies.vite'],
+      sources: [
+        expect.objectContaining({
+          kind: 'dependency',
+          name: 'vite',
+          raw: 'apps/web/package.json devDependencies.vite',
+        }),
+      ],
     });
     expect(signals.testingLibrary).toMatchObject({
       dependencies: ['vitest'],
       found: true,
-      sources: ['apps/web/package.json devDependencies.vitest'],
+      sources: [
+        expect.objectContaining({
+          kind: 'dependency',
+          name: 'vitest',
+          raw: 'apps/web/package.json devDependencies.vitest',
+        }),
+      ],
     });
     expect(signals.lockfile).toMatchObject({
       exists: true,
@@ -262,34 +300,74 @@ describe('collectRepositorySignals', () => {
       configPaths: ['apps/web/vite.config.ts'],
       dependencies: [],
       found: true,
-      projectSources: ['apps/web/vite.config.ts'],
-      sources: ['apps/web/vite.config.ts'],
+      projectSources: [
+        expect.objectContaining({
+          kind: 'file',
+          raw: 'apps/web/vite.config.ts',
+        }),
+      ],
+      sources: [
+        expect.objectContaining({
+          kind: 'file',
+          raw: 'apps/web/vite.config.ts',
+        }),
+      ],
     });
     expect(signals.testingLibrary).toMatchObject({
       configPaths: ['apps/web/vitest.config.ts'],
       found: true,
-      projectSources: ['apps/web/vitest.config.ts'],
+      projectSources: [
+        expect.objectContaining({
+          kind: 'file',
+          raw: 'apps/web/vitest.config.ts',
+        }),
+      ],
     });
     expect(signals.a11yTooling).toMatchObject({
       configPaths: ['apps/web/axe.config.ts'],
       found: true,
-      projectSources: ['apps/web/axe.config.ts'],
+      projectSources: [
+        expect.objectContaining({
+          kind: 'file',
+          raw: 'apps/web/axe.config.ts',
+        }),
+      ],
     });
     expect(signals.linting).toMatchObject({
       configPaths: ['eslint.config.js'],
       found: true,
-      rootSources: ['eslint.config.js'],
-      sources: ['eslint.config.js'],
+      rootSources: [
+        expect.objectContaining({
+          kind: 'file',
+          raw: 'eslint.config.js',
+        }),
+      ],
+      sources: [
+        expect.objectContaining({
+          kind: 'file',
+          raw: 'eslint.config.js',
+        }),
+      ],
     });
     expect(signals.formatting).toMatchObject({
       configPaths: ['prettier.config.js'],
       found: true,
-      rootSources: ['prettier.config.js'],
+      rootSources: [
+        expect.objectContaining({
+          kind: 'file',
+          raw: 'prettier.config.js',
+        }),
+      ],
     });
     expect(signals.frameworks).toMatchObject({
       configPaths: ['next.config.js'],
       found: true,
-      rootSources: ['next.config.js'],
+      rootSources: [
+        expect.objectContaining({
+          kind: 'file',
+          raw: 'next.config.js',
+        }),
+      ],
     });
   });
 
@@ -359,12 +437,26 @@ describe('collectRepositorySignals', () => {
     expect(signals.a11yTooling).toMatchObject({
       dependencies: ['@axe-core/react'],
       found: true,
-      sources: ['package.json optionalDependencies.@axe-core/react'],
+      sources: [
+        expect.objectContaining({
+          kind: 'dependency',
+          name: '@axe-core/react',
+          raw: 'package.json optionalDependencies.@axe-core/react',
+          section: 'optionalDependencies',
+        }),
+      ],
     });
     expect(signals.bundler).toMatchObject({
       dependencies: ['next'],
       found: true,
-      sources: ['package.json peerDependencies.next'],
+      sources: [
+        expect.objectContaining({
+          kind: 'dependency',
+          name: 'next',
+          raw: 'package.json peerDependencies.next',
+          section: 'peerDependencies',
+        }),
+      ],
     });
   });
 

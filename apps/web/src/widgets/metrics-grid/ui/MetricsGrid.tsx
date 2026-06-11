@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 import {
   getScoreStatusBadgeVariant,
-  ReportEvidenceList,
+  ReportScoreDetailsList,
   type ScoreBreakdownItem,
 } from '@/entities/report';
 import { normalizeScore } from '@/shared/lib/format-score';
@@ -81,7 +81,10 @@ export const MetricsGrid = ({ headerAction, metrics }: MetricsGridProps) => {
                 value={metric.value}
               />
 
-              <ReportEvidenceList className={s.metricEvidence} evidence={metric.evidence} />
+              <ReportScoreDetailsList
+                className={s.metricScoreDetails}
+                scoreDetails={metric.scoreDetails}
+              />
             </li>
           );
         })}

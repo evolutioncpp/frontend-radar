@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { ArrowLeftRight, CalendarClock, ChevronDown, GitBranch, GitCommit } from 'lucide-react';
+import { ArrowLeftRight, ChevronDown } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -9,7 +9,7 @@ import { normalizeScore } from '@/shared/lib/format-score';
 
 import s from '../DashboardHistoryPage.module.scss';
 import { HistoryReportCard } from '../history-report-card/HistoryReportCard';
-import { historyStatusIconMap } from '../historyStatusIcons';
+import { ReportRunMetadataList } from '../report-run-metadata-list/ReportRunMetadataList';
 
 import type { ReportHistoryGroupViewModel, ReportHistoryItemViewModel } from '@/entities/report';
 
@@ -27,7 +27,6 @@ const HistoryPreviousRunItem = ({
   const { t } = useTranslation('dashboard-history');
   const normalizedScore = typeof run.score === 'number' ? normalizeScore(run.score) : null;
   const canCompare = latestRun.status === 'completed' && run.status === 'completed';
-  const StatusIcon = historyStatusIconMap[run.status];
 
   return (
     <li className={s.previousRunItem}>
@@ -40,43 +39,14 @@ const HistoryPreviousRunItem = ({
           className={s.previousRunLink}
           to={getReportPath(run.id)}
         >
-          <span className={s.previousRunMain}>
-            <time
-              aria-label={`${t('card.metadata.activityAt')}: ${run.activityLabel}`}
-              className={s.previousRunMetaItem}
-              dateTime={run.activityAt}
-              title={`${t('card.metadata.activityAt')}: ${run.activityLabel}`}
-            >
-              <CalendarClock aria-hidden="true" className={s.previousRunMetaIcon} strokeWidth={2} />
-              <span>{run.activityLabel}</span>
-            </time>
-            <span
-              aria-label={`${t('card.metadata.status')}: ${t(`card.statuses.${run.status}`)}`}
-              className={s.previousRunMetaItem}
-              title={`${t('card.metadata.status')}: ${t(`card.statuses.${run.status}`)}`}
-            >
-              <StatusIcon aria-hidden="true" className={s.previousRunMetaIcon} strokeWidth={2} />
-              <span>{t(`card.statuses.${run.status}`)}</span>
-            </span>
-            <span
-              aria-label={`${t('card.metadata.branch')}: ${run.branch}`}
-              className={s.previousRunMetaItem}
-              title={`${t('card.metadata.branch')}: ${run.branch}`}
-            >
-              <GitBranch aria-hidden="true" className={s.previousRunMetaIcon} strokeWidth={2} />
-              <span className={s.previousRunMetaCode}>{run.branch}</span>
-            </span>
-            {run.commitTitle ? (
-              <span className={s.previousRunCommitTitle} title={run.commitTitle}>
-                <GitCommit
-                  aria-hidden="true"
-                  className={s.previousRunCommitTitleIcon}
-                  strokeWidth={2}
-                />
-                <span className={s.previousRunCommitTitleText}>{run.commitTitle}</span>
-              </span>
-            ) : null}
-          </span>
+          <ReportRunMetadataList
+            activityAt={run.activityAt}
+            activityLabel={run.activityLabel}
+            branch={run.branch}
+            commitTitle={run.commitTitle}
+            status={run.status}
+            variant="previous"
+          />
 
           <span className={s.previousRunScore}>
             {normalizedScore === null ? t(`card.statuses.${run.status}`) : `${normalizedScore}/100`}

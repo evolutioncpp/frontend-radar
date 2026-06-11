@@ -280,55 +280,235 @@ export type GetReportAnalysisApiResponse =
             id: string;
             label: string;
             status: 'found' | 'missing' | 'warning';
-            sources: string[];
+            sources: {
+              raw: string;
+              kind:
+                | 'file'
+                | 'dependency'
+                | 'script'
+                | 'workflow'
+                | 'github_api'
+                | 'directory'
+                | 'workspace';
+              label: string;
+              path?: string;
+              section?:
+                | 'dependencies'
+                | 'devDependencies'
+                | 'optionalDependencies'
+                | 'peerDependencies'
+                | 'scripts';
+              name?: string;
+              detail?: string;
+            }[];
           }[];
           frameworks: {
             id: string;
             label: string;
             status: 'found' | 'missing' | 'warning';
-            sources: string[];
+            sources: {
+              raw: string;
+              kind:
+                | 'file'
+                | 'dependency'
+                | 'script'
+                | 'workflow'
+                | 'github_api'
+                | 'directory'
+                | 'workspace';
+              label: string;
+              path?: string;
+              section?:
+                | 'dependencies'
+                | 'devDependencies'
+                | 'optionalDependencies'
+                | 'peerDependencies'
+                | 'scripts';
+              name?: string;
+              detail?: string;
+            }[];
           }[];
           bundlers: {
             id: string;
             label: string;
             status: 'found' | 'missing' | 'warning';
-            sources: string[];
+            sources: {
+              raw: string;
+              kind:
+                | 'file'
+                | 'dependency'
+                | 'script'
+                | 'workflow'
+                | 'github_api'
+                | 'directory'
+                | 'workspace';
+              label: string;
+              path?: string;
+              section?:
+                | 'dependencies'
+                | 'devDependencies'
+                | 'optionalDependencies'
+                | 'peerDependencies'
+                | 'scripts';
+              name?: string;
+              detail?: string;
+            }[];
           }[];
           testing: {
             id: string;
             label: string;
             status: 'found' | 'missing' | 'warning';
-            sources: string[];
+            sources: {
+              raw: string;
+              kind:
+                | 'file'
+                | 'dependency'
+                | 'script'
+                | 'workflow'
+                | 'github_api'
+                | 'directory'
+                | 'workspace';
+              label: string;
+              path?: string;
+              section?:
+                | 'dependencies'
+                | 'devDependencies'
+                | 'optionalDependencies'
+                | 'peerDependencies'
+                | 'scripts';
+              name?: string;
+              detail?: string;
+            }[];
           }[];
           linting: {
             id: string;
             label: string;
             status: 'found' | 'missing' | 'warning';
-            sources: string[];
+            sources: {
+              raw: string;
+              kind:
+                | 'file'
+                | 'dependency'
+                | 'script'
+                | 'workflow'
+                | 'github_api'
+                | 'directory'
+                | 'workspace';
+              label: string;
+              path?: string;
+              section?:
+                | 'dependencies'
+                | 'devDependencies'
+                | 'optionalDependencies'
+                | 'peerDependencies'
+                | 'scripts';
+              name?: string;
+              detail?: string;
+            }[];
           }[];
           formatting: {
             id: string;
             label: string;
             status: 'found' | 'missing' | 'warning';
-            sources: string[];
+            sources: {
+              raw: string;
+              kind:
+                | 'file'
+                | 'dependency'
+                | 'script'
+                | 'workflow'
+                | 'github_api'
+                | 'directory'
+                | 'workspace';
+              label: string;
+              path?: string;
+              section?:
+                | 'dependencies'
+                | 'devDependencies'
+                | 'optionalDependencies'
+                | 'peerDependencies'
+                | 'scripts';
+              name?: string;
+              detail?: string;
+            }[];
           }[];
           typing: {
             id: string;
             label: string;
             status: 'found' | 'missing' | 'warning';
-            sources: string[];
+            sources: {
+              raw: string;
+              kind:
+                | 'file'
+                | 'dependency'
+                | 'script'
+                | 'workflow'
+                | 'github_api'
+                | 'directory'
+                | 'workspace';
+              label: string;
+              path?: string;
+              section?:
+                | 'dependencies'
+                | 'devDependencies'
+                | 'optionalDependencies'
+                | 'peerDependencies'
+                | 'scripts';
+              name?: string;
+              detail?: string;
+            }[];
           }[];
           uiReview: {
             id: string;
             label: string;
             status: 'found' | 'missing' | 'warning';
-            sources: string[];
+            sources: {
+              raw: string;
+              kind:
+                | 'file'
+                | 'dependency'
+                | 'script'
+                | 'workflow'
+                | 'github_api'
+                | 'directory'
+                | 'workspace';
+              label: string;
+              path?: string;
+              section?:
+                | 'dependencies'
+                | 'devDependencies'
+                | 'optionalDependencies'
+                | 'peerDependencies'
+                | 'scripts';
+              name?: string;
+              detail?: string;
+            }[];
           }[];
           accessibility: {
             id: string;
             label: string;
             status: 'found' | 'missing' | 'warning';
-            sources: string[];
+            sources: {
+              raw: string;
+              kind:
+                | 'file'
+                | 'dependency'
+                | 'script'
+                | 'workflow'
+                | 'github_api'
+                | 'directory'
+                | 'workspace';
+              label: string;
+              path?: string;
+              section?:
+                | 'dependencies'
+                | 'devDependencies'
+                | 'optionalDependencies'
+                | 'peerDependencies'
+                | 'scripts';
+              name?: string;
+              detail?: string;
+            }[];
           }[];
         };
         totalScore: number;
@@ -346,13 +526,54 @@ export type GetReportAnalysisApiResponse =
           maxValue: number;
           status: 'excellent' | 'good' | 'warning' | 'critical';
           description: string;
-          evidence: {
-            id: string;
-            status: 'found' | 'missing' | 'warning';
-            label: string;
-            description?: string;
-            source?: string;
-          }[];
+          scoreDetails: {
+            rawValue: number;
+            finalValue: number;
+            weight: number;
+            impactLevel: 'key' | 'important' | 'supporting';
+            cap?: {
+              value: number;
+              reason: string;
+              source?: string;
+            };
+            checks: {
+              id:
+                | 'readme'
+                | 'readme-quality'
+                | 'env-example'
+                | 'package-json'
+                | 'test-script'
+                | 'testing-library'
+                | 'github-actions'
+                | 'ci-pr-trigger'
+                | 'ci-install-step'
+                | 'ci-lint-step'
+                | 'ci-test-step'
+                | 'ci-build-step'
+                | 'ci-project-scope'
+                | 'build-script'
+                | 'lockfile'
+                | 'lockfile-consistency'
+                | 'package-manager'
+                | 'dependency-hygiene'
+                | 'typescript'
+                | 'lint-script'
+                | 'linting'
+                | 'formatting'
+                | 'storybook'
+                | 'bundler'
+                | 'a11y-tooling';
+              label: string;
+              status: 'passed' | 'partial' | 'failed' | 'unknown' | 'not_applicable';
+              severity: 'critical' | 'major' | 'minor';
+              scope: 'project' | 'root' | 'workspace' | 'repository' | 'github';
+              confidence: 'high' | 'medium' | 'low';
+              earned: number;
+              max: number;
+              description?: string;
+              source?: string;
+            }[];
+          };
         }[];
         checks: {
           id: string;

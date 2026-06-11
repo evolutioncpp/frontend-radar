@@ -20,6 +20,28 @@ const emptyTooling: ProjectReport['tooling'] = {
   uiReview: [],
 };
 
+const createScoreDetails = (
+  value: number,
+): ProjectReport['scoreBreakdown'][number]['scoreDetails'] => ({
+  rawValue: value,
+  finalValue: value,
+  weight: 10,
+  impactLevel: 'supporting',
+  checks: [
+    {
+      id: 'readme',
+      label: 'README',
+      status: 'passed',
+      severity: 'major',
+      scope: 'repository',
+      confidence: 'high',
+      earned: value,
+      max: 100,
+      source: 'README',
+    },
+  ],
+});
+
 const apiMocks = vi.hoisted(() => ({
   createReportAnalysis: vi.fn(),
   forceRefreshReportAnalysis: vi.fn(),
@@ -180,7 +202,7 @@ vi.mock('react-i18next', () => ({
         'healthScore.label': 'Frontend Health Score',
         'healthScore.title': 'Overall project quality',
         'healthScore.description':
-          'This score summarizes repository setup, documentation, testing, CI/CD, dependencies and maintainability signals.',
+          'This weighted score combines category checks and risk caps, so critical gaps can limit the final score even when other signals are strong.',
         'healthScore.progressAria': 'Frontend health score progress',
 
         'metrics.label': 'Score breakdown',
@@ -229,10 +251,29 @@ vi.mock('react-i18next', () => ({
         'statuses.high': 'High',
         'statuses.medium': 'Medium',
         'statuses.low': 'Low',
-        'evidence.title': 'Evidence',
-        'evidence.statuses.found': 'Found',
-        'evidence.statuses.missing': 'Missing',
-        'evidence.statuses.warning': 'Warning',
+        'scoreDetails.title': 'Why this score',
+        'scoreDetails.rawValue': 'Raw score',
+        'scoreDetails.finalValue': 'Final score',
+        'scoreDetails.impact': 'Influence',
+        'scoreDetails.impactLevels.key': 'Key category',
+        'scoreDetails.impactLevels.important': 'Important category',
+        'scoreDetails.impactLevels.supporting': 'Supporting category',
+        'scoreDetails.statuses.passed': 'Passed',
+        'scoreDetails.statuses.partial': 'Partial',
+        'scoreDetails.statuses.failed': 'Failed',
+        'scoreDetails.statuses.unknown': 'Unknown',
+        'scoreDetails.statuses.notApplicable': 'N/A',
+        'scoreDetails.scopes.project': 'Project',
+        'scoreDetails.scopes.root': 'Root',
+        'scoreDetails.scopes.workspace': 'Workspace',
+        'scoreDetails.scopes.repository': 'Repository',
+        'scoreDetails.scopes.github': 'GitHub',
+        'scoreDetails.severities.critical': 'Critical',
+        'scoreDetails.severities.major': 'Major',
+        'scoreDetails.severities.minor': 'Minor',
+        'scoreDetails.confidences.high': 'High confidence',
+        'scoreDetails.confidences.medium': 'Medium confidence',
+        'scoreDetails.confidences.low': 'Low confidence',
 
         'form.label': 'Repository',
         'form.placeholder': 'https://github.com/owner/repo',
@@ -296,8 +337,16 @@ vi.mock('react-i18next', () => ({
         return `${options?.count} persistent`;
       }
 
-      if (key === 'evidence.source') {
+      if (key === 'scoreDetails.source') {
         return `Source: ${options?.source}`;
+      }
+
+      if (key === 'scoreDetails.points') {
+        return `${options?.earned}/${options?.max}`;
+      }
+
+      if (key === 'scoreDetails.cap.title') {
+        return `Score capped at ${options?.value}`;
       }
 
       if (key === 'repository.projectDetection.signalSource') {
@@ -392,14 +441,7 @@ const testReport: ProjectReport = {
       maxValue: 100,
       status: 'good',
       description: 'Documentation signals.',
-      evidence: [
-        {
-          id: 'readme',
-          label: 'README',
-          status: 'found',
-          source: 'README',
-        },
-      ],
+      scoreDetails: createScoreDetails(82),
     },
   ],
   checks: [
@@ -416,7 +458,17 @@ const testReport: ProjectReport = {
       {
         id: 'react',
         label: 'React',
-        sources: ['package.json dependencies.react'],
+        sources: [
+          {
+            detail: 'package.json / dependencies',
+            kind: 'dependency',
+            label: 'react',
+            name: 'react',
+            path: 'package.json',
+            raw: 'package.json dependencies.react',
+            section: 'dependencies',
+          },
+        ],
         status: 'found',
       },
     ],

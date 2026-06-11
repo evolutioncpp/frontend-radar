@@ -7,6 +7,7 @@ import {
 import { buildChecks } from './reportChecks.js';
 import { buildRecommendations } from './reportRecommendations.js';
 import { buildScoreBreakdown } from './reportScoreCalculator.js';
+import { calculateWeightedTotalScore } from './reportScoringEngine.js';
 import { resolveReportProject } from './reportProjectDetector.js';
 import { buildReportAnalysisSources } from './reportAnalysisSources.js';
 import { buildReportTooling } from './reportToolingAnalyzer.js';
@@ -117,12 +118,13 @@ export class GithubReportAnalyzer implements ReportAnalyzer {
       repository: input.repository,
       rootPackageJson: project.rootPackageJson,
     });
-    const analysisSources = buildReportAnalysisSources(signals);
+    const analysisSources = buildReportAnalysisSources(signals, {
+      name: repositoryMetadata.name,
+      owner: repositoryMetadata.owner,
+    });
     const scoreBreakdown = buildScoreBreakdown(signals);
     const tooling = buildReportTooling(signals);
-    const totalScore = Math.round(
-      scoreBreakdown.reduce((sum, metric) => sum + metric.value, 0) / scoreBreakdown.length,
-    );
+    const totalScore = calculateWeightedTotalScore(scoreBreakdown);
 
     return {
       id: input.id,

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildReportTooling } from './reportToolingAnalyzer.js';
+import {
+  createDependencySource,
+  createFileSource,
+  type ToolingSource,
+} from './reportToolingSources.js';
 
 import type { RepositorySignals, ScriptSignal, ToolSignal } from './reportSignals.js';
 
@@ -19,8 +24,8 @@ const createToolSignal = ({
 }: {
   configPaths?: string[];
   dependencies?: string[];
-  projectSources?: string[];
-  rootSources?: string[];
+  projectSources?: ToolingSource[];
+  rootSources?: ToolingSource[];
 } = {}): ToolSignal => ({
   configPaths,
   dependencies,
@@ -30,6 +35,17 @@ const createToolSignal = ({
   sources: [...projectSources, ...rootSources],
 });
 
+const dependencySource = (
+  packageJsonPath: string,
+  section: 'dependencies' | 'devDependencies',
+  name: string,
+) =>
+  createDependencySource({
+    name,
+    packageJsonPath,
+    section,
+  });
+
 const createCiCheck = (sources: string[] = []) => ({
   found: sources.length > 0,
   sources,
@@ -38,11 +54,11 @@ const createCiCheck = (sources: string[] = []) => ({
 const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySignals => ({
   a11yTooling: createToolSignal({
     dependencies: ['eslint-plugin-jsx-a11y'],
-    projectSources: ['package.json devDependencies.eslint-plugin-jsx-a11y'],
+    projectSources: [dependencySource('package.json', 'devDependencies', 'eslint-plugin-jsx-a11y')],
   }),
   bundler: createToolSignal({
     dependencies: ['vite'],
-    projectSources: ['package.json devDependencies.vite'],
+    projectSources: [dependencySource('package.json', 'devDependencies', 'vite')],
   }),
   ci: {
     exists: false,
@@ -82,11 +98,11 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
   },
   formatting: createToolSignal({
     dependencies: ['prettier'],
-    rootSources: ['package.json devDependencies.prettier'],
+    rootSources: [dependencySource('package.json', 'devDependencies', 'prettier')],
   }),
   frameworks: createToolSignal({
     dependencies: ['react'],
-    projectSources: ['package.json dependencies.react'],
+    projectSources: [dependencySource('package.json', 'dependencies', 'react')],
   }),
   isNestedProject: true,
   linting: createToolSignal(),
@@ -127,11 +143,11 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
   storybook: createToolSignal(),
   testingLibrary: createToolSignal({
     dependencies: ['vitest'],
-    projectSources: ['apps/web/package.json devDependencies.vitest'],
+    projectSources: [dependencySource('apps/web/package.json', 'devDependencies', 'vitest')],
   }),
   typescript: createToolSignal({
     dependencies: ['typescript'],
-    projectSources: ['apps/web/tsconfig.json'],
+    projectSources: [createFileSource('apps/web/tsconfig.json')],
   }),
   ...overrides,
 });
@@ -143,7 +159,13 @@ describe('buildReportTooling', () => {
     expect(tooling.frameworks[0]).toMatchObject({
       label: 'react',
       status: 'found',
-      sources: ['package.json dependencies.react'],
+      sources: [
+        expect.objectContaining({
+          kind: 'dependency',
+          label: 'react',
+          raw: 'package.json dependencies.react',
+        }),
+      ],
     });
     expect(tooling.packageManager[0]).toMatchObject({
       label: 'pnpm',
@@ -152,7 +174,13 @@ describe('buildReportTooling', () => {
     expect(tooling.formatting[0]).toMatchObject({
       label: 'prettier',
       status: 'warning',
-      sources: ['package.json devDependencies.prettier'],
+      sources: [
+        expect.objectContaining({
+          kind: 'dependency',
+          label: 'prettier',
+          raw: 'package.json devDependencies.prettier',
+        }),
+      ],
     });
     expect(tooling.linting[0]).toMatchObject({
       label: 'Not detected',
@@ -165,14 +193,20 @@ describe('buildReportTooling', () => {
       createSignals({
         bundler: createToolSignal({
           configPaths: ['apps/web/vite.config.ts'],
-          projectSources: ['apps/web/vite.config.ts'],
+          projectSources: [createFileSource('apps/web/vite.config.ts')],
         }),
       }),
     );
 
     expect(tooling.bundlers[0]).toMatchObject({
       label: 'Frontend bundler',
-      sources: ['apps/web/vite.config.ts'],
+      sources: [
+        expect.objectContaining({
+          kind: 'file',
+          label: 'vite.config.ts',
+          raw: 'apps/web/vite.config.ts',
+        }),
+      ],
       status: 'found',
     });
   });

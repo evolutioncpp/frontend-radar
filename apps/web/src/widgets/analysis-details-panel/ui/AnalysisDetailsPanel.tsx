@@ -11,7 +11,7 @@ import s from './AnalysisDetailsPanel.module.scss';
 import type {
   AnalysisSource,
   ProjectReport,
-  ReportEvidenceStatus,
+  ReportSignalStatus,
   ToolingItem,
 } from '@/entities/report';
 import type { ReactNode } from 'react';
@@ -45,13 +45,13 @@ const statusVariantMap = {
   found: 'success',
   missing: 'danger',
   warning: 'warning',
-} as const satisfies Record<ReportEvidenceStatus, 'success' | 'danger' | 'warning'>;
+} as const satisfies Record<ReportSignalStatus, 'success' | 'danger' | 'warning'>;
 
 const statusLabelKeys = {
   found: 'analysisDetails.statuses.found',
   missing: 'analysisDetails.statuses.missing',
   warning: 'analysisDetails.statuses.warning',
-} as const satisfies Record<ReportEvidenceStatus, string>;
+} as const satisfies Record<ReportSignalStatus, string>;
 
 const getPrimaryToolingItem = (items: ToolingItem[]) => {
   return (
@@ -60,37 +60,6 @@ const getPrimaryToolingItem = (items: ToolingItem[]) => {
     items[0] ??
     null
   );
-};
-
-const parseToolingSource = (source: string) => {
-  const packageJsonSource = source.match(
-    /^(.+?package\.json)\s+(dependencies|devDependencies|optionalDependencies|peerDependencies)\.(.+)$/u,
-  );
-
-  if (packageJsonSource) {
-    const [, path, section, dependencyName] = packageJsonSource;
-
-    return {
-      detail: `${path} / ${section}`,
-      label: dependencyName,
-    };
-  }
-
-  const scriptSource = source.match(/^(.+?package\.json)\s+(scripts\..+)$/u);
-
-  if (scriptSource) {
-    const [, path, scriptName] = scriptSource;
-
-    return {
-      detail: path,
-      label: scriptName,
-    };
-  }
-
-  return {
-    detail: null,
-    label: source,
-  };
 };
 
 export const AnalysisDetailsPanel = ({
@@ -123,7 +92,7 @@ export const AnalysisDetailsPanel = ({
         <dl className={s.toolingGrid}>
           {toolingGroups.map((group) => {
             const item = getPrimaryToolingItem(tooling[group]);
-            const primarySource = item?.sources[0] ? parseToolingSource(item.sources[0]) : null;
+            const primarySource = item?.sources[0] ?? null;
 
             return (
               <div className={s.toolingItem} key={group}>
@@ -160,20 +129,14 @@ export const AnalysisDetailsPanel = ({
                             </span>
                           </summary>
                           <ul className={s.toolingSourcesList}>
-                            {item.sources.map((source) => {
-                              const parsedSource = parseToolingSource(source);
-
-                              return (
-                                <li className={s.toolingSourceItem} key={source}>
-                                  <span className={s.toolingSourceLabel}>{parsedSource.label}</span>
-                                  {parsedSource.detail ? (
-                                    <span className={s.toolingSourceDetail}>
-                                      {parsedSource.detail}
-                                    </span>
-                                  ) : null}
-                                </li>
-                              );
-                            })}
+                            {item.sources.map((source) => (
+                              <li className={s.toolingSourceItem} key={source.raw}>
+                                <span className={s.toolingSourceLabel}>{source.label}</span>
+                                {source.detail ? (
+                                  <span className={s.toolingSourceDetail}>{source.detail}</span>
+                                ) : null}
+                              </li>
+                            ))}
                           </ul>
                         </details>
                       ) : null}

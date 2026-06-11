@@ -102,13 +102,6 @@ describe('ChecksList', () => {
     expect(screen.getByText('Failed')).toBeInTheDocument();
   });
 
-  test('does not render check evidence disclosures', () => {
-    render(<ChecksList checks={checks} />);
-
-    expect(screen.queryByText('Evidence')).not.toBeInTheDocument();
-    expect(screen.queryByText('Source: .env.example')).not.toBeInTheDocument();
-  });
-
   test('renders zero counter when checks list is empty', () => {
     render(<ChecksList checks={[]} />);
 

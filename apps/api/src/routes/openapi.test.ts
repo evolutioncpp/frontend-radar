@@ -69,57 +69,6 @@ const findFailedResponseSchema = (
   return null;
 };
 
-const collectSchemasWithRequiredEvidence = (
-  schema: unknown,
-  document: unknown,
-  visitedRefs = new Set<string>(),
-): Array<Record<string, unknown>> => {
-  if (!isRecord(schema)) {
-    return [];
-  }
-
-  const ref = schema.$ref;
-
-  if (typeof ref === 'string') {
-    if (visitedRefs.has(ref)) {
-      return [];
-    }
-
-    const nextVisitedRefs = new Set(visitedRefs);
-    nextVisitedRefs.add(ref);
-
-    return collectSchemasWithRequiredEvidence(
-      resolveJsonPointer(document, ref),
-      document,
-      nextVisitedRefs,
-    );
-  }
-
-  const schemas: Array<Record<string, unknown>> = [];
-  const properties = schema.properties;
-  const required = schema.required;
-
-  if (isRecord(properties) && 'evidence' in properties && Array.isArray(required)) {
-    if (required.includes('evidence')) {
-      schemas.push(schema);
-    }
-  }
-
-  for (const value of Object.values(schema)) {
-    if (Array.isArray(value)) {
-      for (const child of value) {
-        schemas.push(...collectSchemasWithRequiredEvidence(child, document, visitedRefs));
-      }
-
-      continue;
-    }
-
-    schemas.push(...collectSchemasWithRequiredEvidence(value, document, visitedRefs));
-  }
-
-  return schemas;
-};
-
 const collectSchemasWithRequiredProperties = (
   schema: unknown,
   document: unknown,
@@ -305,6 +254,27 @@ describe('GET /openapi.json', () => {
         ).length,
       ).toBeGreaterThan(0);
       expect(
+        collectSchemasWithRequiredProperties(
+          body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,
+          body,
+          ['category', 'scoreDetails'],
+        ).length,
+      ).toBeGreaterThan(0);
+      expect(
+        collectSchemasWithRequiredProperties(
+          body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,
+          body,
+          ['rawValue', 'finalValue', 'weight', 'impactLevel', 'checks'],
+        ).length,
+      ).toBeGreaterThan(0);
+      expect(
+        collectSchemasWithRequiredProperties(
+          body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,
+          body,
+          ['raw', 'kind', 'label'],
+        ).length,
+      ).toBeGreaterThan(0);
+      expect(
         findFailedResponseSchema(
           body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,
           body,
@@ -317,23 +287,11 @@ describe('GET /openapi.json', () => {
         },
         required: expect.arrayContaining(['id', 'status', 'errorCode', 'errorMessage']),
       });
-      const evidenceSchemas = collectSchemasWithRequiredEvidence(
-        body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,
-        body,
-      );
-      const isMetricSchema = (schema: Record<string, unknown>) => {
-        const properties = schema.properties;
-
-        return isRecord(properties) && 'category' in properties && 'value' in properties;
-      };
-      const isCheckSchema = (schema: Record<string, unknown>) => {
-        const properties = schema.properties;
-
-        return isRecord(properties) && 'id' in properties && 'label' in properties;
-      };
-
-      expect(evidenceSchemas.some(isMetricSchema)).toBe(true);
-      expect(evidenceSchemas.some(isCheckSchema)).toBe(false);
+      expect(
+        JSON.stringify(
+          body.paths['/reports/{id}'].get.responses['200'].content['application/json'].schema,
+        ),
+      ).not.toContain('"evidence"');
       expect(body.paths['/reports/{id}'].get.responses['404']).toBeDefined();
     } finally {
       await app.close();

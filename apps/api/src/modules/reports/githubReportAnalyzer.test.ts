@@ -188,33 +188,45 @@ describe('GithubReportAnalyzer', () => {
         license: 'MIT',
       },
     });
+    expect(report.analysisSources).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'github-repository-metadata',
+          source: 'GET /repos/owner/repo',
+        }),
+      ]),
+    );
     expect(report.totalScore).toBeGreaterThan(80);
     expect(report.scoreBreakdown).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           category: 'documentation',
-          evidence: expect.arrayContaining([
-            expect.objectContaining({
-              id: 'readme',
-              source: 'README.md',
-              status: 'found',
-            }),
-            expect.objectContaining({
-              id: 'env-example',
-              source: '.env.example',
-              status: 'found',
-            }),
-          ]),
+          scoreDetails: expect.objectContaining({
+            checks: expect.arrayContaining([
+              expect.objectContaining({
+                id: 'readme',
+                source: 'README.md',
+                status: 'passed',
+              }),
+              expect.objectContaining({
+                id: 'env-example',
+                source: '.env.example',
+                status: 'passed',
+              }),
+            ]),
+          }),
         }),
         expect.objectContaining({
           category: 'accessibility',
-          evidence: expect.arrayContaining([
-            expect.objectContaining({
-              id: 'a11y-tooling',
-              source: 'package.json',
-              status: 'missing',
-            }),
-          ]),
+          scoreDetails: expect.objectContaining({
+            checks: expect.arrayContaining([
+              expect.objectContaining({
+                id: 'a11y-tooling',
+                source: 'package.json',
+                status: 'failed',
+              }),
+            ]),
+          }),
         }),
       ]),
     );
@@ -222,23 +234,27 @@ describe('GithubReportAnalyzer', () => {
       expect.arrayContaining([
         expect.objectContaining({
           category: 'ci',
-          evidence: expect.arrayContaining([
-            expect.objectContaining({
-              id: 'github-actions',
-              source: '.github/workflows/ci.yml',
-              status: 'found',
-            }),
-          ]),
+          scoreDetails: expect.objectContaining({
+            checks: expect.arrayContaining([
+              expect.objectContaining({
+                id: 'github-actions',
+                source: '.github/workflows/ci.yml',
+                status: 'passed',
+              }),
+            ]),
+          }),
         }),
         expect.objectContaining({
           category: 'performance',
-          evidence: expect.arrayContaining([
-            expect.objectContaining({
-              id: 'bundler',
-              source: 'package.json devDependencies.vite',
-              status: 'found',
-            }),
-          ]),
+          scoreDetails: expect.objectContaining({
+            checks: expect.arrayContaining([
+              expect.objectContaining({
+                id: 'bundler',
+                source: 'package.json devDependencies.vite',
+                status: 'passed',
+              }),
+            ]),
+          }),
         }),
       ]),
     );
@@ -467,38 +483,44 @@ describe('GithubReportAnalyzer', () => {
       expect.arrayContaining([
         expect.objectContaining({
           category: 'testing',
-          evidence: expect.arrayContaining([
-            expect.objectContaining({
-              id: 'package-json',
-              source: 'apps/web/package.json',
-              status: 'found',
-            }),
-            expect.objectContaining({
-              id: 'test-script',
-              source: 'apps/web/package.json scripts.test',
-              status: 'found',
-            }),
-          ]),
+          scoreDetails: expect.objectContaining({
+            checks: expect.arrayContaining([
+              expect.objectContaining({
+                id: 'package-json',
+                source: 'apps/web/package.json',
+                status: 'passed',
+              }),
+              expect.objectContaining({
+                id: 'test-script',
+                source: 'apps/web/package.json scripts.test',
+                status: 'passed',
+              }),
+            ]),
+          }),
         }),
         expect.objectContaining({
           category: 'maintainability',
-          evidence: expect.arrayContaining([
-            expect.objectContaining({
-              id: 'typescript',
-              source: 'apps/web/tsconfig.json, apps/web/package.json devDependencies.typescript',
-              status: 'found',
-            }),
-          ]),
+          scoreDetails: expect.objectContaining({
+            checks: expect.arrayContaining([
+              expect.objectContaining({
+                id: 'typescript',
+                source: 'apps/web/tsconfig.json, apps/web/package.json devDependencies.typescript',
+                status: 'passed',
+              }),
+            ]),
+          }),
         }),
         expect.objectContaining({
           category: 'performance',
-          evidence: expect.arrayContaining([
-            expect.objectContaining({
-              id: 'bundler',
-              source: 'apps/web/package.json devDependencies.vite',
-              status: 'found',
-            }),
-          ]),
+          scoreDetails: expect.objectContaining({
+            checks: expect.arrayContaining([
+              expect.objectContaining({
+                id: 'bundler',
+                source: 'apps/web/package.json devDependencies.vite',
+                status: 'passed',
+              }),
+            ]),
+          }),
         }),
       ]),
     );

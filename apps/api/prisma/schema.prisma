@@ -38,6 +38,8 @@ model ReportAnalysis {
   report            Json?
   errorCode         String?
   errorMessage      String?
+  leaseOwner        String?
+  leaseExpiresAt    DateTime?
   startedAt         DateTime?
   completedAt       DateTime?
   createdAt         DateTime             @default(now())
@@ -47,4 +49,5 @@ model ReportAnalysis {
   @@index([createdAt])
   @@index([updatedAt])
   @@index([repositoryKey, projectPath, branch, status, updatedAt], map: "ReportAnalysis_history_branch_idx")
+  @@index([status, leaseExpiresAt, updatedAt], map: "ReportAnalysis_recovery_lease_idx")
 }

@@ -275,7 +275,7 @@
     "label": "Оценка здоровья frontend",
     "title": "Общее качество проекта",
     "scoreAria": "Оценка здоровья frontend {{score}} из 100",
-    "description": "Эта оценка суммирует настройку репозитория, документацию, тестирование, CI/CD, зависимости и сигналы поддерживаемости.",
+    "description": "Это взвешенная оценка по проверкам категорий, ограничениям риска и сигналам репозитория.",
     "progressAria": "Прогресс оценки здоровья frontend"
   },
   "metrics": {
@@ -360,13 +360,44 @@
     "noChangesDescription": "Оценка, метрики, проверки и рекомендации совпадают с предыдущим готовым отчётом.",
     "resolvedBadge": "Решено"
   },
-  "evidence": {
-    "title": "Что найдено",
+  "scoreDetails": {
+    "title": "Почему такая оценка",
+    "rawValue": "Оценка до ограничений",
+    "finalValue": "Итоговая оценка",
+    "impact": "Влияние",
+    "impactLevels": {
+      "key": "Ключевая категория",
+      "important": "Важная категория",
+      "supporting": "Поддерживающая категория"
+    },
+    "points": "{{earned}} / {{max}} баллов",
     "source": "Источник: {{source}}",
+    "cap": {
+      "title": "Ограничено до {{value}}"
+    },
     "statuses": {
-      "found": "Найдено",
-      "missing": "Не найдено",
-      "warning": "Внимание"
+      "passed": "Пройдено",
+      "partial": "Частично",
+      "failed": "Не пройдено",
+      "unknown": "Неясно",
+      "notApplicable": "Н/Д"
+    },
+    "scopes": {
+      "project": "Проект",
+      "root": "Корень",
+      "workspace": "Workspace",
+      "repository": "Репозиторий",
+      "github": "GitHub"
+    },
+    "severities": {
+      "critical": "Критично",
+      "major": "Важно",
+      "minor": "Некритично"
+    },
+    "confidences": {
+      "high": "Высокая уверенность",
+      "medium": "Средняя уверенность",
+      "low": "Низкая уверенность"
     }
   },
   "statuses": {

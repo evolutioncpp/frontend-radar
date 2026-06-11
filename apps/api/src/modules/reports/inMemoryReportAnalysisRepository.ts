@@ -1,9 +1,14 @@
 import { randomUUID } from 'node:crypto';
 
+import { ReportAnalysisLeaseConflictError } from './reportAnalysisRepository.js';
+
 import type {
+  ClaimReportAnalysisForProcessingInput,
+  ClaimRecoverableReportAnalysesInput,
   CreateReportAnalysisRecordInput,
   ReportAnalysisEntity,
   ReportAnalysisFailure,
+  ReportAnalysisLeaseOptions,
   ReportAnalysisRepository,
   ReportAnalysisSnapshotLookup,
 } from './reportAnalysisRepository.js';
@@ -55,6 +60,8 @@ export class InMemoryReportAnalysisRepository implements ReportAnalysisRepositor
       report: null,
       errorCode: null,
       errorMessage: null,
+      leaseExpiresAt: null,
+      leaseOwner: null,
       startedAt: null,
       completedAt: null,
       createdAt: now,
@@ -77,10 +84,58 @@ export class InMemoryReportAnalysisRepository implements ReportAnalysisRepositor
       .slice(0, limit);
   }
 
-  async findRecoverable() {
-    return Array.from(this.analyses.values())
-      .filter((analysis) => analysis.status === 'queued' || analysis.status === 'running')
-      .sort((left, right) => left.updatedAt.getTime() - right.updatedAt.getTime());
+  async claimForProcessing({
+    id,
+    leaseExpiresAt,
+    leaseOwner,
+    now,
+  }: ClaimReportAnalysisForProcessingInput) {
+    const analysis = this.analyses.get(id);
+
+    if (!analysis || (analysis.status !== 'queued' && analysis.status !== 'running')) {
+      return null;
+    }
+
+    const isLeaseAvailable =
+      !analysis.leaseExpiresAt ||
+      analysis.leaseExpiresAt.getTime() <= now.getTime() ||
+      analysis.leaseOwner === leaseOwner;
+
+    if (!isLeaseAvailable) {
+      return null;
+    }
+
+    return this.update(id, {
+      leaseExpiresAt,
+      leaseOwner,
+      startedAt: now,
+      status: 'running',
+    });
+  }
+
+  async claimRecoverable({
+    leaseExpiresAt,
+    leaseOwnerPrefix = `recovery-${process.pid}`,
+    limit,
+    now,
+  }: ClaimRecoverableReportAnalysesInput) {
+    const candidates = Array.from(this.analyses.values())
+      .filter(
+        (analysis) =>
+          (analysis.status === 'queued' || analysis.status === 'running') &&
+          (!analysis.leaseExpiresAt || analysis.leaseExpiresAt.getTime() <= now.getTime()),
+      )
+      .sort((left, right) => left.updatedAt.getTime() - right.updatedAt.getTime())
+      .slice(0, limit);
+
+    return candidates.map((analysis) => {
+      const leaseOwner = `${leaseOwnerPrefix}-${analysis.id}-${randomUUID()}`;
+
+      return this.update(analysis.id, {
+        leaseExpiresAt,
+        leaseOwner,
+      });
+    });
   }
 
   async findPreviousCompleted(analysis: ReportAnalysisEntity) {
@@ -123,21 +178,29 @@ export class InMemoryReportAnalysisRepository implements ReportAnalysisRepositor
     );
   }
 
-  async complete(id: string, report: ProjectReport) {
+  async complete(id: string, report: ProjectReport, options: ReportAnalysisLeaseOptions) {
+    this.assertLeaseOwner(id, options.leaseOwner);
+
     return this.update(id, {
       completedAt: new Date(),
       errorCode: null,
       errorMessage: null,
+      leaseExpiresAt: null,
+      leaseOwner: null,
       report,
       status: 'completed',
     });
   }
 
-  async fail(id: string, failure: ReportAnalysisFailure) {
+  async fail(id: string, failure: ReportAnalysisFailure, options: ReportAnalysisLeaseOptions) {
+    this.assertLeaseOwner(id, options.leaseOwner);
+
     return this.update(id, {
       completedAt: new Date(),
       errorCode: failure.errorCode,
       errorMessage: failure.errorMessage,
+      leaseExpiresAt: null,
+      leaseOwner: null,
       status: 'failed',
     });
   }
@@ -147,6 +210,8 @@ export class InMemoryReportAnalysisRepository implements ReportAnalysisRepositor
       completedAt: null,
       errorCode: null,
       errorMessage: null,
+      leaseExpiresAt: null,
+      leaseOwner: null,
       report: null,
       startedAt: null,
       status: 'queued',
@@ -157,11 +222,32 @@ export class InMemoryReportAnalysisRepository implements ReportAnalysisRepositor
     return this.update(id, {});
   }
 
-  async updateStatus(id: string, status: ReportAnalysisStatus) {
+  async refreshLease({
+    id,
+    leaseExpiresAt,
+    leaseOwner,
+  }: {
+    id: string;
+    leaseExpiresAt: Date;
+    leaseOwner: string;
+  }) {
+    const analysis = this.analyses.get(id);
+
+    if (!analysis || analysis.status !== 'running' || analysis.leaseOwner !== leaseOwner) {
+      return null;
+    }
+
     return this.update(id, {
-      startedAt: status === 'running' ? new Date() : undefined,
-      status,
+      leaseExpiresAt,
     });
+  }
+
+  private assertLeaseOwner(id: string, leaseOwner: string) {
+    const analysis = this.analyses.get(id);
+
+    if (!analysis || analysis.leaseOwner !== leaseOwner) {
+      throw new ReportAnalysisLeaseConflictError();
+    }
   }
 
   private update(
@@ -169,7 +255,14 @@ export class InMemoryReportAnalysisRepository implements ReportAnalysisRepositor
     values: Partial<
       Pick<
         ReportAnalysisEntity,
-        'completedAt' | 'errorCode' | 'errorMessage' | 'report' | 'startedAt' | 'status'
+        | 'completedAt'
+        | 'errorCode'
+        | 'errorMessage'
+        | 'leaseExpiresAt'
+        | 'leaseOwner'
+        | 'report'
+        | 'startedAt'
+        | 'status'
       >
     >,
   ) {

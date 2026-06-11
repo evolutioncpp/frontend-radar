@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { Prisma, PrismaClient } from '@prisma/client';
 
 import {
@@ -38,6 +40,30 @@ export interface ReportAnalysisFailure {
   errorMessage: string;
 }
 
+export interface ClaimRecoverableReportAnalysesInput {
+  leaseExpiresAt: Date;
+  leaseOwnerPrefix?: string;
+  limit: number;
+  now: Date;
+}
+
+export interface ClaimReportAnalysisForProcessingInput {
+  id: string;
+  leaseExpiresAt: Date;
+  leaseOwner: string;
+  now: Date;
+}
+
+export interface ReportAnalysisLeaseOptions {
+  leaseOwner: string;
+}
+
+export interface RefreshReportAnalysisLeaseInput {
+  id: string;
+  leaseExpiresAt: Date;
+  leaseOwner: string;
+}
+
 export interface ReportAnalysisEntity {
   id: string;
   owner: string;
@@ -56,6 +82,8 @@ export interface ReportAnalysisEntity {
   report: ProjectReport | null;
   errorCode: ReportAnalysisErrorCode | null;
   errorMessage: string | null;
+  leaseOwner: string | null;
+  leaseExpiresAt: Date | null;
   startedAt: Date | null;
   completedAt: Date | null;
   createdAt: Date;
@@ -63,19 +91,30 @@ export interface ReportAnalysisEntity {
 }
 
 export interface ReportAnalysisRepository {
-  complete(id: string, report: ProjectReport): Promise<ReportAnalysisEntity>;
+  claimForProcessing(
+    input: ClaimReportAnalysisForProcessingInput,
+  ): Promise<ReportAnalysisEntity | null>;
+  claimRecoverable(input: ClaimRecoverableReportAnalysesInput): Promise<ReportAnalysisEntity[]>;
+  complete(
+    id: string,
+    report: ProjectReport,
+    options: ReportAnalysisLeaseOptions,
+  ): Promise<ReportAnalysisEntity>;
   create(input: CreateReportAnalysisRecordInput): Promise<ReportAnalysisEntity>;
-  fail(id: string, failure: ReportAnalysisFailure): Promise<ReportAnalysisEntity>;
+  fail(
+    id: string,
+    failure: ReportAnalysisFailure,
+    options: ReportAnalysisLeaseOptions,
+  ): Promise<ReportAnalysisEntity>;
   findById(id: string): Promise<ReportAnalysisEntity | null>;
   findLatest(limit: number): Promise<ReportAnalysisEntity[]>;
   findPreviousCompleted(analysis: ReportAnalysisEntity): Promise<ReportAnalysisEntity | null>;
-  findRecoverable(): Promise<ReportAnalysisEntity[]>;
   findReusableBySnapshot(
     lookup: ReportAnalysisSnapshotLookup,
   ): Promise<ReportAnalysisEntity | null>;
+  refreshLease(input: RefreshReportAnalysisLeaseInput): Promise<ReportAnalysisEntity | null>;
   resetForRetry(id: string): Promise<ReportAnalysisEntity>;
   touch(id: string): Promise<ReportAnalysisEntity>;
-  updateStatus(id: string, status: ReportAnalysisStatus): Promise<ReportAnalysisEntity>;
 }
 
 type PrismaReportAnalysis = Awaited<ReturnType<PrismaClient['reportAnalysis']['findUnique']>>;
@@ -86,6 +125,19 @@ export class ReportAnalysisAlreadyExistsError extends Error {
     this.name = 'ReportAnalysisAlreadyExistsError';
   }
 }
+
+export class ReportAnalysisLeaseConflictError extends Error {
+  constructor() {
+    super('Report analysis lease is owned by another worker');
+    this.name = 'ReportAnalysisLeaseConflictError';
+  }
+}
+
+export const isReportAnalysisLeaseConflictError = (
+  error: unknown,
+): error is ReportAnalysisLeaseConflictError => {
+  return error instanceof ReportAnalysisLeaseConflictError;
+};
 
 export const isReportAnalysisAlreadyExistsError = (
   error: unknown,
@@ -139,6 +191,8 @@ const mapPrismaReportAnalysis = (
     report: analysis.report ? projectReportSchema.parse(analysis.report) : null,
     errorCode: parseReportAnalysisErrorCode(analysis.errorCode),
     errorMessage: analysis.errorMessage,
+    leaseOwner: analysis.leaseOwner,
+    leaseExpiresAt: analysis.leaseExpiresAt,
     startedAt: analysis.startedAt,
     completedAt: analysis.completedAt,
     createdAt: analysis.createdAt,
@@ -233,19 +287,123 @@ export class PrismaReportAnalysisRepository implements ReportAnalysisRepository 
     return analyses.map(mapPrismaReportAnalysis);
   }
 
-  async findRecoverable() {
-    const analyses = await this.prisma.reportAnalysis.findMany({
-      orderBy: {
-        updatedAt: 'asc',
+  async claimForProcessing({
+    id,
+    leaseExpiresAt,
+    leaseOwner,
+    now,
+  }: ClaimReportAnalysisForProcessingInput) {
+    const claimResult = await this.prisma.reportAnalysis.updateMany({
+      data: {
+        leaseExpiresAt,
+        leaseOwner,
+        startedAt: new Date(),
+        status: 'running',
       },
       where: {
+        id,
+        OR: [
+          {
+            leaseExpiresAt: null,
+          },
+          {
+            leaseExpiresAt: {
+              lte: now,
+            },
+          },
+          {
+            leaseOwner,
+          },
+        ],
         status: {
           in: ['queued', 'running'],
         },
       },
     });
 
-    return analyses.map(mapPrismaReportAnalysis);
+    if (claimResult.count === 0) {
+      return null;
+    }
+
+    const claimedAnalysis = await this.prisma.reportAnalysis.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    return claimedAnalysis ? mapPrismaReportAnalysis(claimedAnalysis) : null;
+  }
+
+  async claimRecoverable({
+    leaseExpiresAt,
+    leaseOwnerPrefix = `recovery-${process.pid}`,
+    limit,
+    now,
+  }: ClaimRecoverableReportAnalysesInput) {
+    const candidates = await this.prisma.reportAnalysis.findMany({
+      orderBy: {
+        updatedAt: 'asc',
+      },
+      take: limit,
+      where: {
+        OR: [
+          {
+            leaseExpiresAt: null,
+          },
+          {
+            leaseExpiresAt: {
+              lte: now,
+            },
+          },
+        ],
+        status: {
+          in: ['queued', 'running'],
+        },
+      },
+    });
+    const claimedAnalyses: ReportAnalysisEntity[] = [];
+
+    for (const candidate of candidates) {
+      const leaseOwner = `${leaseOwnerPrefix}-${candidate.id}-${randomUUID()}`;
+      const claimResult = await this.prisma.reportAnalysis.updateMany({
+        data: {
+          leaseExpiresAt,
+          leaseOwner,
+        },
+        where: {
+          id: candidate.id,
+          OR: [
+            {
+              leaseExpiresAt: null,
+            },
+            {
+              leaseExpiresAt: {
+                lte: now,
+              },
+            },
+          ],
+          status: {
+            in: ['queued', 'running'],
+          },
+        },
+      });
+
+      if (claimResult.count === 0) {
+        continue;
+      }
+
+      const claimedAnalysis = await this.prisma.reportAnalysis.findUnique({
+        where: {
+          id: candidate.id,
+        },
+      });
+
+      if (claimedAnalysis) {
+        claimedAnalyses.push(mapPrismaReportAnalysis(claimedAnalysis));
+      }
+    }
+
+    return claimedAnalyses;
   }
 
   async findPreviousCompleted(analysis: ReportAnalysisEntity) {
@@ -282,37 +440,96 @@ export class PrismaReportAnalysisRepository implements ReportAnalysisRepository 
     return selectReusableAnalysis(analyses.map(mapPrismaReportAnalysis));
   }
 
-  async complete(id: string, report: ProjectReport) {
-    const analysis = await this.prisma.reportAnalysis.update({
+  async complete(id: string, report: ProjectReport, options: ReportAnalysisLeaseOptions) {
+    const updateResult = await this.prisma.reportAnalysis.updateMany({
       where: {
         id,
+        leaseOwner: options.leaseOwner,
       },
       data: {
         completedAt: new Date(),
         errorCode: null,
         errorMessage: null,
+        leaseExpiresAt: null,
+        leaseOwner: null,
         report: report as unknown as Prisma.InputJsonValue,
         status: 'completed',
       },
     });
 
+    if (updateResult.count === 0) {
+      throw new ReportAnalysisLeaseConflictError();
+    }
+
+    const analysis = await this.prisma.reportAnalysis.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!analysis) {
+      throw new ReportAnalysisLeaseConflictError();
+    }
+
     return mapPrismaReportAnalysis(analysis);
   }
 
-  async fail(id: string, failure: ReportAnalysisFailure) {
-    const analysis = await this.prisma.reportAnalysis.update({
+  async fail(id: string, failure: ReportAnalysisFailure, options: ReportAnalysisLeaseOptions) {
+    const updateResult = await this.prisma.reportAnalysis.updateMany({
       where: {
         id,
+        leaseOwner: options.leaseOwner,
       },
       data: {
         completedAt: new Date(),
         errorCode: failure.errorCode,
         errorMessage: failure.errorMessage,
+        leaseExpiresAt: null,
+        leaseOwner: null,
         status: 'failed',
       },
     });
 
+    if (updateResult.count === 0) {
+      throw new ReportAnalysisLeaseConflictError();
+    }
+
+    const analysis = await this.prisma.reportAnalysis.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!analysis) {
+      throw new ReportAnalysisLeaseConflictError();
+    }
+
     return mapPrismaReportAnalysis(analysis);
+  }
+
+  async refreshLease({ id, leaseExpiresAt, leaseOwner }: RefreshReportAnalysisLeaseInput) {
+    const updateResult = await this.prisma.reportAnalysis.updateMany({
+      data: {
+        leaseExpiresAt,
+      },
+      where: {
+        id,
+        leaseOwner,
+        status: 'running',
+      },
+    });
+
+    if (updateResult.count === 0) {
+      return null;
+    }
+
+    const analysis = await this.prisma.reportAnalysis.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    return analysis ? mapPrismaReportAnalysis(analysis) : null;
   }
 
   async resetForRetry(id: string) {
@@ -324,6 +541,8 @@ export class PrismaReportAnalysisRepository implements ReportAnalysisRepository 
         completedAt: null,
         errorCode: null,
         errorMessage: null,
+        leaseExpiresAt: null,
+        leaseOwner: null,
         report: Prisma.DbNull,
         startedAt: null,
         status: 'queued',
@@ -340,20 +559,6 @@ export class PrismaReportAnalysisRepository implements ReportAnalysisRepository 
       },
       data: {
         updatedAt: new Date(),
-      },
-    });
-
-    return mapPrismaReportAnalysis(analysis);
-  }
-
-  async updateStatus(id: string, status: ReportAnalysisStatus) {
-    const analysis = await this.prisma.reportAnalysis.update({
-      where: {
-        id,
-      },
-      data: {
-        startedAt: status === 'running' ? new Date() : undefined,
-        status,
       },
     });
 

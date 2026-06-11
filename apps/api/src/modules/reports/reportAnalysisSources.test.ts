@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildReportAnalysisSources } from './reportAnalysisSources.js';
+import {
+  createDependencySource,
+  createFileSource,
+  type ToolingSource,
+} from './reportToolingSources.js';
 
 import type { RepositorySignals, ScriptSignal, ToolSignal } from './reportSignals.js';
 
@@ -25,8 +30,8 @@ const createToolSignal = ({
   rootSources = [],
 }: {
   configPaths?: string[];
-  projectSources?: string[];
-  rootSources?: string[];
+  projectSources?: ToolingSource[];
+  rootSources?: ToolingSource[];
 } = {}): ToolSignal => ({
   configPaths,
   dependencies: [],
@@ -36,6 +41,17 @@ const createToolSignal = ({
   sources: [...projectSources, ...rootSources],
 });
 
+const dependencySource = (
+  packageJsonPath: string,
+  section: 'dependencies' | 'devDependencies',
+  name: string,
+) =>
+  createDependencySource({
+    name,
+    packageJsonPath,
+    section,
+  });
+
 const createCiCheck = (sources: string[] = []) => ({
   found: sources.length > 0,
   sources,
@@ -44,7 +60,7 @@ const createCiCheck = (sources: string[] = []) => ({
 const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySignals => ({
   a11yTooling: createToolSignal(),
   bundler: createToolSignal({
-    projectSources: ['apps/web/package.json devDependencies.vite'],
+    projectSources: [dependencySource('apps/web/package.json', 'devDependencies', 'vite')],
   }),
   ci: {
     exists: true,
@@ -86,7 +102,7 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     scope: 'root',
   },
   formatting: createToolSignal({
-    rootSources: ['package.json devDependencies.prettier'],
+    rootSources: [dependencySource('package.json', 'devDependencies', 'prettier')],
   }),
   frameworks: createToolSignal(),
   isNestedProject: true,
@@ -184,7 +200,7 @@ describe('buildReportAnalysisSources', () => {
       createSignals({
         bundler: createToolSignal({
           configPaths: ['apps/web/vite.config.ts'],
-          projectSources: ['apps/web/vite.config.ts'],
+          projectSources: [createFileSource('apps/web/vite.config.ts')],
         }),
       }),
     );

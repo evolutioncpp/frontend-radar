@@ -182,7 +182,7 @@ export const readmeQualityConfig = {
   usageSectionPatterns: [/\busage\b/i, /\bexample\b/i, /\bexamples\b/i, /\bapi\b/i],
 } as const;
 
-export const evidenceSourceConfig = {
+export const sourcePreviewConfig = {
   workflowPreviewLimit: 3,
 } as const;
 
@@ -191,4 +191,24 @@ export const scoreThresholds = {
   warning: 50,
   good: 70,
   excellent: 90,
+} as const;
+
+export const scoreCategoryWeights = {
+  accessibility: 12,
+  ci: 18,
+  dependencies: 14,
+  documentation: 10,
+  maintainability: 16,
+  performance: 12,
+  testing: 18,
+} as const;
+
+export const scoreCaps = {
+  criticalMissingCheck: 49,
+  warningKeyCheck: 89,
+} as const;
+
+export const scoreImpactWeightThresholds = {
+  important: 14,
+  key: 18,
 } as const;

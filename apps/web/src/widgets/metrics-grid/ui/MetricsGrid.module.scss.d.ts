@@ -2,12 +2,12 @@ export type Styles = {
   counter: string;
   list: string;
   metricDescription: string;
-  metricEvidence: string;
   metricMain: string;
   metricMeta: string;
   metricProgress: string;
   metricRow: string;
   metricScore: string;
+  metricScoreDetails: string;
   metricScoreMax: string;
   metricScoreSeparator: string;
   metricScoreValue: string;

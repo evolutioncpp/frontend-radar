@@ -4,20 +4,13 @@ import { useEffect } from 'react';
 import { useGetReportAnalysisQuery } from './reportApi';
 import { isReportProcessing } from './reportSelectors';
 
-import type { ProjectReport } from './types';
+import type {
+  FailedReportAnalysisResponse,
+  ProcessingReportAnalysisResponse,
+  ProjectReport,
+} from './types';
 
-export type ProjectReportProcessingAnalysis = {
-  owner: string;
-  repository: string;
-  normalizedUrl: string;
-  branch: string;
-  projectPath: string | null;
-  latestCommitSha: string | null;
-  latestCommitDate: string | null;
-  latestCommitTitle: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
+export type ProjectReportProcessingAnalysis = ProcessingReportAnalysisResponse['analysis'];
 
 export type ProjectReportState =
   | {
@@ -40,9 +33,9 @@ export type ProjectReportState =
     }
   | {
       status: 'failed';
-      errorCode: string;
-      errorMessage: string;
-      id: string;
+      errorCode: FailedReportAnalysisResponse['errorCode'];
+      errorMessage: FailedReportAnalysisResponse['errorMessage'];
+      id: FailedReportAnalysisResponse['id'];
     };
 
 export const useProjectReport = (reportId?: string): ProjectReportState => {

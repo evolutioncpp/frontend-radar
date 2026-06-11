@@ -1,3 +1,5 @@
+import { createFileSource } from './reportToolingSources.js';
+
 import type { ProjectReport } from './reportSchemas.js';
 import type { RepositorySignals, ToolSignal } from './reportSignals.js';
 
@@ -75,7 +77,7 @@ export const buildReportTooling = (signals: RepositorySignals): ReportTooling =>
           id: signals.lockfile.packageManager,
           label: signals.lockfile.packageManager,
           status: 'found',
-          sources: signals.lockfile.path ? [signals.lockfile.path] : [],
+          sources: signals.lockfile.path ? [createFileSource(signals.lockfile.path)] : [],
         }
       : missingItem('packageManager'),
   ],

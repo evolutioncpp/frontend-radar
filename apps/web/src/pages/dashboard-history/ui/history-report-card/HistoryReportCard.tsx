@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { CalendarClock, Folder, GitBranch, GitCommit } from 'lucide-react';
+import { GitCommit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
@@ -8,7 +8,7 @@ import { normalizeScore } from '@/shared/lib/format-score';
 import { Card } from '@/shared/ui/Card';
 
 import s from '../DashboardHistoryPage.module.scss';
-import { historyStatusIconMap } from '../historyStatusIcons';
+import { ReportRunMetadataList } from '../report-run-metadata-list/ReportRunMetadataList';
 
 import type { ReactNode } from 'react';
 
@@ -54,40 +54,6 @@ export const HistoryReportCard = ({
   const normalizedScore = typeof score === 'number' ? normalizeScore(score) : null;
   const scoreStatusClassName =
     normalizedScore === null ? undefined : scoreStatusClassMap[getScoreStatus(normalizedScore)];
-  const metadataItems = [
-    {
-      id: 'activityAt',
-      icon: CalendarClock,
-      isCode: false,
-      label: t('card.metadata.activityAt'),
-      value: activityLabel,
-    },
-    {
-      id: 'status',
-      icon: historyStatusIconMap[status],
-      isCode: false,
-      label: t('card.metadata.status'),
-      value: t(`card.statuses.${status}`),
-    },
-    {
-      id: 'branch',
-      icon: GitBranch,
-      isCode: true,
-      label: t('card.metadata.branch'),
-      value: branch,
-    },
-    ...(projectPath
-      ? [
-          {
-            id: 'projectPath',
-            icon: Folder,
-            isCode: true,
-            label: t('card.metadata.projectPath'),
-            value: projectPath,
-          },
-        ]
-      : []),
-  ];
 
   return (
     <Card className={s.historyCard}>
@@ -116,28 +82,13 @@ export const HistoryReportCard = ({
                 </p>
               ) : null}
             </div>
-            <div aria-label={t('card.metadataAria')} className={s.metaList}>
-              {metadataItems.map((item) => {
-                const Icon = item.icon;
-                const itemLabel = `${item.label}: ${item.value}`;
-
-                return (
-                  <span
-                    aria-label={itemLabel}
-                    className={s.metaItem}
-                    key={item.id}
-                    title={itemLabel}
-                  >
-                    <Icon aria-hidden="true" className={s.metaIcon} strokeWidth={2} />
-                    {item.id === 'activityAt' ? (
-                      <time dateTime={activityAt}>{item.value}</time>
-                    ) : (
-                      <span className={item.isCode ? s.metaCode : s.metaValue}>{item.value}</span>
-                    )}
-                  </span>
-                );
-              })}
-            </div>
+            <ReportRunMetadataList
+              activityAt={activityAt}
+              activityLabel={activityLabel}
+              branch={branch}
+              projectPath={projectPath}
+              status={status}
+            />
           </div>
         </div>
 

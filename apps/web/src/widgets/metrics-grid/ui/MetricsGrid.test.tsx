@@ -16,14 +16,41 @@ vi.mock('react-i18next', () => ({
         'statuses.good': 'Good',
         'statuses.warning': 'Warning',
         'statuses.critical': 'Critical',
-        'evidence.title': 'Evidence',
-        'evidence.statuses.found': 'Found',
-        'evidence.statuses.missing': 'Missing',
-        'evidence.statuses.warning': 'Warning',
+        'scoreDetails.title': 'Why this score',
+        'scoreDetails.rawValue': 'Raw score',
+        'scoreDetails.finalValue': 'Final score',
+        'scoreDetails.impact': 'Influence',
+        'scoreDetails.impactLevels.key': 'Key category',
+        'scoreDetails.impactLevels.important': 'Important category',
+        'scoreDetails.impactLevels.supporting': 'Supporting category',
+        'scoreDetails.statuses.passed': 'Passed',
+        'scoreDetails.statuses.partial': 'Partial',
+        'scoreDetails.statuses.failed': 'Failed',
+        'scoreDetails.statuses.unknown': 'Unknown',
+        'scoreDetails.statuses.notApplicable': 'N/A',
+        'scoreDetails.scopes.project': 'Project',
+        'scoreDetails.scopes.root': 'Root',
+        'scoreDetails.scopes.workspace': 'Workspace',
+        'scoreDetails.scopes.repository': 'Repository',
+        'scoreDetails.scopes.github': 'GitHub',
+        'scoreDetails.severities.critical': 'Critical',
+        'scoreDetails.severities.major': 'Major',
+        'scoreDetails.severities.minor': 'Minor',
+        'scoreDetails.confidences.high': 'High confidence',
+        'scoreDetails.confidences.medium': 'Medium confidence',
+        'scoreDetails.confidences.low': 'Low confidence',
       };
 
-      if (key === 'evidence.source') {
+      if (key === 'scoreDetails.source') {
         return `Source: ${options?.source}`;
+      }
+
+      if (key === 'scoreDetails.points') {
+        return `${options?.earned} / ${options?.max} pts`;
+      }
+
+      if (key === 'scoreDetails.cap.title') {
+        return `Capped at ${options?.value}`;
       }
 
       if (key === 'metrics.counter') {
@@ -51,14 +78,25 @@ const metrics: ScoreBreakdownItem[] = [
     maxValue: 100,
     status: 'good',
     description: 'README and setup documentation are mostly complete.',
-    evidence: [
-      {
-        id: 'readme',
-        label: 'README',
-        status: 'found',
-        source: 'README',
-      },
-    ],
+    scoreDetails: {
+      rawValue: 88,
+      finalValue: 88,
+      weight: 10,
+      impactLevel: 'supporting',
+      checks: [
+        {
+          id: 'readme',
+          label: 'README',
+          status: 'passed',
+          severity: 'critical',
+          scope: 'project',
+          confidence: 'high',
+          earned: 45,
+          max: 45,
+          source: 'README',
+        },
+      ],
+    },
   },
   {
     category: 'testing',
@@ -67,14 +105,31 @@ const metrics: ScoreBreakdownItem[] = [
     maxValue: 100,
     status: 'good',
     description: 'Unit and e2e testing foundation exists, but coverage can be improved.',
-    evidence: [
-      {
-        id: 'test-script',
-        label: 'Test script',
-        status: 'found',
+    scoreDetails: {
+      rawValue: 76,
+      finalValue: 76,
+      weight: 18,
+      impactLevel: 'key',
+      cap: {
+        value: 89,
+        reason: 'A key scoring check is only partially satisfied.',
         source: 'package.json scripts.test',
       },
-    ],
+      checks: [
+        {
+          id: 'test-script',
+          label: 'Test script',
+          status: 'partial',
+          severity: 'major',
+          scope: 'root',
+          confidence: 'medium',
+          earned: 24,
+          max: 45,
+          description: 'Only a root-level monorepo script was found.',
+          source: 'package.json scripts.test',
+        },
+      ],
+    },
   },
   {
     category: 'ci',
@@ -83,14 +138,25 @@ const metrics: ScoreBreakdownItem[] = [
     maxValue: 100,
     status: 'excellent',
     description: 'Automated checks are configured for build and quality gates.',
-    evidence: [
-      {
-        id: 'github-actions',
-        label: 'GitHub Actions',
-        status: 'found',
-        source: '.github/workflows',
-      },
-    ],
+    scoreDetails: {
+      rawValue: 92,
+      finalValue: 92,
+      weight: 18,
+      impactLevel: 'key',
+      checks: [
+        {
+          id: 'github-actions',
+          label: 'GitHub Actions',
+          status: 'passed',
+          severity: 'critical',
+          scope: 'github',
+          confidence: 'high',
+          earned: 20,
+          max: 20,
+          source: '.github/workflows',
+        },
+      ],
+    },
   },
 ];
 
@@ -162,11 +228,13 @@ describe('MetricsGrid', () => {
     expect(screen.getByText('Excellent')).toBeInTheDocument();
   });
 
-  test('renders metric evidence disclosures', () => {
+  test('renders metric score details disclosures', () => {
     render(<MetricsGrid metrics={metrics} />);
 
-    expect(screen.getAllByText('Evidence')).toHaveLength(3);
-    expect(screen.getByText('Test script')).toBeInTheDocument();
-    expect(screen.getByText('Source: package.json scripts.test')).toBeInTheDocument();
+    expect(screen.getAllByText('Why this score')).toHaveLength(3);
+    expect(screen.getAllByText('Key category')).toHaveLength(2);
+    expect(screen.getByText('Supporting category')).toBeInTheDocument();
+    expect(screen.getByText('24 / 45 pts')).toBeInTheDocument();
+    expect(screen.getByText('Only a root-level monorepo script was found.')).toBeInTheDocument();
   });
 });

@@ -17,6 +17,28 @@ const emptyTooling: ProjectReport['tooling'] = {
   uiReview: [],
 };
 
+const createScoreDetails = (
+  value: number,
+): ProjectReport['scoreBreakdown'][number]['scoreDetails'] => ({
+  rawValue: value,
+  finalValue: value,
+  weight: 10,
+  impactLevel: 'supporting',
+  checks: [
+    {
+      id: 'readme',
+      label: 'README',
+      status: 'passed',
+      severity: 'major',
+      scope: 'repository',
+      confidence: 'high',
+      earned: value,
+      max: 100,
+      source: 'README',
+    },
+  ],
+});
+
 const apiMocks = vi.hoisted(() => ({
   getReportAnalysis: vi.fn(),
 }));
@@ -76,14 +98,7 @@ const testReport: ProjectReport = {
       maxValue: 100,
       status: 'good',
       description: 'Documentation signals.',
-      evidence: [
-        {
-          id: 'readme',
-          label: 'README',
-          status: 'found',
-          source: 'README',
-        },
-      ],
+      scoreDetails: createScoreDetails(82),
     },
   ],
   checks: [

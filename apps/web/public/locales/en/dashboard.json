@@ -271,7 +271,7 @@
     "label": "Frontend Health Score",
     "title": "Overall project quality",
     "scoreAria": "Frontend health score {{score}} out of 100",
-    "description": "This score summarizes repository setup, documentation, testing, CI/CD, dependencies and maintainability signals.",
+    "description": "This weighted score is based on category checks, risk caps and repository signals.",
     "progressAria": "Frontend health score progress"
   },
   "metrics": {
@@ -336,13 +336,44 @@
     "noChangesDescription": "Score, metrics, checks and recommendations match the previous completed report.",
     "resolvedBadge": "Resolved"
   },
-  "evidence": {
-    "title": "Evidence",
+  "scoreDetails": {
+    "title": "Why this score",
+    "rawValue": "Raw score",
+    "finalValue": "Final score",
+    "impact": "Influence",
+    "impactLevels": {
+      "key": "Key category",
+      "important": "Important category",
+      "supporting": "Supporting category"
+    },
+    "points": "{{earned}} / {{max}} pts",
     "source": "Source: {{source}}",
+    "cap": {
+      "title": "Capped at {{value}}"
+    },
     "statuses": {
-      "found": "Found",
-      "missing": "Missing",
-      "warning": "Warning"
+      "passed": "Passed",
+      "partial": "Partial",
+      "failed": "Failed",
+      "unknown": "Unknown",
+      "notApplicable": "N/A"
+    },
+    "scopes": {
+      "project": "Project",
+      "root": "Root",
+      "workspace": "Workspace",
+      "repository": "Repository",
+      "github": "GitHub"
+    },
+    "severities": {
+      "critical": "Critical",
+      "major": "Major",
+      "minor": "Minor"
+    },
+    "confidences": {
+      "high": "High confidence",
+      "medium": "Medium confidence",
+      "low": "Low confidence"
     }
   },
   "statuses": {

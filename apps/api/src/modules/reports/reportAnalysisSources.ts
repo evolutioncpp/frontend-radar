@@ -1,4 +1,4 @@
-import { evidenceSourceConfig } from './reportAnalysisConfig.js';
+import { sourcePreviewConfig } from './reportAnalysisConfig.js';
 
 import type { ProjectReport } from './reportSchemas.js';
 import type { PathSignal, RepositorySignals, ScriptSignal, ToolSignal } from './reportSignals.js';
@@ -40,11 +40,11 @@ const uniqueStrings = (values: readonly string[]) => [...new Set(values)];
 const compactSources = (sources: readonly string[]) => {
   const uniqueSources = uniqueStrings(sources);
 
-  if (uniqueSources.length <= evidenceSourceConfig.workflowPreviewLimit) {
+  if (uniqueSources.length <= sourcePreviewConfig.workflowPreviewLimit) {
     return uniqueSources.join(', ');
   }
 
-  const visibleSources = uniqueSources.slice(0, evidenceSourceConfig.workflowPreviewLimit);
+  const visibleSources = uniqueSources.slice(0, sourcePreviewConfig.workflowPreviewLimit);
   const hiddenSourceCount = uniqueSources.length - visibleSources.length;
 
   return `${visibleSources.join(', ')}, +${hiddenSourceCount} more`;
@@ -137,7 +137,7 @@ const sourceFromTool = ({
     kind,
     label,
     scope: projectSources.length > 0 ? 'project' : rootSources.length > 0 ? 'root' : 'project',
-    source: compactSources(signal.sources),
+    source: compactSources(signal.sources.map((source) => source.raw)),
     status: signal.found ? (projectSources.length > 0 ? 'found' : 'warning') : 'missing',
   });
 };
@@ -165,14 +165,17 @@ const sourceFromCiCheck = ({
     status: sources.length > 0 ? 'found' : 'missing',
   });
 
-export const buildReportAnalysisSources = (signals: RepositorySignals): AnalysisSource[] => {
+export const buildReportAnalysisSources = (
+  signals: RepositorySignals,
+  repository?: { name: string; owner: string },
+): AnalysisSource[] => {
   const sources: AnalysisSource[] = [
     createSource({
       id: 'github-repository-metadata',
       kind: 'github_api',
       label: 'GitHub repository metadata',
       scope: 'github',
-      source: 'GET /repos/{owner}/{repo}',
+      source: repository ? `GET /repos/${repository.owner}/${repository.name}` : 'GitHub REST API',
       status: 'found',
     }),
     createSource({
