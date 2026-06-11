@@ -36,6 +36,7 @@ export type PackageJson = {
   devDependencies?: Record<string, unknown>;
   name?: string;
   optionalDependencies?: Record<string, unknown>;
+  packageManager?: string;
   peerDependencies?: Record<string, unknown>;
   scripts?: Record<string, unknown>;
   workspaces?: string[];
@@ -120,12 +121,14 @@ const toPackageJson = (value: unknown): PackageJson | null => {
   const optionalDependencies = getObjectField(value, 'optionalDependencies');
   const peerDependencies = getObjectField(value, 'peerDependencies');
   const name = getStringField(value, 'name');
+  const packageManager = getStringField(value, 'packageManager');
 
   return {
     dependencies: isRecord(dependencies) ? dependencies : undefined,
     devDependencies: isRecord(devDependencies) ? devDependencies : undefined,
     name: name ?? undefined,
     optionalDependencies: isRecord(optionalDependencies) ? optionalDependencies : undefined,
+    packageManager: packageManager ?? undefined,
     peerDependencies: isRecord(peerDependencies) ? peerDependencies : undefined,
     scripts: isRecord(scripts) ? scripts : undefined,
     workspaces: getWorkspaces(value),
@@ -285,6 +288,27 @@ export class GithubRepositoryReader {
     }
 
     return null;
+  }
+
+  async findExistingPaths(
+    owner: string,
+    repository: string,
+    branch: string,
+    paths: readonly string[],
+  ) {
+    const existingPaths: string[] = [];
+
+    for (const path of paths) {
+      if (await this.hasPath(owner, repository, branch, path)) {
+        existingPaths.push(path);
+      }
+    }
+
+    return existingPaths;
+  }
+
+  async readTextFile(owner: string, repository: string, branch: string, path: string) {
+    return this.readFile(owner, repository, branch, path);
   }
 
   async readFirstTextFile(

@@ -108,6 +108,29 @@ describe('GithubReportAnalyzer', () => {
         );
       }
 
+      if (path === '/repos/owner/repo/contents/.github/workflows/ci.yml') {
+        contentRefs.push(url.searchParams.get('ref'));
+
+        return createGithubJsonResponse({
+          content: encodeContent(
+            [
+              'on: [pull_request, push]',
+              'jobs:',
+              '  checks:',
+              '    steps:',
+              '      - uses: actions/setup-node@v4',
+              '        with:',
+              '          cache: npm',
+              '      - run: npm ci',
+              '      - run: npm run lint',
+              '      - run: npm run test',
+              '      - run: npm run build',
+            ].join('\n'),
+          ),
+          encoding: 'base64',
+        });
+      }
+
       if (path.startsWith('/repos/owner/repo/contents/')) {
         contentRefs.push(url.searchParams.get('ref'));
       }

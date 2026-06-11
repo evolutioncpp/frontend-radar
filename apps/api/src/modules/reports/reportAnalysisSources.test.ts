@@ -36,6 +36,11 @@ const createToolSignal = ({
   sources: [...projectSources, ...rootSources],
 });
 
+const createCiCheck = (sources: string[] = []) => ({
+  found: sources.length > 0,
+  sources,
+});
+
 const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySignals => ({
   a11yTooling: createToolSignal(),
   bundler: createToolSignal({
@@ -47,6 +52,33 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     source:
       '.github/workflows/ci.yml, .github/workflows/lint.yml, .github/workflows/test.yml, +1 more',
     workflowNames: ['ci.yml', 'lint.yml', 'test.yml', 'deploy.yml'],
+  },
+  ciAnalysis: {
+    analyzedWorkflowPaths: ['.github/workflows/ci.yml', '.github/workflows/lint.yml'],
+    build: createCiCheck(['.github/workflows/ci.yml']),
+    cache: createCiCheck(),
+    install: createCiCheck(['.github/workflows/ci.yml']),
+    lint: createCiCheck(['.github/workflows/lint.yml']),
+    projectScope: createCiCheck(['.github/workflows/ci.yml']),
+    pullRequest: createCiCheck(['.github/workflows/ci.yml']),
+    push: createCiCheck(),
+    test: createCiCheck(),
+  },
+  dependencyHealth: {
+    declaredPackageManager: 'pnpm',
+    declaredPackageManagerSource: 'package.json packageManager',
+    hasMixedLockfiles: false,
+    lockfiles: [
+      {
+        packageManager: 'pnpm',
+        path: 'pnpm-lock.yaml',
+        scope: 'root',
+      },
+    ],
+    misplacedDevDependencies: [],
+    misplacedDevDependencySources: [],
+    packageManagerMismatch: false,
+    primaryPackageManager: 'pnpm',
   },
   envExample: {
     exists: true,
@@ -135,6 +167,14 @@ describe('buildReportAnalysisSources', () => {
           source: 'package.json devDependencies.prettier',
           status: 'warning',
         }),
+        expect.objectContaining({
+          id: 'ci-quality-steps',
+          status: 'warning',
+        }),
+        expect.objectContaining({
+          id: 'package-manager',
+          status: 'found',
+        }),
       ]),
     );
   });
@@ -156,6 +196,39 @@ describe('buildReportAnalysisSources', () => {
           kind: 'file',
           scope: 'project',
           source: 'apps/web/vite.config.ts',
+          status: 'found',
+        }),
+      ]),
+    );
+  });
+
+  it('deduplicates CI quality sources and marks truncated workflow analysis as warning', () => {
+    const sources = buildReportAnalysisSources(
+      createSignals({
+        ciAnalysis: {
+          analyzedWorkflowPaths: ['.github/workflows/ci.yml'],
+          build: createCiCheck(['.github/workflows/ci.yml']),
+          cache: createCiCheck(),
+          install: createCiCheck(['.github/workflows/ci.yml']),
+          isWorkflowAnalysisTruncated: true,
+          lint: createCiCheck(['.github/workflows/ci.yml']),
+          projectScope: createCiCheck(['.github/workflows/ci.yml']),
+          pullRequest: createCiCheck(['.github/workflows/ci.yml']),
+          push: createCiCheck(),
+          test: createCiCheck(['.github/workflows/ci.yml']),
+        },
+      }),
+    );
+
+    expect(sources).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'github-actions',
+          status: 'warning',
+        }),
+        expect.objectContaining({
+          id: 'ci-quality-steps',
+          source: '.github/workflows/ci.yml',
           status: 'found',
         }),
       ]),

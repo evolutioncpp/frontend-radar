@@ -1,16 +1,24 @@
 import {
+  ciWorkflowAnalysisConfig,
   evidenceSourceConfig,
   readmeQualityConfig,
   repositorySignalConfig,
 } from './reportAnalysisConfig.js';
 
 import { joinRepositoryPath } from './githubRepositoryReader.js';
+import { buildCiAnalysis, sortWorkflowNamesByAnalysisPriority } from './reportCiAnalyzer.js';
+import {
+  buildDependencyHealth,
+  getPackageManagerFromLockfile,
+} from './reportDependencyAnalyzer.js';
 
 import type {
   GithubRepositoryReader,
   PackageJson,
   TextFileMatch,
 } from './githubRepositoryReader.js';
+import type { CiAnalysis, WorkflowFile } from './reportCiAnalyzer.js';
+import type { DependencyHealth, LockfileSignal } from './reportDependencyAnalyzer.js';
 
 export type SignalScope = 'project' | 'root' | 'github' | null;
 type ScriptName = 'build' | 'lint' | 'test';
@@ -60,6 +68,8 @@ export interface RepositorySignals {
     source: string | null;
     workflowNames: string[];
   };
+  ciAnalysis: CiAnalysis;
+  dependencyHealth: DependencyHealth;
   envExample: PathSignal;
   formatting: ToolSignal;
   frameworks: ToolSignal;
@@ -236,24 +246,6 @@ const prefixPaths = (projectPath: string, paths: readonly string[]) => {
   return paths.map((path) => joinRepositoryPath(projectPath, path));
 };
 
-const getPackageManager = (lockfilePath: string | null) => {
-  const lockfileName = lockfilePath?.split('/').at(-1) ?? null;
-
-  switch (lockfileName) {
-    case 'bun.lock':
-    case 'bun.lockb':
-      return 'bun';
-    case 'package-lock.json':
-      return 'npm';
-    case 'pnpm-lock.yaml':
-      return 'pnpm';
-    case 'yarn.lock':
-      return 'yarn';
-    default:
-      return null;
-  }
-};
-
 const getWorkflowSource = (workflowNames: readonly string[]) => {
   if (workflowNames.length === 0) {
     return null;
@@ -269,6 +261,13 @@ const getWorkflowSource = (workflowNames: readonly string[]) => {
   const hiddenWorkflowCount = workflowPaths.length - visibleWorkflowPaths.length;
 
   return `${visibleWorkflowPaths.join(', ')}, +${hiddenWorkflowCount} more`;
+};
+
+const getPrimaryLockfile = (lockfiles: readonly LockfileSignal[]) => {
+  const primaryLockfile =
+    lockfiles.find((lockfile) => lockfile.scope === 'project') ?? lockfiles[0] ?? null;
+
+  return createPathSignal(primaryLockfile?.path ?? null, primaryLockfile?.scope ?? null);
 };
 
 const getValidWorkflowNames = (workflowNames: readonly string[]) => {
@@ -309,6 +308,91 @@ const findScopedPath = async ({
   }
 
   return createPathSignal(await reader.findFirstPath(owner, repository, branch, paths), 'root');
+};
+
+const findScopedPaths = async ({
+  branch,
+  owner,
+  paths,
+  projectPath,
+  reader,
+  repository,
+}: {
+  branch: string;
+  owner: string;
+  paths: readonly string[];
+  projectPath: string;
+  reader: GithubRepositoryReader;
+  repository: string;
+}): Promise<LockfileSignal[]> => {
+  if (!projectPath) {
+    const existingPaths = await reader.findExistingPaths(owner, repository, branch, paths);
+
+    return existingPaths.map((path) => ({
+      packageManager: getPackageManagerFromLockfile(path),
+      path,
+      scope: 'project',
+    }));
+  }
+
+  const projectPaths = await reader.findExistingPaths(
+    owner,
+    repository,
+    branch,
+    prefixPaths(projectPath, paths),
+  );
+  const rootPaths = await reader.findExistingPaths(owner, repository, branch, paths);
+
+  return [
+    ...projectPaths.map((path) => ({
+      packageManager: getPackageManagerFromLockfile(path),
+      path,
+      scope: 'project' as const,
+    })),
+    ...rootPaths.map((path) => ({
+      packageManager: getPackageManagerFromLockfile(path),
+      path,
+      scope: 'root' as const,
+    })),
+  ];
+};
+
+const readWorkflowFiles = async ({
+  branch,
+  owner,
+  reader,
+  repository,
+  workflowNames,
+}: {
+  branch: string;
+  owner: string;
+  reader: GithubRepositoryReader;
+  repository: string;
+  workflowNames: readonly string[];
+}): Promise<{ files: WorkflowFile[]; isTruncated: boolean }> => {
+  const prioritizedWorkflowNames = sortWorkflowNamesByAnalysisPriority(workflowNames);
+  const workflowNamesToAnalyze = prioritizedWorkflowNames.slice(0, ciWorkflowAnalysisConfig.limit);
+  const workflowFiles = await Promise.all(
+    workflowNamesToAnalyze.map(async (workflowName) => {
+      const path = `${repositorySignalConfig.workflowsPath}/${workflowName}`;
+      const content = await reader.readTextFile(owner, repository, branch, path);
+
+      return content === null
+        ? null
+        : {
+            content,
+            name: workflowName,
+            path,
+          };
+    }),
+  );
+
+  return {
+    files: workflowFiles.filter(
+      (workflowFile): workflowFile is WorkflowFile => workflowFile !== null,
+    ),
+    isTruncated: prioritizedWorkflowNames.length > workflowNamesToAnalyze.length,
+  };
 };
 
 const readScopedTextFile = async ({
@@ -449,7 +533,7 @@ export const collectRepositorySignals = async ({
     typescriptPath,
     workflowNames,
     envExample,
-    lockfile,
+    lockfiles,
     storybookPath,
     bundlerConfigPath,
     lintingConfigPath,
@@ -483,7 +567,7 @@ export const collectRepositorySignals = async ({
       reader,
       repository,
     }),
-    findScopedPath({
+    findScopedPaths({
       branch,
       owner,
       paths: repositorySignalConfig.lockfilePaths,
@@ -549,6 +633,25 @@ export const collectRepositorySignals = async ({
     }),
   ]);
   const validWorkflowNames = getValidWorkflowNames(workflowNames);
+  const workflowFilesResult = await readWorkflowFiles({
+    branch,
+    owner,
+    reader,
+    repository,
+    workflowNames: validWorkflowNames,
+  });
+  const primaryLockfile = getPrimaryLockfile(lockfiles);
+  const dependencyHealth = buildDependencyHealth({
+    lockfiles,
+    packageJson: projectPackageJson,
+    packageJsonPath,
+    rootPackageJson: rootPackage,
+  });
+  const ciAnalysis = buildCiAnalysis({
+    isWorkflowAnalysisTruncated: workflowFilesResult.isTruncated,
+    projectPath,
+    workflowFiles: workflowFilesResult.files,
+  });
   const scriptSignals = {
     build: createEffectiveScriptSignal({
       projectPackageJson,
@@ -600,6 +703,8 @@ export const collectRepositorySignals = async ({
       source: getWorkflowSource(validWorkflowNames),
       workflowNames: validWorkflowNames,
     },
+    ciAnalysis,
+    dependencyHealth,
     envExample,
     formatting: buildScopedToolSignal({
       expectedDependencyNames: repositorySignalConfig.formattingDependencies,
@@ -631,8 +736,8 @@ export const collectRepositorySignals = async ({
       rootDependencySourceMap,
     }),
     lockfile: {
-      ...lockfile,
-      packageManager: getPackageManager(lockfile.path),
+      ...primaryLockfile,
+      packageManager: dependencyHealth.primaryPackageManager,
     },
     packageJson: createPackageJsonSignal({
       dependencies: projectDependencyNames,

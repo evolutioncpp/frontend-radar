@@ -23,7 +23,16 @@ const createReader = () => {
 
       if (path.includes('/contents/package.json?')) {
         return {
-          content: encodeContent('{"scripts":{"test":"vitest run"}}'),
+          content: encodeContent(
+            '{"packageManager":"pnpm@10.0.0","scripts":{"test":"vitest run"}}',
+          ),
+          encoding: 'base64',
+        };
+      }
+
+      if (path.includes('/contents/pnpm-lock.yaml?')) {
+        return {
+          content: encodeContent('lockfileVersion: 9'),
           encoding: 'base64',
         };
       }
@@ -227,9 +236,25 @@ describe('GithubRepositoryReader', () => {
     await expect(
       reader.readFirstTextFile('owner', 'repo', 'main', ['README.md', 'package.json']),
     ).resolves.toEqual({
-      content: '{"scripts":{"test":"vitest run"}}',
+      content: '{"packageManager":"pnpm@10.0.0","scripts":{"test":"vitest run"}}',
       path: 'package.json',
     });
+  });
+
+  it('returns all existing paths from path candidates', async () => {
+    const { reader } = createReader();
+
+    await expect(
+      reader.findExistingPaths('owner', 'repo', 'main', ['package-lock.json', 'pnpm-lock.yaml']),
+    ).resolves.toEqual(['pnpm-lock.yaml']);
+  });
+
+  it('reads a concrete text file by path', async () => {
+    const { reader } = createReader();
+
+    await expect(reader.readTextFile('owner', 'repo', 'main', 'pnpm-lock.yaml')).resolves.toBe(
+      'lockfileVersion: 9',
+    );
   });
 
   it('lists only file names from directory contents', async () => {
@@ -246,6 +271,7 @@ describe('GithubRepositoryReader', () => {
     await expect(reader.readPackageJson('owner', 'repo', 'main', 'apps/web')).resolves.toEqual(
       expect.objectContaining({
         name: '@scope/web',
+        packageManager: undefined,
         scripts: {
           build: 'vite build',
         },

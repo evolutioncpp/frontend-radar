@@ -54,11 +54,18 @@ describe('collectRepositorySignals', () => {
 
         return null;
       },
+      findExistingPaths: async (
+        _owner: string,
+        _repository: string,
+        _branch: string,
+        paths: readonly string[],
+      ) => (paths.includes('pnpm-lock.yaml') ? ['pnpm-lock.yaml'] : []),
       listDirectoryFiles: async () => ['ci.yml', 'deploy.yml'],
       readFirstTextFile: async () => ({
         content: createSubstantialReadme(),
         path: 'README.md',
       }),
+      readTextFile: async () => null,
     } as unknown as GithubRepositoryReader;
 
     const signals = await collectRepositorySignals({
@@ -138,7 +145,14 @@ describe('collectRepositorySignals', () => {
 
         return null;
       },
+      findExistingPaths: async (
+        _owner: string,
+        _repository: string,
+        _branch: string,
+        paths: readonly string[],
+      ) => (paths.includes('package-lock.json') ? ['package-lock.json'] : []),
       listDirectoryFiles: async () => ['ci.yml'],
+      readTextFile: async () => null,
       readFirstTextFile: async (
         _owner: string,
         _repository: string,
@@ -228,7 +242,9 @@ describe('collectRepositorySignals', () => {
 
         return null;
       },
+      findExistingPaths: async () => [],
       listDirectoryFiles: async () => [],
+      readTextFile: async () => null,
       readFirstTextFile: async () => null,
     } as unknown as GithubRepositoryReader;
 
@@ -279,6 +295,12 @@ describe('collectRepositorySignals', () => {
 
   it('detects Bun from the current bun.lock file name', async () => {
     const reader = {
+      findExistingPaths: async (
+        _owner: string,
+        _repository: string,
+        _branch: string,
+        paths: readonly string[],
+      ) => (paths.includes('bun.lock') ? ['bun.lock'] : []),
       findFirstPath: async (
         _owner: string,
         _repository: string,
@@ -286,6 +308,7 @@ describe('collectRepositorySignals', () => {
         paths: readonly string[],
       ) => (paths.includes('bun.lock') ? 'bun.lock' : null),
       listDirectoryFiles: async () => [],
+      readTextFile: async () => null,
       readFirstTextFile: async () => null,
     } as unknown as GithubRepositoryReader;
 
@@ -317,7 +340,9 @@ describe('collectRepositorySignals', () => {
     };
     const reader = {
       findFirstPath: async () => null,
+      findExistingPaths: async () => [],
       listDirectoryFiles: async () => [],
+      readTextFile: async () => null,
       readFirstTextFile: async () => null,
     } as unknown as GithubRepositoryReader;
 
@@ -346,7 +371,9 @@ describe('collectRepositorySignals', () => {
   it('keeps CI source compact for repositories with many workflow files', async () => {
     const reader = {
       findFirstPath: async () => null,
+      findExistingPaths: async () => [],
       listDirectoryFiles: async () => ['ci.yml', 'deploy.yml', 'lint.yml', 'release.yml'],
+      readTextFile: async () => null,
       readFirstTextFile: async () => null,
     } as unknown as GithubRepositoryReader;
 
@@ -368,10 +395,44 @@ describe('collectRepositorySignals', () => {
     });
   });
 
+  it('marks workflow content analysis as truncated when workflow count exceeds limit', async () => {
+    const workflowNames = Array.from({ length: 11 }, (_, index) => `ci-${index}.yml`);
+    const readPaths: string[] = [];
+    const reader = {
+      findFirstPath: async () => null,
+      findExistingPaths: async () => [],
+      listDirectoryFiles: async () => workflowNames,
+      readTextFile: async (_owner: string, _repository: string, _branch: string, path: string) => {
+        readPaths.push(path);
+
+        return 'on: push';
+      },
+      readFirstTextFile: async () => null,
+    } as unknown as GithubRepositoryReader;
+
+    const signals = await collectRepositorySignals({
+      branch: 'main',
+      owner: 'owner',
+      packageJson: null,
+      packageJsonPath: null,
+      projectPath: '',
+      reader,
+      repository: 'repo',
+    });
+
+    expect(signals.ciAnalysis).toMatchObject({
+      isWorkflowAnalysisTruncated: true,
+    });
+    expect(signals.ciAnalysis.analyzedWorkflowPaths).toHaveLength(10);
+    expect(readPaths).toHaveLength(10);
+  });
+
   it('ignores disabled and non-YAML files in GitHub Actions workflows directory', async () => {
     const reader = {
       findFirstPath: async () => null,
+      findExistingPaths: async () => [],
       listDirectoryFiles: async () => ['ci.yml.disabled', 'README.md', 'deploy.yaml', 'lint.yml'],
+      readTextFile: async () => null,
       readFirstTextFile: async () => null,
     } as unknown as GithubRepositoryReader;
 
@@ -395,7 +456,9 @@ describe('collectRepositorySignals', () => {
   it('does not report CI when workflows directory only has disabled files', async () => {
     const reader = {
       findFirstPath: async () => null,
+      findExistingPaths: async () => [],
       listDirectoryFiles: async () => ['ci.yml.disabled', 'README.md'],
+      readTextFile: async () => null,
       readFirstTextFile: async () => null,
     } as unknown as GithubRepositoryReader;
 

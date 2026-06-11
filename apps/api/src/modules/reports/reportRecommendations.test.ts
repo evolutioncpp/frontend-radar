@@ -24,6 +24,11 @@ const createToolSignal = (sources: string[] = []): ToolSignal => ({
   sources,
 });
 
+const createCiCheck = (sources: string[] = ['.github/workflows/ci.yml']) => ({
+  found: sources.length > 0,
+  sources,
+});
+
 const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySignals => ({
   a11yTooling: createToolSignal(['eslint-plugin-jsx-a11y']),
   bundler: createToolSignal(['vite']),
@@ -31,6 +36,33 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     exists: true,
     source: '.github/workflows/ci.yml',
     workflowNames: ['ci.yml'],
+  },
+  ciAnalysis: {
+    analyzedWorkflowPaths: ['.github/workflows/ci.yml'],
+    build: createCiCheck(),
+    cache: createCiCheck(),
+    install: createCiCheck(),
+    lint: createCiCheck(),
+    projectScope: createCiCheck(),
+    pullRequest: createCiCheck(),
+    push: createCiCheck(),
+    test: createCiCheck(),
+  },
+  dependencyHealth: {
+    declaredPackageManager: 'npm',
+    declaredPackageManagerSource: 'package.json packageManager',
+    hasMixedLockfiles: false,
+    lockfiles: [
+      {
+        packageManager: 'npm',
+        path: 'package-lock.json',
+        scope: 'project',
+      },
+    ],
+    misplacedDevDependencies: [],
+    misplacedDevDependencySources: [],
+    packageManagerMismatch: false,
+    primaryPackageManager: 'npm',
   },
   envExample: {
     exists: true,
@@ -187,6 +219,72 @@ describe('buildRecommendations', () => {
           id: 'add-storybook',
           severity: 'low',
         }),
+      ]),
+    );
+  });
+
+  it('adds targeted recommendations when CI workflow misses important steps', () => {
+    const recommendations = buildRecommendations(
+      createSignals({
+        ciAnalysis: {
+          analyzedWorkflowPaths: ['.github/workflows/ci.yml'],
+          build: createCiCheck([]),
+          cache: createCiCheck([]),
+          install: createCiCheck(['.github/workflows/ci.yml']),
+          lint: createCiCheck([]),
+          projectScope: createCiCheck([]),
+          pullRequest: createCiCheck([]),
+          push: createCiCheck(['.github/workflows/ci.yml']),
+          test: createCiCheck([]),
+        },
+        isNestedProject: true,
+        projectPath: 'apps/web',
+      }),
+    );
+
+    expect(recommendations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'add-ci-pr-checks', severity: 'medium' }),
+        expect.objectContaining({ id: 'add-ci-lint-step', severity: 'medium' }),
+        expect.objectContaining({ id: 'add-ci-test-step', severity: 'high' }),
+        expect.objectContaining({ id: 'add-ci-build-step', severity: 'high' }),
+        expect.objectContaining({ id: 'scope-ci-to-frontend-path', severity: 'medium' }),
+      ]),
+    );
+  });
+
+  it('adds dependency recommendations for mixed lockfiles and package manager mismatch', () => {
+    const recommendations = buildRecommendations(
+      createSignals({
+        dependencyHealth: {
+          declaredPackageManager: 'pnpm',
+          declaredPackageManagerSource: 'package.json packageManager',
+          hasMixedLockfiles: true,
+          lockfiles: [
+            {
+              packageManager: 'npm',
+              path: 'package-lock.json',
+              scope: 'project',
+            },
+            {
+              packageManager: 'pnpm',
+              path: 'pnpm-lock.yaml',
+              scope: 'project',
+            },
+          ],
+          misplacedDevDependencies: ['eslint'],
+          misplacedDevDependencySources: ['package.json dependencies.eslint'],
+          packageManagerMismatch: true,
+          primaryPackageManager: 'npm',
+        },
+      }),
+    );
+
+    expect(recommendations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'remove-mixed-lockfiles' }),
+        expect.objectContaining({ id: 'align-package-manager' }),
+        expect.objectContaining({ id: 'move-tooling-to-dev-dependencies' }),
       ]),
     );
   });

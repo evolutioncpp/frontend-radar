@@ -1,3 +1,5 @@
+import { evidenceSourceConfig } from './reportAnalysisConfig.js';
+
 import type { ProjectReport } from './reportSchemas.js';
 import type { RepositorySignals } from './reportSignals.js';
 
@@ -8,8 +10,17 @@ export const reportEvidenceIds = [
   'test-script',
   'testing-library',
   'github-actions',
+  'ci-pr-trigger',
+  'ci-install-step',
+  'ci-lint-step',
+  'ci-test-step',
+  'ci-build-step',
+  'ci-project-scope',
   'build-script',
   'lockfile',
+  'lockfile-consistency',
+  'package-manager',
+  'dependency-hygiene',
   'typescript',
   'lint-script',
   'storybook',
@@ -43,6 +54,21 @@ const createEvidence = ({
 
 const getToolSource = (sources: readonly string[], fallback: string) => {
   return sources.length > 0 ? sources.join(', ') : fallback;
+};
+
+const uniqueStrings = (values: readonly string[]) => [...new Set(values)];
+
+const compactSources = (sources: readonly string[]) => {
+  const uniqueSources = uniqueStrings(sources);
+
+  if (uniqueSources.length <= evidenceSourceConfig.workflowPreviewLimit) {
+    return uniqueSources.join(', ');
+  }
+
+  const visibleSources = uniqueSources.slice(0, evidenceSourceConfig.workflowPreviewLimit);
+  const hiddenSourceCount = uniqueSources.length - visibleSources.length;
+
+  return `${visibleSources.join(', ')}, +${hiddenSourceCount} more`;
 };
 
 const getToolEvidenceStatus = (
@@ -144,6 +170,40 @@ const getScriptEvidence = ({
   };
 };
 
+const getCiEvidence = ({
+  foundDescription,
+  id,
+  label,
+  missingDescription,
+  signals,
+  sources,
+}: {
+  foundDescription: string;
+  id: ReportEvidenceId;
+  label: string;
+  missingDescription: string;
+  signals: RepositorySignals;
+  sources: readonly string[];
+}): ReportEvidence => {
+  if (!signals.ci.exists) {
+    return createEvidence({
+      description: 'No GitHub Actions workflow was found.',
+      id,
+      label,
+      source: '.github/workflows',
+      status: 'missing',
+    });
+  }
+
+  return createEvidence({
+    description: sources.length > 0 ? foundDescription : missingDescription,
+    id,
+    label,
+    source: compactSources(sources) || signals.ci.source,
+    status: sources.length > 0 ? 'found' : 'warning',
+  });
+};
+
 export const buildReportEvidenceMap = (signals: RepositorySignals): ReportEvidenceMap => ({
   'a11y-tooling': createEvidence({
     description: getToolMissingDescription({
@@ -190,11 +250,78 @@ export const buildReportEvidenceMap = (signals: RepositorySignals): ReportEviden
           : 'missing',
   }),
   'github-actions': createEvidence({
-    description: signals.ci.exists ? undefined : 'No GitHub Actions workflow was found.',
+    description: signals.ci.exists
+      ? signals.ciAnalysis.analyzedWorkflowPaths.length === 0
+        ? 'Workflow files were found, but their contents could not be analyzed.'
+        : signals.ciAnalysis.isWorkflowAnalysisTruncated
+          ? 'Only the highest-priority workflow files were analyzed.'
+          : undefined
+      : 'No GitHub Actions workflow was found.',
     id: 'github-actions',
     label: 'GitHub Actions workflow',
     source: signals.ci.source ?? '.github/workflows',
-    status: signals.ci.exists ? 'found' : 'missing',
+    status: signals.ci.exists
+      ? signals.ciAnalysis.analyzedWorkflowPaths.length === 0
+        ? 'warning'
+        : signals.ciAnalysis.isWorkflowAnalysisTruncated
+          ? 'warning'
+          : 'found'
+      : 'missing',
+  }),
+  'ci-build-step': getCiEvidence({
+    foundDescription: 'GitHub Actions runs the build step.',
+    id: 'ci-build-step',
+    label: 'CI build step',
+    missingDescription: 'No build step was detected in analyzed workflows.',
+    signals,
+    sources: signals.ciAnalysis.build.sources,
+  }),
+  'ci-install-step': getCiEvidence({
+    foundDescription: 'GitHub Actions installs dependencies.',
+    id: 'ci-install-step',
+    label: 'CI install step',
+    missingDescription: 'No dependency installation step was detected in analyzed workflows.',
+    signals,
+    sources: signals.ciAnalysis.install.sources,
+  }),
+  'ci-lint-step': getCiEvidence({
+    foundDescription: 'GitHub Actions runs linting.',
+    id: 'ci-lint-step',
+    label: 'CI lint step',
+    missingDescription: 'No lint step was detected in analyzed workflows.',
+    signals,
+    sources: signals.ciAnalysis.lint.sources,
+  }),
+  'ci-pr-trigger': getCiEvidence({
+    foundDescription: 'GitHub Actions runs on pull requests.',
+    id: 'ci-pr-trigger',
+    label: 'Pull request CI trigger',
+    missingDescription: 'No pull request trigger was detected in analyzed workflows.',
+    signals,
+    sources: signals.ciAnalysis.pullRequest.sources,
+  }),
+  'ci-project-scope': createEvidence({
+    description: !signals.ci.exists
+      ? 'No GitHub Actions workflow was found.'
+      : signals.projectPath && !signals.ciAnalysis.projectScope.found
+        ? 'Analyzed workflows do not clearly target the selected frontend path.'
+        : undefined,
+    id: 'ci-project-scope',
+    label: 'CI project scope',
+    source: compactSources(signals.ciAnalysis.projectScope.sources) || signals.projectPath,
+    status: !signals.ci.exists
+      ? 'missing'
+      : signals.projectPath && !signals.ciAnalysis.projectScope.found
+        ? 'warning'
+        : 'found',
+  }),
+  'ci-test-step': getCiEvidence({
+    foundDescription: 'GitHub Actions runs tests.',
+    id: 'ci-test-step',
+    label: 'CI test step',
+    missingDescription: 'No test step was detected in analyzed workflows.',
+    signals,
+    sources: signals.ciAnalysis.test.sources,
   }),
   'lint-script': getScriptEvidence({
     id: 'lint-script',
@@ -203,11 +330,53 @@ export const buildReportEvidenceMap = (signals: RepositorySignals): ReportEviden
     script: signals.packageJson.scripts.lint,
   }),
   lockfile: createEvidence({
-    description: signals.lockfile.exists ? undefined : 'No package lockfile was found.',
+    description: signals.lockfile.exists
+      ? signals.lockfile.scope === 'root' && signals.isNestedProject
+        ? 'Only a root-level package lockfile was found.'
+        : undefined
+      : 'No package lockfile was found.',
     id: 'lockfile',
     label: 'Package lockfile',
     source: signals.lockfile.path ?? 'lockfile',
-    status: signals.lockfile.exists ? 'found' : 'missing',
+    status:
+      signals.lockfile.exists && signals.lockfile.scope === 'root' && signals.isNestedProject
+        ? 'warning'
+        : signals.lockfile.exists
+          ? 'found'
+          : 'missing',
+  }),
+  'lockfile-consistency': createEvidence({
+    description: signals.dependencyHealth.hasMixedLockfiles
+      ? 'Multiple package manager lockfiles were found.'
+      : signals.lockfile.exists
+        ? 'Lockfiles point to one package manager.'
+        : 'No package lockfile was found.',
+    id: 'lockfile-consistency',
+    label: 'Lockfile consistency',
+    source: compactSources(signals.dependencyHealth.lockfiles.map((lockfile) => lockfile.path)),
+    status: signals.dependencyHealth.hasMixedLockfiles
+      ? 'warning'
+      : signals.lockfile.exists
+        ? 'found'
+        : 'missing',
+  }),
+  'package-manager': createEvidence({
+    description: signals.dependencyHealth.packageManagerMismatch
+      ? 'package.json packageManager does not match the detected lockfile.'
+      : signals.dependencyHealth.primaryPackageManager
+        ? 'Package manager was detected from lockfile or package metadata.'
+        : 'Package manager was not detected.',
+    id: 'package-manager',
+    label: 'Package manager',
+    source:
+      signals.dependencyHealth.declaredPackageManagerSource ??
+      signals.lockfile.path ??
+      signals.packageJson.path,
+    status: signals.dependencyHealth.packageManagerMismatch
+      ? 'warning'
+      : signals.dependencyHealth.primaryPackageManager
+        ? 'found'
+        : 'missing',
   }),
   'package-json': createEvidence({
     description: signals.packageJson.exists ? undefined : 'package.json was not found.',
@@ -215,6 +384,16 @@ export const buildReportEvidenceMap = (signals: RepositorySignals): ReportEviden
     label: 'package.json',
     source: signals.packageJson.path ?? 'package.json',
     status: signals.packageJson.exists ? 'found' : 'missing',
+  }),
+  'dependency-hygiene': createEvidence({
+    description:
+      signals.dependencyHealth.misplacedDevDependencySources.length > 0
+        ? 'Dev-only tooling dependencies were found in production dependencies.'
+        : 'No dev-only tooling dependencies were found in production dependencies.',
+    id: 'dependency-hygiene',
+    label: 'Dependency hygiene',
+    source: compactSources(signals.dependencyHealth.misplacedDevDependencySources),
+    status: signals.dependencyHealth.misplacedDevDependencySources.length > 0 ? 'warning' : 'found',
   }),
   readme: getReadmeEvidence(signals),
   storybook: createEvidence({

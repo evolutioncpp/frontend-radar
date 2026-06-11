@@ -12,7 +12,14 @@ export const reportAnalysisSourceIds = [
   'readme',
   'env-example',
   'lockfile',
+  'lockfile-consistency',
+  'package-manager',
+  'dependency-hygiene',
   'github-actions',
+  'ci-pr-trigger',
+  'ci-install-step',
+  'ci-quality-steps',
+  'ci-project-scope',
   'build-script',
   'test-script',
   'lint-script',
@@ -28,13 +35,17 @@ export const reportAnalysisSourceIds = [
 
 const getScope = (scope: AnalysisSource['scope'] | null | undefined) => scope ?? 'project';
 
+const uniqueStrings = (values: readonly string[]) => [...new Set(values)];
+
 const compactSources = (sources: readonly string[]) => {
-  if (sources.length <= evidenceSourceConfig.workflowPreviewLimit) {
-    return sources.join(', ');
+  const uniqueSources = uniqueStrings(sources);
+
+  if (uniqueSources.length <= evidenceSourceConfig.workflowPreviewLimit) {
+    return uniqueSources.join(', ');
   }
 
-  const visibleSources = sources.slice(0, evidenceSourceConfig.workflowPreviewLimit);
-  const hiddenSourceCount = sources.length - visibleSources.length;
+  const visibleSources = uniqueSources.slice(0, evidenceSourceConfig.workflowPreviewLimit);
+  const hiddenSourceCount = uniqueSources.length - visibleSources.length;
 
   return `${visibleSources.join(', ')}, +${hiddenSourceCount} more`;
 };
@@ -131,6 +142,29 @@ const sourceFromTool = ({
   });
 };
 
+const sourceFromCiCheck = ({
+  foundDescription,
+  id,
+  label,
+  missingDescription,
+  sources,
+}: {
+  foundDescription: string;
+  id: (typeof reportAnalysisSourceIds)[number];
+  label: string;
+  missingDescription: string;
+  sources: readonly string[];
+}) =>
+  createSource({
+    description: sources.length > 0 ? foundDescription : missingDescription,
+    id,
+    kind: 'workflow',
+    label,
+    scope: 'github',
+    source: compactSources(sources),
+    status: sources.length > 0 ? 'found' : 'missing',
+  });
+
 export const buildReportAnalysisSources = (signals: RepositorySignals): AnalysisSource[] => {
   const sources: AnalysisSource[] = [
     createSource({
@@ -169,13 +203,129 @@ export const buildReportAnalysisSources = (signals: RepositorySignals): Analysis
       signal: signals.lockfile,
     }),
     createSource({
-      description: signals.ci.exists ? undefined : 'GitHub Actions workflows were not found.',
+      description: signals.dependencyHealth.hasMixedLockfiles
+        ? 'Multiple package manager lockfiles were found.'
+        : 'Lockfile set matches one package manager.',
+      id: 'lockfile-consistency',
+      kind: 'file',
+      label: 'Lockfile consistency',
+      scope: signals.lockfile.scope ?? 'project',
+      source: compactSources(signals.dependencyHealth.lockfiles.map((lockfile) => lockfile.path)),
+      status: signals.dependencyHealth.hasMixedLockfiles
+        ? 'warning'
+        : signals.lockfile.exists
+          ? 'found'
+          : 'missing',
+    }),
+    createSource({
+      description: signals.dependencyHealth.packageManagerMismatch
+        ? 'package.json packageManager does not match the detected lockfile.'
+        : signals.dependencyHealth.primaryPackageManager
+          ? 'Package manager was inferred from lockfile/package metadata.'
+          : 'Package manager was not detected.',
+      id: 'package-manager',
+      kind: 'package_json',
+      label: 'Package manager',
+      scope: signals.packageJson.scope ?? 'project',
+      source:
+        signals.dependencyHealth.declaredPackageManagerSource ??
+        signals.lockfile.path ??
+        signals.packageJson.path,
+      status: signals.dependencyHealth.packageManagerMismatch
+        ? 'warning'
+        : signals.dependencyHealth.primaryPackageManager
+          ? 'found'
+          : 'missing',
+    }),
+    createSource({
+      description:
+        signals.dependencyHealth.misplacedDevDependencySources.length > 0
+          ? 'Dev-only tooling dependencies were found in production dependencies.'
+          : 'No dev-only tooling dependencies were found in production dependencies.',
+      id: 'dependency-hygiene',
+      kind: 'dependency',
+      label: 'Dependency hygiene',
+      scope:
+        signals.isNestedProject &&
+        signals.dependencyHealth.misplacedDevDependencySources.some((source) =>
+          source.startsWith('package.json '),
+        )
+          ? 'root'
+          : 'project',
+      source: compactSources(signals.dependencyHealth.misplacedDevDependencySources),
+      status:
+        signals.dependencyHealth.misplacedDevDependencySources.length > 0 ? 'warning' : 'found',
+    }),
+    createSource({
+      description: !signals.ci.exists
+        ? 'GitHub Actions workflows were not found.'
+        : signals.ciAnalysis.isWorkflowAnalysisTruncated
+          ? 'Only the highest-priority workflow files were analyzed.'
+          : undefined,
       id: 'github-actions',
       kind: 'workflow',
       label: 'GitHub Actions workflows',
       scope: 'github',
       source: signals.ci.source,
-      status: signals.ci.exists ? 'found' : 'missing',
+      status: signals.ci.exists
+        ? signals.ciAnalysis.isWorkflowAnalysisTruncated
+          ? 'warning'
+          : 'found'
+        : 'missing',
+    }),
+    sourceFromCiCheck({
+      foundDescription: 'GitHub Actions runs on pull requests.',
+      id: 'ci-pr-trigger',
+      label: 'Pull request CI trigger',
+      missingDescription: 'Pull request trigger was not detected in analyzed workflows.',
+      sources: signals.ciAnalysis.pullRequest.sources,
+    }),
+    sourceFromCiCheck({
+      foundDescription: 'Dependency installation step was detected in GitHub Actions.',
+      id: 'ci-install-step',
+      label: 'CI install step',
+      missingDescription: 'Dependency installation step was not detected in analyzed workflows.',
+      sources: signals.ciAnalysis.install.sources,
+    }),
+    createSource({
+      description:
+        signals.ciAnalysis.lint.found &&
+        signals.ciAnalysis.test.found &&
+        signals.ciAnalysis.build.found
+          ? 'Lint, test and build steps were detected in GitHub Actions.'
+          : 'One or more lint, test or build steps were not detected in analyzed workflows.',
+      id: 'ci-quality-steps',
+      kind: 'workflow',
+      label: 'CI quality steps',
+      scope: 'github',
+      source: compactSources([
+        ...signals.ciAnalysis.lint.sources,
+        ...signals.ciAnalysis.test.sources,
+        ...signals.ciAnalysis.build.sources,
+      ]),
+      status: !signals.ci.exists
+        ? 'missing'
+        : signals.ciAnalysis.lint.found &&
+            signals.ciAnalysis.test.found &&
+            signals.ciAnalysis.build.found
+          ? 'found'
+          : 'warning',
+    }),
+    createSource({
+      description:
+        signals.projectPath && !signals.ciAnalysis.projectScope.found
+          ? 'Analyzed workflows do not clearly target the selected frontend path.'
+          : 'Workflow scope matches repository root or selected frontend path.',
+      id: 'ci-project-scope',
+      kind: 'workflow',
+      label: 'CI project scope',
+      scope: 'github',
+      source: compactSources(signals.ciAnalysis.projectScope.sources),
+      status: !signals.ci.exists
+        ? 'missing'
+        : signals.projectPath && !signals.ciAnalysis.projectScope.found
+          ? 'warning'
+          : 'found',
     }),
     sourceFromScript({
       id: 'build-script',

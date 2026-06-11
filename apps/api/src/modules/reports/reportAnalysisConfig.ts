@@ -115,6 +115,61 @@ export const repositorySignalConfig = {
   workflowsPath: '.github/workflows',
 } as const;
 
+export const dependencyAnalysisConfig = {
+  devOnlyDependencyNames: [
+    '@biomejs/biome',
+    '@eslint/js',
+    '@storybook/react',
+    '@storybook/react-vite',
+    '@types/react',
+    'biome',
+    'dprint',
+    'eslint',
+    'eslint-plugin-jsx-a11y',
+    'jest',
+    'playwright',
+    'prettier',
+    'storybook',
+    'ts-node',
+    'typescript',
+    'typescript-eslint',
+    'vitest',
+  ],
+  devOnlyDependencyPrefixes: ['@types/'],
+  packageManagerByLockfile: {
+    'bun.lock': 'bun',
+    'bun.lockb': 'bun',
+    'package-lock.json': 'npm',
+    'pnpm-lock.yaml': 'pnpm',
+    'yarn.lock': 'yarn',
+  },
+} as const;
+
+export const ciWorkflowAnalysisConfig = {
+  buildCommandPatterns: [
+    /\b(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?build\b/i,
+    /\b(?:vite|next|webpack|parcel|react-scripts)\s+build\b/i,
+  ],
+  cachePatterns: [/\bactions\/cache\b/i, /\bsetup-node\b[\s\S]*?\bcache\s*:/i],
+  installCommandPatterns: [
+    /\bnpm\s+ci\b/i,
+    /\bnpm\s+install\b/i,
+    /\bpnpm\s+install\b/i,
+    /\byarn\s+install\b/i,
+    /\bbun\s+install\b/i,
+  ],
+  limit: 10,
+  lintCommandPatterns: [/\b(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?lint\b/i, /\b(?:eslint|biome)\b/i],
+  priorityNamePatterns: [/ci/i, /check/i, /test/i, /lint/i, /build/i, /pr/i, /quality/i],
+  pullRequestTriggerPatterns: [/\bpull_request\b/i, /\bpull-request\b/i],
+  pushTriggerPatterns: [/\bpush\b/i],
+  testCommandPatterns: [
+    /\b(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?test\b/i,
+    /\b(?:vitest|jest)\b/i,
+    /\bplaywright\s+test\b/i,
+  ],
+} as const;
+
 export const readmeQualityConfig = {
   installSectionPatterns: [
     /\binstallation\b/i,

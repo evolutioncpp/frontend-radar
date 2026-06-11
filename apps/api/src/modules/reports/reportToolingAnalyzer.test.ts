@@ -30,6 +30,11 @@ const createToolSignal = ({
   sources: [...projectSources, ...rootSources],
 });
 
+const createCiCheck = (sources: string[] = []) => ({
+  found: sources.length > 0,
+  sources,
+});
+
 const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySignals => ({
   a11yTooling: createToolSignal({
     dependencies: ['eslint-plugin-jsx-a11y'],
@@ -43,6 +48,33 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     exists: false,
     source: null,
     workflowNames: [],
+  },
+  ciAnalysis: {
+    analyzedWorkflowPaths: [],
+    build: createCiCheck(),
+    cache: createCiCheck(),
+    install: createCiCheck(),
+    lint: createCiCheck(),
+    projectScope: createCiCheck(),
+    pullRequest: createCiCheck(),
+    push: createCiCheck(),
+    test: createCiCheck(),
+  },
+  dependencyHealth: {
+    declaredPackageManager: null,
+    declaredPackageManagerSource: null,
+    hasMixedLockfiles: false,
+    lockfiles: [
+      {
+        packageManager: 'pnpm',
+        path: 'pnpm-lock.yaml',
+        scope: 'root',
+      },
+    ],
+    misplacedDevDependencies: [],
+    misplacedDevDependencySources: [],
+    packageManagerMismatch: false,
+    primaryPackageManager: 'pnpm',
   },
   envExample: {
     exists: false,

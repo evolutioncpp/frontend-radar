@@ -93,10 +93,64 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
           missing: 'Package lockfile was not found.',
         },
       },
+      'lockfile-consistency': {
+        label: 'Lockfile consistency',
+        descriptions: {
+          found: 'Lockfiles point to one package manager.',
+          warning: 'Multiple package manager lockfiles were found.',
+          missing: 'Package lockfile was not found.',
+        },
+      },
+      'package-manager': {
+        label: 'Package manager',
+        descriptions: {
+          found: 'Package manager was detected from lockfile or package metadata.',
+          warning: 'package.json packageManager does not match the detected lockfile.',
+          missing: 'Package manager was not detected.',
+        },
+      },
+      'dependency-hygiene': {
+        label: 'Dependency hygiene',
+        descriptions: {
+          found: 'No dev-only tooling dependencies were found in production dependencies.',
+          warning: 'Dev-only tooling dependencies were found in production dependencies.',
+        },
+      },
       'github-actions': {
         label: 'GitHub Actions workflows',
         descriptions: {
           found: 'GitHub Actions workflows were found.',
+          warning: 'GitHub Actions workflows were found, but their contents could not be analyzed.',
+          missing: 'GitHub Actions workflows were not found.',
+        },
+      },
+      'ci-pr-trigger': {
+        label: 'Pull request CI trigger',
+        descriptions: {
+          found: 'GitHub Actions runs on pull requests.',
+          missing: 'Pull request trigger was not detected in analyzed workflows.',
+        },
+      },
+      'ci-install-step': {
+        label: 'CI install step',
+        descriptions: {
+          found: 'Dependency installation step was detected in GitHub Actions.',
+          missing: 'Dependency installation step was not detected in analyzed workflows.',
+        },
+      },
+      'ci-quality-steps': {
+        label: 'CI quality steps',
+        descriptions: {
+          found: 'Lint, test and build steps were detected in GitHub Actions.',
+          warning: 'One or more lint, test or build steps were not detected in analyzed workflows.',
+          missing: 'GitHub Actions workflows were not found.',
+        },
+      },
+      'ci-project-scope': {
+        label: 'CI project scope',
+        descriptions: {
+          found: 'Workflow scope matches repository root or selected frontend path.',
+          warning: 'Analyzed workflows do not clearly target the selected frontend path.',
           missing: 'GitHub Actions workflows were not found.',
         },
       },
@@ -266,6 +320,55 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
         label: 'GitHub Actions workflow',
         descriptions: {
           found: 'A GitHub Actions workflow directory was found.',
+          warning: 'GitHub Actions workflows were found, but their contents could not be analyzed.',
+          missing: 'No GitHub Actions workflow was found.',
+        },
+      },
+      'ci-build-step': {
+        label: 'CI build step',
+        descriptions: {
+          found: 'GitHub Actions runs the build step.',
+          warning: 'No build step was detected in analyzed workflows.',
+          missing: 'No GitHub Actions workflow was found.',
+        },
+      },
+      'ci-install-step': {
+        label: 'CI install step',
+        descriptions: {
+          found: 'GitHub Actions installs dependencies.',
+          warning: 'No dependency installation step was detected in analyzed workflows.',
+          missing: 'No GitHub Actions workflow was found.',
+        },
+      },
+      'ci-lint-step': {
+        label: 'CI lint step',
+        descriptions: {
+          found: 'GitHub Actions runs linting.',
+          warning: 'No lint step was detected in analyzed workflows.',
+          missing: 'No GitHub Actions workflow was found.',
+        },
+      },
+      'ci-pr-trigger': {
+        label: 'Pull request CI trigger',
+        descriptions: {
+          found: 'GitHub Actions runs on pull requests.',
+          warning: 'No pull request trigger was detected in analyzed workflows.',
+          missing: 'No GitHub Actions workflow was found.',
+        },
+      },
+      'ci-project-scope': {
+        label: 'CI project scope',
+        descriptions: {
+          found: 'Workflow scope matches repository root or selected frontend path.',
+          warning: 'Analyzed workflows do not clearly target the selected frontend path.',
+          missing: 'No GitHub Actions workflow was found.',
+        },
+      },
+      'ci-test-step': {
+        label: 'CI test step',
+        descriptions: {
+          found: 'GitHub Actions runs tests.',
+          warning: 'No test step was detected in analyzed workflows.',
           missing: 'No GitHub Actions workflow was found.',
         },
       },
@@ -280,7 +383,24 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
         label: 'Package lockfile',
         descriptions: {
           found: 'A package lockfile was found.',
+          warning: 'Only a root-level package lockfile was found.',
           missing: 'No package lockfile was found.',
+        },
+      },
+      'lockfile-consistency': {
+        label: 'Lockfile consistency',
+        descriptions: {
+          found: 'Lockfiles point to one package manager.',
+          warning: 'Multiple package manager lockfiles were found.',
+          missing: 'No package lockfile was found.',
+        },
+      },
+      'package-manager': {
+        label: 'Package manager',
+        descriptions: {
+          found: 'Package manager was detected from lockfile or package metadata.',
+          warning: 'package.json packageManager does not match the detected lockfile.',
+          missing: 'Package manager was not detected.',
         },
       },
       'package-json': {
@@ -288,6 +408,13 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
         descriptions: {
           found: 'package.json was found.',
           missing: 'package.json was not found.',
+        },
+      },
+      'dependency-hygiene': {
+        label: 'Dependency hygiene',
+        descriptions: {
+          found: 'No dev-only tooling dependencies were found in production dependencies.',
+          warning: 'Dev-only tooling dependencies were found in production dependencies.',
         },
       },
       readme: {
@@ -433,6 +560,27 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
         title: 'Add GitHub Actions checks',
         description: 'Add CI workflows so linting, tests and builds run for every change.',
       },
+      'add-ci-build-step': {
+        title: 'Run production build in CI',
+        description: 'Add a build step so the selected frontend project is compiled in CI.',
+      },
+      'add-ci-install-step': {
+        title: 'Install dependencies in CI',
+        description:
+          'Add an install step such as npm ci, pnpm install or yarn install before checks run.',
+      },
+      'add-ci-lint-step': {
+        title: 'Run linting in CI',
+        description: 'Add a lint step to the GitHub Actions workflow for repeatable code checks.',
+      },
+      'add-ci-pr-checks': {
+        title: 'Run CI on pull requests',
+        description: 'Add a pull_request trigger so frontend checks run before code is merged.',
+      },
+      'add-ci-test-step': {
+        title: 'Run tests in CI',
+        description: 'Add a test step so regressions are caught automatically before delivery.',
+      },
       'add-lint-script': {
         title: 'Add a lint script',
         description: 'Expose linting in package.json to make code quality checks repeatable.',
@@ -470,10 +618,30 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
         title: 'Commit a package lockfile',
         description: 'A lockfile keeps dependency installs reproducible across machines and CI.',
       },
+      'align-package-manager': {
+        title: 'Align package manager metadata',
+        description:
+          'Make package.json packageManager match the committed lockfile package manager.',
+      },
       'improve-readme': {
         title: 'Expand README setup and usage details',
         description:
           'Add installation/setup and usage/examples sections so the README explains how to run and validate the project.',
+      },
+      'move-tooling-to-dev-dependencies': {
+        title: 'Move tooling to devDependencies',
+        description:
+          'Keep linting, testing and type tooling out of production dependencies where possible.',
+      },
+      'remove-mixed-lockfiles': {
+        title: 'Use one package manager lockfile',
+        description:
+          'Keep one package manager lockfile so local and CI installs resolve dependencies consistently.',
+      },
+      'scope-ci-to-frontend-path': {
+        title: 'Scope CI to the selected frontend path',
+        description:
+          'Use working-directory, workspace or filter options so CI checks target the analyzed frontend package.',
       },
     },
     reportNotFound: 'Report analysis not found',
@@ -481,6 +649,64 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
   },
   ru: {
     analysisSources: {
+      'ci-install-step': {
+        label: 'CI install step',
+        descriptions: {
+          found:
+            'РЁР°Рі СѓСЃС‚Р°РЅРѕРІРєРё Р·Р°РІРёСЃРёРјРѕСЃС‚РµР№ РЅР°Р№РґРµРЅ РІ GitHub Actions.',
+          missing:
+            'РЁР°Рі СѓСЃС‚Р°РЅРѕРІРєРё Р·Р°РІРёСЃРёРјРѕСЃС‚РµР№ РЅРµ РЅР°Р№РґРµРЅ РІ workflows.',
+        },
+      },
+      'ci-pr-trigger': {
+        label: 'Pull request CI trigger',
+        descriptions: {
+          found: 'GitHub Actions Р·Р°РїСѓСЃРєР°РµС‚СЃСЏ РЅР° pull request.',
+          missing:
+            'Pull request trigger РЅРµ РЅР°Р№РґРµРЅ РІ РїСЂРѕР°РЅР°Р»РёР·РёСЂРѕРІР°РЅРЅС‹С… workflows.',
+        },
+      },
+      'ci-project-scope': {
+        label: 'CI project scope',
+        descriptions: {
+          found:
+            'Workflow РЅР°С†РµР»РµРЅ РЅР° РєРѕСЂРµРЅСЊ СЂРµРїРѕР·РёС‚РѕСЂРёСЏ РёР»Рё РІС‹Р±СЂР°РЅРЅСѓСЋ frontend-РїР°РїРєСѓ.',
+          warning: 'Workflows РЅРµ СѓРєР°Р·С‹РІР°СЋС‚ РЅР° РІС‹Р±СЂР°РЅРЅСѓСЋ frontend-РїР°РїРєСѓ.',
+          missing: 'Workflow GitHub Actions РЅРµ РЅР°Р№РґРµРЅС‹.',
+        },
+      },
+      'ci-quality-steps': {
+        label: 'CI quality steps',
+        descriptions: {
+          found: 'РЁР°РіРё lint, test Рё build РЅР°Р№РґРµРЅС‹ РІ GitHub Actions.',
+          warning:
+            'РћРґРёРЅ РёР»Рё РЅРµСЃРєРѕР»СЊРєРѕ С€Р°РіРѕРІ lint, test Рё build РЅРµ РЅР°Р№РґРµРЅС‹ РІ workflows.',
+          missing: 'Workflow GitHub Actions РЅРµ РЅР°Р№РґРµРЅС‹.',
+        },
+      },
+      'dependency-hygiene': {
+        label: 'Р“РёРіРёРµРЅР° Р·Р°РІРёСЃРёРјРѕСЃС‚РµР№',
+        descriptions: {
+          found: 'Dev-only tooling РЅРµ РЅР°Р№РґРµРЅ РІ production dependencies.',
+          warning: 'Dev-only tooling РЅР°Р№РґРµРЅ РІ production dependencies.',
+        },
+      },
+      'lockfile-consistency': {
+        label: 'РЎРѕРіР»Р°СЃРѕРІР°РЅРЅРѕСЃС‚СЊ lockfile',
+        descriptions: {
+          found: 'Lockfile СѓРєР°Р·С‹РІР°СЋС‚ РЅР° РѕРґРёРЅ package manager.',
+          warning: 'РќР°Р№РґРµРЅРѕ РЅРµСЃРєРѕР»СЊРєРѕ lockfile СЂР°Р·РЅС‹С… package manager.',
+          missing: 'Package lockfile РЅРµ РЅР°Р№РґРµРЅ.',
+        },
+      },
+      'package-manager': {
+        label: 'Package manager',
+        descriptions: {
+          found: 'Package manager РѕРїСЂРµРґРµР»С‘РЅ РїРѕ lockfile РёР»Рё package metadata.',
+          warning: 'package.json packageManager РЅРµ СЃРѕРІРїР°РґР°РµС‚ СЃ lockfile.',
+          missing: 'Package manager РЅРµ РѕРїСЂРµРґРµР»С‘РЅ.',
+        },
+      },
       'github-repository-metadata': {
         label: 'Метаданные GitHub-репозитория',
         descriptions: {
@@ -666,6 +892,77 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
       repository_verification_failed: 'Не удалось проверить репозиторий GitHub.',
     },
     evidence: {
+      'ci-build-step': {
+        label: 'CI build step',
+        descriptions: {
+          found: 'GitHub Actions ????????? build.',
+          warning: 'Build step ?? ?????? ? workflows.',
+          missing: 'Workflow GitHub Actions ?? ??????.',
+        },
+      },
+      'ci-install-step': {
+        label: 'CI install step',
+        descriptions: {
+          found: 'GitHub Actions ????????????? ???????????.',
+          warning: 'Install step ?? ?????? ? workflows.',
+          missing: 'Workflow GitHub Actions ?? ??????.',
+        },
+      },
+      'ci-lint-step': {
+        label: 'CI lint step',
+        descriptions: {
+          found: 'GitHub Actions ????????? lint.',
+          warning: 'Lint step ?? ?????? ? workflows.',
+          missing: 'Workflow GitHub Actions ?? ??????.',
+        },
+      },
+      'ci-pr-trigger': {
+        label: 'Pull request CI trigger',
+        descriptions: {
+          found: 'GitHub Actions ??????????? ?? pull request.',
+          warning: 'Pull request trigger ?? ?????? ? workflows.',
+          missing: 'Workflow GitHub Actions ?? ??????.',
+        },
+      },
+      'ci-project-scope': {
+        label: 'CI project scope',
+        descriptions: {
+          found: 'Workflow ??????? ?? ?????? ??????????? ??? ????????? frontend-?????.',
+          warning: 'Workflows ?? ????????? ?? ????????? frontend-?????.',
+          missing: 'Workflow GitHub Actions ?? ??????.',
+        },
+      },
+      'ci-test-step': {
+        label: 'CI test step',
+        descriptions: {
+          found: 'GitHub Actions ????????? ?????.',
+          warning: 'Test step ?? ?????? ? workflows.',
+          missing: 'Workflow GitHub Actions ?? ??????.',
+        },
+      },
+      'dependency-hygiene': {
+        label: '??????? ????????????',
+        descriptions: {
+          found: 'Dev-only tooling ?? ?????? ? production dependencies.',
+          warning: 'Dev-only tooling ?????? ? production dependencies.',
+        },
+      },
+      'lockfile-consistency': {
+        label: '??????????????? lockfile',
+        descriptions: {
+          found: 'Lockfile ????????? ?? ???? package manager.',
+          warning: '??????? ????????? lockfile ?????? package manager.',
+          missing: 'Package lockfile ?? ??????.',
+        },
+      },
+      'package-manager': {
+        label: 'Package manager',
+        descriptions: {
+          found: 'Package manager ????????? ?? lockfile ??? package metadata.',
+          warning: 'package.json packageManager ?? ????????? ? lockfile.',
+          missing: 'Package manager ?? ?????????.',
+        },
+      },
       'a11y-tooling': {
         label: 'Инструменты доступности',
         descriptions: {
@@ -842,6 +1139,47 @@ const reportLocalizationCatalogs: Record<SupportedLanguage, ReportLocalizationCa
     },
     toolingNotDetected: 'Не обнаружено',
     recommendations: {
+      'add-ci-build-step': {
+        title: '????????? production build ? CI',
+        description: '???????? build step, ????? ????????? frontend-?????? ????????? ? CI.',
+      },
+      'add-ci-install-step': {
+        title: '????????????? ??????????? ? CI',
+        description:
+          '???????? install step: npm ci, pnpm install ??? yarn install ????? ??????????.',
+      },
+      'add-ci-lint-step': {
+        title: '????????? lint ? CI',
+        description:
+          '???????? lint step ? GitHub Actions workflow ??? ??????????? ???????? ????????.',
+      },
+      'add-ci-pr-checks': {
+        title: '????????? CI ?? pull request',
+        description: '???????? pull_request trigger, ????? frontend-???????? ??????????? ?? merge.',
+      },
+      'add-ci-test-step': {
+        title: '????????? ????? ? CI',
+        description: '???????? test step, ????? ????????? ???????? ????????????? ?? ????????.',
+      },
+      'align-package-manager': {
+        title: '??????????? package manager metadata',
+        description: '???????? package.json packageManager ????????????? ? ????????????? lockfile.',
+      },
+      'move-tooling-to-dev-dependencies': {
+        title: '????????? tooling ? devDependencies',
+        description:
+          '??????? linting, testing ? type tooling ??? production dependencies, ????? ??? ????????.',
+      },
+      'remove-mixed-lockfiles': {
+        title: '???????? ???? package manager lockfile',
+        description:
+          '???????? ???? lockfile, ????? ????????? ? CI-????????? ???????????? ???? ???????????.',
+      },
+      'scope-ci-to-frontend-path': {
+        title: '???????? CI ?? ????????? frontend-?????',
+        description:
+          '??????????? working-directory, workspace ??? filter options, ????? CI ???????? ????????????? frontend package.',
+      },
       'add-a11y-tooling': {
         title: 'Добавить проверки доступности',
         description:

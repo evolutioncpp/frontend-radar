@@ -41,6 +41,8 @@ const getToolScore = (
   return (signal.projectSources?.length ?? 0) > 0 ? projectScore : rootScore;
 };
 
+const getCiCheckScore = (found: boolean, score: number) => (found ? score : 0);
+
 export const getStatusByScore = (score: number) => {
   if (score >= scoreThresholds.excellent) {
     return 'excellent' as const;
@@ -72,14 +74,29 @@ export const buildScoreBreakdown = (signals: RepositorySignals) => {
       getScriptScore(signals.packageJson.scripts.test, 55, 30) +
       getToolScore(signals.testingLibrary, 20, 10),
   );
+  const ciScopePenalty =
+    signals.projectPath && signals.ci.exists && !signals.ciAnalysis.projectScope.found ? 10 : 0;
   const ciScore = clampScore(
-    (signals.ci.exists ? 60 : 0) + getScriptScore(signals.packageJson.scripts.build, 35, 18) + 5,
+    (signals.ci.exists ? 15 : 0) +
+      getCiCheckScore(signals.ciAnalysis.pullRequest.found, 15) +
+      getCiCheckScore(signals.ciAnalysis.install.found, 15) +
+      getCiCheckScore(signals.ciAnalysis.lint.found, 15) +
+      getCiCheckScore(signals.ciAnalysis.test.found, 20) +
+      getCiCheckScore(signals.ciAnalysis.build.found, 15) +
+      getCiCheckScore(signals.ciAnalysis.projectScope.found, 10) +
+      getScriptScore(signals.packageJson.scripts.build, 5, 3) -
+      ciScopePenalty,
   );
   const dependenciesScore = clampScore(
-    (signals.packageJson.exists ? 40 : 0) +
-      (signals.lockfile.exists ? 40 : 0) +
-      (signals.lockfile.packageManager ? 10 : 0) +
-      10,
+    (signals.packageJson.exists ? 30 : 0) +
+      (signals.lockfile.exists ? 30 : 0) +
+      (signals.dependencyHealth.primaryPackageManager ? 15 : 0) +
+      (signals.lockfile.exists && !signals.dependencyHealth.hasMixedLockfiles ? 10 : 0) +
+      (signals.dependencyHealth.primaryPackageManager &&
+      !signals.dependencyHealth.packageManagerMismatch
+        ? 10
+        : 0) +
+      (signals.dependencyHealth.misplacedDevDependencySources.length === 0 ? 5 : 0),
   );
   const maintainabilityScore = clampScore(
     getToolScore(signals.typescript, 35, 18) +
@@ -124,7 +141,16 @@ export const buildScoreBreakdown = (signals: RepositorySignals) => {
       maxValue: 100,
       status: getStatusByScore(ciScore),
       description: 'Automated delivery checks from GitHub Actions and build scripts.',
-      evidence: pickReportEvidence(evidenceMap, ['github-actions', 'build-script']),
+      evidence: pickReportEvidence(evidenceMap, [
+        'github-actions',
+        'ci-pr-trigger',
+        'ci-install-step',
+        'ci-lint-step',
+        'ci-test-step',
+        'ci-build-step',
+        'ci-project-scope',
+        'build-script',
+      ]),
     },
     {
       category: 'dependencies' as const,
@@ -133,7 +159,13 @@ export const buildScoreBreakdown = (signals: RepositorySignals) => {
       maxValue: 100,
       status: getStatusByScore(dependenciesScore),
       description: 'Package metadata and lockfile consistency signals.',
-      evidence: pickReportEvidence(evidenceMap, ['package-json', 'lockfile']),
+      evidence: pickReportEvidence(evidenceMap, [
+        'package-json',
+        'lockfile',
+        'lockfile-consistency',
+        'package-manager',
+        'dependency-hygiene',
+      ]),
     },
     {
       category: 'maintainability' as const,

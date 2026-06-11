@@ -22,6 +22,35 @@ const emptyToolSignal: ToolSignal = {
   sources: [],
 };
 
+const createCiCheck = (sources: string[] = []) => ({
+  found: sources.length > 0,
+  sources,
+});
+
+const createCiAnalysis = (source = '.github/workflows/ci.yml') => ({
+  analyzedWorkflowPaths: source ? [source] : [],
+  build: createCiCheck(),
+  cache: createCiCheck(),
+  install: createCiCheck(),
+  lint: createCiCheck(),
+  projectScope: createCiCheck(),
+  pullRequest: createCiCheck(),
+  push: createCiCheck(),
+  test: createCiCheck(),
+});
+
+const createFullCiAnalysis = (source = '.github/workflows/ci.yml') => ({
+  analyzedWorkflowPaths: [source],
+  build: createCiCheck([source]),
+  cache: createCiCheck([source]),
+  install: createCiCheck([source]),
+  lint: createCiCheck([source]),
+  projectScope: createCiCheck([source]),
+  pullRequest: createCiCheck([source]),
+  push: createCiCheck([source]),
+  test: createCiCheck([source]),
+});
+
 const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySignals => ({
   a11yTooling: emptyToolSignal,
   bundler: emptyToolSignal,
@@ -29,6 +58,17 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     exists: false,
     source: null,
     workflowNames: [],
+  },
+  ciAnalysis: createCiAnalysis(''),
+  dependencyHealth: {
+    declaredPackageManager: null,
+    declaredPackageManagerSource: null,
+    hasMixedLockfiles: false,
+    lockfiles: [],
+    misplacedDevDependencies: [],
+    misplacedDevDependencySources: [],
+    packageManagerMismatch: false,
+    primaryPackageManager: null,
   },
   envExample: {
     exists: false,
@@ -89,7 +129,7 @@ const getMetric = (signals: RepositorySignals, category: string) => {
 };
 
 describe('buildScoreBreakdown', () => {
-  it('does not mark CI as excellent when a workflow exists without a build script', () => {
+  it('does not give high CI score when a workflow exists without quality steps', () => {
     const metric = getMetric(
       createSignals({
         ci: {
@@ -102,12 +142,12 @@ describe('buildScoreBreakdown', () => {
     );
 
     expect(metric).toMatchObject({
-      status: 'warning',
-      value: 65,
+      status: 'critical',
+      value: 15,
     });
   });
 
-  it('marks CI as excellent when workflow and build script both exist', () => {
+  it('marks CI as excellent when workflow runs PR install lint test and build steps', () => {
     const metric = getMetric(
       createSignals({
         ci: {
@@ -115,6 +155,7 @@ describe('buildScoreBreakdown', () => {
           source: '.github/workflows/ci.yml',
           workflowNames: ['ci.yml'],
         },
+        ciAnalysis: createFullCiAnalysis(),
         packageJson: {
           dependencies: [],
           exists: true,
@@ -143,6 +184,10 @@ describe('buildScoreBreakdown', () => {
           source: '.github/workflows/ci.yml',
           workflowNames: ['ci.yml'],
         },
+        ciAnalysis: {
+          ...createFullCiAnalysis(),
+          projectScope: createCiCheck(),
+        },
         isNestedProject: true,
         packageJson: {
           dependencies: [],
@@ -165,7 +210,7 @@ describe('buildScoreBreakdown', () => {
 
     expect(metric).toMatchObject({
       status: 'good',
-      value: 83,
+      value: 88,
     });
     expect(metric.evidence).toEqual(
       expect.arrayContaining([
@@ -175,5 +220,44 @@ describe('buildScoreBreakdown', () => {
         }),
       ]),
     );
+  });
+
+  it('penalizes dependencies when lockfiles are mixed or package manager metadata mismatches', () => {
+    const metric = getMetric(
+      createSignals({
+        dependencyHealth: {
+          declaredPackageManager: 'pnpm',
+          declaredPackageManagerSource: 'package.json packageManager',
+          hasMixedLockfiles: true,
+          lockfiles: [
+            {
+              packageManager: 'npm',
+              path: 'package-lock.json',
+              scope: 'project',
+            },
+            {
+              packageManager: 'pnpm',
+              path: 'pnpm-lock.yaml',
+              scope: 'project',
+            },
+          ],
+          misplacedDevDependencies: ['eslint'],
+          misplacedDevDependencySources: ['package.json dependencies.eslint'],
+          packageManagerMismatch: true,
+          primaryPackageManager: 'npm',
+        },
+        lockfile: {
+          exists: true,
+          packageManager: 'npm',
+          path: 'package-lock.json',
+        },
+      }),
+      'dependencies',
+    );
+
+    expect(metric).toMatchObject({
+      status: 'good',
+      value: 75,
+    });
   });
 });

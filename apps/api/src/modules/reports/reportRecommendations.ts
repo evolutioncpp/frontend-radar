@@ -53,6 +53,62 @@ export const buildRecommendations = (signals: RepositorySignals) => {
       title: 'Add GitHub Actions checks',
       description: 'Add CI workflows so linting, tests and builds run for every change.',
     });
+  } else {
+    if (!signals.ciAnalysis.pullRequest.found) {
+      recommendations.push({
+        id: 'add-ci-pr-checks',
+        severity: 'medium',
+        title: 'Run CI on pull requests',
+        description: 'Add a pull_request trigger so frontend checks run before code is merged.',
+      });
+    }
+
+    if (!signals.ciAnalysis.install.found) {
+      recommendations.push({
+        id: 'add-ci-install-step',
+        severity: 'medium',
+        title: 'Install dependencies in CI',
+        description:
+          'Add an install step such as npm ci, pnpm install or yarn install before checks run.',
+      });
+    }
+
+    if (!signals.ciAnalysis.lint.found) {
+      recommendations.push({
+        id: 'add-ci-lint-step',
+        severity: 'medium',
+        title: 'Run linting in CI',
+        description: 'Add a lint step to the GitHub Actions workflow for repeatable code checks.',
+      });
+    }
+
+    if (!signals.ciAnalysis.test.found) {
+      recommendations.push({
+        id: 'add-ci-test-step',
+        severity: 'high',
+        title: 'Run tests in CI',
+        description: 'Add a test step so regressions are caught automatically before delivery.',
+      });
+    }
+
+    if (!signals.ciAnalysis.build.found) {
+      recommendations.push({
+        id: 'add-ci-build-step',
+        severity: 'high',
+        title: 'Run production build in CI',
+        description: 'Add a build step so the selected frontend project is compiled in CI.',
+      });
+    }
+
+    if (signals.projectPath && !signals.ciAnalysis.projectScope.found) {
+      recommendations.push({
+        id: 'scope-ci-to-frontend-path',
+        severity: 'medium',
+        title: 'Scope CI to the selected frontend path',
+        description:
+          'Use working-directory, workspace or filter options so CI checks target the analyzed frontend package.',
+      });
+    }
   }
 
   if (signals.packageJson.exists && !signals.packageJson.scripts.test.exists) {
@@ -147,6 +203,35 @@ export const buildRecommendations = (signals: RepositorySignals) => {
       severity: 'medium',
       title: 'Commit a package lockfile',
       description: 'A lockfile keeps dependency installs reproducible across machines and CI.',
+    });
+  }
+
+  if (signals.dependencyHealth.hasMixedLockfiles) {
+    recommendations.push({
+      id: 'remove-mixed-lockfiles',
+      severity: 'medium',
+      title: 'Use one package manager lockfile',
+      description:
+        'Keep one package manager lockfile so local and CI installs resolve dependencies consistently.',
+    });
+  }
+
+  if (signals.dependencyHealth.packageManagerMismatch) {
+    recommendations.push({
+      id: 'align-package-manager',
+      severity: 'medium',
+      title: 'Align package manager metadata',
+      description: 'Make package.json packageManager match the committed lockfile package manager.',
+    });
+  }
+
+  if (signals.dependencyHealth.misplacedDevDependencySources.length > 0) {
+    recommendations.push({
+      id: 'move-tooling-to-dev-dependencies',
+      severity: 'medium',
+      title: 'Move tooling to devDependencies',
+      description:
+        'Keep linting, testing and type tooling out of production dependencies where possible.',
     });
   }
 
