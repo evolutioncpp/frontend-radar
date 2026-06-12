@@ -21,7 +21,7 @@ import {
   type ReportAnalysisSnapshotLookup,
   type ReportAnalysisFailure,
   type ReportAnalysisLeaseOptions,
-} from './reportAnalysisRepository.js';
+} from '../../application/ports/reportAnalysisRepository.js';
 
 type PrismaReportAnalysis = Awaited<ReturnType<PrismaClient['reportAnalysis']['findUnique']>>;
 

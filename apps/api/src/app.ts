@@ -12,19 +12,17 @@ import {
 import { env } from './config/env.js';
 import { openApiConfig } from './config/openapi.js';
 import { prisma } from './config/prisma.js';
-import {
-  GithubReportAnalyzer,
-  type ReportAnalyzer,
-} from './modules/reports/analysis/githubReportAnalyzer.js';
+import { GithubReportAnalyzer } from './modules/reports/analysis/githubReportAnalyzer.js';
 import { createReportApplicationService } from './modules/reports/application/reportApplicationService.js';
 import {
   recoverReportAnalyses,
-  startReportAnalysis,
+  startReportAnalysisSafely,
 } from './modules/reports/application/reportAnalysisWorker.js';
-import {
-  type ReportAnalysisEntity,
-  type ReportAnalysisRepository,
-} from './modules/reports/infrastructure/persistence/reportAnalysisRepository.js';
+import type { ReportAnalyzer } from './modules/reports/application/ports/reportAnalyzer.js';
+import type {
+  ReportAnalysisEntity,
+  ReportAnalysisRepository,
+} from './modules/reports/application/ports/reportAnalysisRepository.js';
 import { PrismaReportAnalysisRepository } from './modules/reports/infrastructure/persistence/prismaReportAnalysisRepository.js';
 import { healthRoutes } from './routes/health.js';
 import { createReportRoutes } from './routes/reports.js';
@@ -49,7 +47,7 @@ export const buildApp = (
   const runReportAnalysis =
     dependencies.startReportAnalysis ??
     ((analysis: ReportAnalysisEntity) => {
-      void startReportAnalysis({
+      startReportAnalysisSafely({
         analysis,
         analyzer: reportAnalyzer,
         logger: app.log,

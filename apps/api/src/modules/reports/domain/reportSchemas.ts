@@ -408,8 +408,14 @@ export const errorResponseSchema = z.object({
 });
 
 export type CreateReportAnalysisRequest = z.infer<typeof createReportAnalysisRequestSchema>;
+export type CreateReportAnalysisResponse = z.infer<typeof createReportAnalysisResponseSchema>;
 export type GetReportComparisonResponse = z.infer<typeof getReportComparisonResponseSchema>;
+export type GetReportAnalysisResponse = z.infer<typeof getReportAnalysisResponseSchema>;
+export type ListReportAnalysesResponse = z.infer<typeof listReportAnalysesResponseSchema>;
+export type ListRepositoryBranchesResponse = z.infer<typeof listRepositoryBranchesResponseSchema>;
 export type ReportAnalysisErrorCode = z.infer<typeof reportAnalysisErrorCodeSchema>;
 export type ProjectReport = z.infer<typeof projectReportSchema>;
 export type ReportAnalysisStatus = z.infer<typeof reportAnalysisStatusSchema>;
 export type ReportProjectPathSource = z.infer<typeof reportProjectPathSourceSchema>;
+export type RefreshReportAnalysisResponse = z.infer<typeof refreshReportAnalysisResponseSchema>;
+export type RetryReportAnalysisResponse = z.infer<typeof retryReportAnalysisResponseSchema>;

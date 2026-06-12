@@ -1,9 +1,5 @@
 import { GithubClient } from '../infrastructure/github/githubClient.js';
-import {
-  GithubRepositoryReader,
-  type RepositoryBranches,
-  type RepositorySnapshot,
-} from '../infrastructure/github/githubRepositoryReader.js';
+import { GithubRepositoryReader } from '../infrastructure/github/githubRepositoryReader.js';
 import { buildChecks } from '../domain/reportChecks.js';
 import { buildRecommendations } from '../domain/reportRecommendations.js';
 import { buildScoreBreakdown } from '../scoring/reportScoreCalculator.js';
@@ -13,11 +9,8 @@ import { buildReportAnalysisSources } from './sources/reportAnalysisSources.js';
 import { buildReportTooling } from './tooling/reportToolingAnalyzer.js';
 import { collectRepositorySignals } from './signals/reportSignals.js';
 
-import type {
-  CreateReportAnalysisRequest,
-  ProjectReport,
-  ReportProjectPathSource,
-} from '../domain/reportSchemas.js';
+import type { ReportAnalysisInput, ReportAnalyzer } from '../application/ports/reportAnalyzer.js';
+import type { ProjectReport, ReportProjectPathSource } from '../domain/reportSchemas.js';
 
 export {
   GithubApiError,
@@ -28,39 +21,6 @@ export {
   isGithubBranchNotFoundError,
   isGithubRepositoryNotFoundError,
 } from '../infrastructure/github/githubErrors.js';
-
-type ReportAnalysisInput = Omit<
-  CreateReportAnalysisRequest,
-  'branch' | 'projectPath' | 'projectPathSource'
-> & {
-  id: string;
-  branch: string;
-  createdAt: Date;
-  latestCommitDate: string | null;
-  latestCommitSha: string | null;
-  latestCommitTitle: string | null;
-  projectPath: string;
-  projectPathSource: ReportProjectPathSource;
-};
-
-export type { RepositorySnapshot };
-
-export interface ReportAnalyzer {
-  analyze(input: ReportAnalysisInput): Promise<ProjectReport>;
-  getRepositorySnapshot(
-    owner: string,
-    repository: string,
-    branch?: string | null,
-  ): Promise<RepositorySnapshot>;
-  listRepositoryBranches(owner: string, repository: string): Promise<RepositoryBranches>;
-  resolveProjectPath(
-    owner: string,
-    repository: string,
-    ref: string,
-    projectPath?: string | null,
-    projectPathSource?: ReportProjectPathSource | null,
-  ): Promise<string>;
-}
 
 export class GithubReportAnalyzer implements ReportAnalyzer {
   constructor(private readonly reader = new GithubRepositoryReader(new GithubClient())) {}

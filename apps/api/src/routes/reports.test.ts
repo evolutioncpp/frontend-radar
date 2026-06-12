@@ -6,46 +6,35 @@ import {
   GithubApiError,
   GithubBranchNotFoundError,
   GithubRepositoryNotFoundError,
-} from '../modules/reports/analysis/githubReportAnalyzer.js';
+} from '../modules/reports/infrastructure/github/githubErrors.js';
 import { InMemoryReportAnalysisRepository } from '../modules/reports/infrastructure/persistence/inMemoryReportAnalysisRepository.js';
 import { REPORT_ANALYSIS_VERSION } from '../modules/reports/domain/reportAnalysisConfig.js';
 import { createReportAnalysisSnapshotKey } from '../modules/reports/domain/reportAnalysisSnapshot.js';
-import { startReportAnalysis } from '../modules/reports/application/reportAnalysisWorker.js';
-import { ReportProjectPathNotFoundError } from '../modules/reports/analysis/project-detector/reportProjectDetector.js';
+import {
+  startReportAnalysis,
+  startReportAnalysisSafely,
+} from '../modules/reports/application/reportAnalysisWorker.js';
+import { ReportProjectPathNotFoundError } from '../modules/reports/application/ports/reportAnalyzer.js';
+import {
+  DEFAULT_REPORT_BRANCH,
+  DEFAULT_REPORT_COMMIT_DATE,
+  DEFAULT_REPORT_COMMIT_SHA,
+  DEFAULT_REPORT_COMMIT_TITLE,
+  createTestProjectReport,
+  createTestScoreDetails,
+} from '../test-utils/reportTestFixtures.js';
 
-import type { ReportAnalyzer } from '../modules/reports/analysis/githubReportAnalyzer.js';
+import type { ReportAnalyzer } from '../modules/reports/application/ports/reportAnalyzer.js';
 import type {
   CreateReportAnalysisRecordInput,
   ReportAnalysisFailure,
-} from '../modules/reports/infrastructure/persistence/reportAnalysisRepository.js';
+} from '../modules/reports/application/ports/reportAnalysisRepository.js';
 import type { ProjectReport } from '../modules/reports/domain/reportSchemas.js';
 
-const DEFAULT_COMMIT_DATE = '2026-06-09T00:00:00.000Z';
-const DEFAULT_COMMIT_SHA = 'abc123';
-const DEFAULT_COMMIT_TITLE = 'Initial frontend quality pass';
-const DEFAULT_BRANCH = 'main';
-
-const emptyTooling: ProjectReport['tooling'] = {
-  accessibility: [],
-  bundlers: [],
-  formatting: [],
-  frameworks: [],
-  linting: [],
-  packageManager: [],
-  testing: [],
-  typing: [],
-  uiReview: [],
-};
-
-const createScoreDetails = (
-  value: number,
-): ProjectReport['scoreBreakdown'][number]['scoreDetails'] => ({
-  rawValue: value,
-  finalValue: value,
-  weight: 1,
-  impactLevel: 'supporting',
-  checks: [],
-});
+const DEFAULT_COMMIT_DATE = DEFAULT_REPORT_COMMIT_DATE;
+const DEFAULT_COMMIT_SHA = DEFAULT_REPORT_COMMIT_SHA;
+const DEFAULT_COMMIT_TITLE = DEFAULT_REPORT_COMMIT_TITLE;
+const DEFAULT_BRANCH = DEFAULT_REPORT_BRANCH;
 
 const createTestReport = (
   id: string,
@@ -54,61 +43,15 @@ const createTestReport = (
   projectPath: string | null = null,
   latestCommitTitle: string | null = DEFAULT_COMMIT_TITLE,
   branch = DEFAULT_BRANCH,
-): ProjectReport => ({
-  analysisSources: [],
-  id,
-  createdAt: '2026-06-09T00:00:00.000Z',
-  totalScore: 100,
-  repository: {
-    owner: 'owner',
-    name: 'repo',
-    url: 'https://github.com/owner/repo',
-    description: 'Test repository',
-    stars: 1,
-    forks: 0,
-    defaultBranch: DEFAULT_BRANCH,
+): ProjectReport =>
+  createTestProjectReport({
     branch,
-    projectPath,
-    projectDetection: {
-      source: projectPath ? 'manual' : 'autodetect',
-      path: projectPath,
-      packageJsonPath: projectPath ? `${projectPath}/package.json` : 'package.json',
-      confidence: 'high',
-      signals: [
-        {
-          id: 'project-package-json',
-          label: 'Frontend package.json',
-          status: 'found',
-          source: projectPath ? `${projectPath}/package.json` : 'package.json',
-        },
-      ],
-    },
+    id,
     latestCommitSha,
     latestCommitDate,
     latestCommitTitle,
-    license: 'MIT',
-  },
-  scoreBreakdown: [
-    {
-      category: 'documentation',
-      label: 'Documentation',
-      value: 100,
-      maxValue: 100,
-      status: 'excellent',
-      description: 'Documentation is present.',
-      scoreDetails: createScoreDetails(100),
-    },
-  ],
-  checks: [
-    {
-      id: 'readme-exists',
-      label: 'README exists',
-      status: 'passed',
-    },
-  ],
-  tooling: emptyTooling,
-  recommendations: [],
-});
+    projectPath,
+  });
 
 const createTestRecordInput = (
   overrides: Partial<CreateReportAnalysisRecordInput> = {},
@@ -1752,7 +1695,7 @@ describe('reports routes', () => {
           maxValue: 100,
           status: options.score >= 75 ? 'good' : 'warning',
           description: 'Documentation signals.',
-          scoreDetails: createScoreDetails(options.score),
+          scoreDetails: createTestScoreDetails(options.score),
         },
       ],
       checks: [
@@ -1914,7 +1857,7 @@ describe('reports routes', () => {
           {
             ...report.scoreBreakdown[0],
             value: score,
-            scoreDetails: createScoreDetails(score),
+            scoreDetails: createTestScoreDetails(score),
           },
         ],
       };
@@ -2201,6 +2144,7 @@ describe('reports routes', () => {
       }),
       logger: {
         error: vi.fn(),
+        warn: vi.fn(),
       },
       lease: {
         expiresAt: new Date('2026-06-09T00:05:00.000Z'),
@@ -2248,6 +2192,7 @@ describe('reports routes', () => {
         }),
         logger: {
           error: vi.fn(),
+          warn: vi.fn(),
         },
         lease: {
           expiresAt: new Date('2026-06-09T00:05:00.000Z'),
@@ -2270,6 +2215,104 @@ describe('reports routes', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('does not complete analysis when worker loses its lease', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-09T00:00:00.000Z'));
+
+    try {
+      const repository = new InMemoryReportAnalysisRepository();
+      const queuedAnalysis = await repository.create(createTestRecordInput());
+      const logger = {
+        error: vi.fn(),
+        warn: vi.fn(),
+      };
+      const analysisControl: {
+        finish?: () => void;
+      } = {};
+      let resolveAnalysisStarted: (() => void) | null = null;
+      const startedPromise = new Promise<void>((resolve) => {
+        resolveAnalysisStarted = resolve;
+      });
+      const runPromise = startReportAnalysis({
+        analysis: queuedAnalysis,
+        analyzer: createAnalyzer({
+          analyze: async (analysis) => {
+            resolveAnalysisStarted?.();
+
+            await new Promise<void>((resolve) => {
+              analysisControl.finish = resolve;
+            });
+
+            return createTestReport(analysis.id);
+          },
+        }),
+        logger,
+        lease: {
+          expiresAt: new Date('2026-06-09T00:05:00.000Z'),
+          owner: 'worker-a',
+        },
+        repository,
+      });
+
+      await startedPromise;
+      vi.setSystemTime(new Date('2026-06-09T00:06:00.000Z'));
+      await repository.claimForProcessing({
+        id: queuedAnalysis.id,
+        leaseExpiresAt: new Date('2026-06-09T00:11:00.000Z'),
+        leaseOwner: 'worker-b',
+        now: new Date('2026-06-09T00:06:00.000Z'),
+      });
+      await vi.advanceTimersByTimeAsync(110_000);
+
+      analysisControl.finish?.();
+      await runPromise;
+
+      await expect(repository.findById(queuedAnalysis.id)).resolves.toMatchObject({
+        status: 'running',
+        leaseOwner: 'worker-b',
+      });
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.objectContaining({
+          analysisId: queuedAnalysis.id,
+          leaseOwner: 'worker-a',
+        }),
+        'Report analysis lease was lost',
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('logs unexpected background worker crashes', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const queuedAnalysis = await repository.create(createTestRecordInput());
+    const logger = {
+      error: vi.fn(),
+      warn: vi.fn(),
+    };
+    const crash = new Error('Database unavailable');
+
+    repository.claimForProcessing = vi.fn(async () => {
+      throw crash;
+    });
+
+    startReportAnalysisSafely({
+      analysis: queuedAnalysis,
+      analyzer: createAnalyzer(),
+      logger,
+      repository,
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(logger.error).toHaveBeenCalledWith(
+      {
+        analysisId: queuedAnalysis.id,
+        error: crash,
+      },
+      'Report analysis worker crashed',
+    );
   });
 
   it('does not recover a running analysis with an active lease', async () => {

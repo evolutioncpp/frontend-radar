@@ -257,6 +257,29 @@ describe('GithubRepositoryReader', () => {
     );
   });
 
+  it('returns null for unsupported file content encoding', async () => {
+    const client = {
+      requestJson: async () => ({
+        content: encodeContent('README'),
+        encoding: 'none',
+      }),
+    } satisfies Pick<GithubClient, 'requestJson'>;
+    const reader = new GithubRepositoryReader(client as GithubClient);
+
+    await expect(reader.readTextFile('owner', 'repo', 'main', 'README.md')).resolves.toBeNull();
+  });
+
+  it('returns null when file content is missing from contents response', async () => {
+    const client = {
+      requestJson: async () => ({
+        encoding: 'base64',
+      }),
+    } satisfies Pick<GithubClient, 'requestJson'>;
+    const reader = new GithubRepositoryReader(client as GithubClient);
+
+    await expect(reader.readTextFile('owner', 'repo', 'main', 'README.md')).resolves.toBeNull();
+  });
+
   it('lists only file names from directory contents', async () => {
     const { reader } = createReader();
 

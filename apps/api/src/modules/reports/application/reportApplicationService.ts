@@ -1,7 +1,10 @@
 import { getGithubRepositoryKey } from '@frontend-radar/github-repository';
 
-import { isGithubApiError, type ReportAnalyzer } from '../analysis/githubReportAnalyzer.js';
-import { isReportProjectPathNotFoundError } from '../analysis/project-detector/reportProjectDetector.js';
+import {
+  isReportAnalyzerApiError,
+  isReportProjectPathNotFoundError,
+  type ReportAnalyzer,
+} from './ports/reportAnalyzer.js';
 import { REPORT_ANALYSIS_VERSION, reportHistoryLimit } from '../domain/reportAnalysisConfig.js';
 import { createReportAnalysisSnapshotKey } from '../domain/reportAnalysisSnapshot.js';
 import { buildReportComparison } from '../domain/reportComparison.js';
@@ -14,20 +17,20 @@ import {
   type ReportAnalysisEntity,
   type ReportAnalysisRepository,
   type ReportAnalysisSnapshotLookup,
-} from '../infrastructure/persistence/reportAnalysisRepository.js';
+} from './ports/reportAnalysisRepository.js';
 
 import type {
   CreateReportAnalysisRequest,
+  CreateReportAnalysisResponse,
   GetReportComparisonResponse,
-  ProjectReport,
+  GetReportAnalysisResponse,
+  ListReportAnalysesResponse,
+  ListRepositoryBranchesResponse,
+  RefreshReportAnalysisResponse,
   ReportAnalysisErrorCode,
-  ReportAnalysisStatus,
+  RetryReportAnalysisResponse,
 } from '../domain/reportSchemas.js';
-import type { RepositoryBranches } from '../infrastructure/github/githubRepositoryReader.js';
 import type { SupportedLanguage } from '@frontend-radar/localization';
-
-type ProcessingStatus = Extract<ReportAnalysisStatus, 'queued' | 'running'>;
-type ReusableStatus = Extract<ReportAnalysisStatus, 'queued' | 'running' | 'completed'>;
 
 export interface ReportApplicationWarning {
   context: Record<string, unknown>;
@@ -61,54 +64,14 @@ export type ReportApplicationResult<TBody> =
       type: 'error';
     };
 
-export interface CreateReportAnalysisResultBody {
-  id: string;
-  reuseReason: 'active' | 'completed' | 'retried' | null;
-  status: ReusableStatus;
-}
-
-export interface RetryReportAnalysisResultBody {
-  id: string;
-  retryReason: 'active' | 'completed' | 'retried';
-  status: ReusableStatus;
-}
-
-export interface RefreshReportAnalysisResultBody {
-  id: string;
-  refreshReason: 'created' | 'reused' | 'up_to_date';
-  status: ReusableStatus;
-}
-
-export interface ReportAnalysisProcessingSummary {
-  owner: string;
-  repository: string;
-  normalizedUrl: string;
-  branch: string;
-  projectPath: string | null;
-  latestCommitSha: string | null;
-  latestCommitDate: string | null;
-  latestCommitTitle: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export type GetReportAnalysisResultBody =
-  | {
-      id: string;
-      analysis: ReportAnalysisProcessingSummary;
-      status: ProcessingStatus;
-    }
-  | {
-      id: string;
-      report: ProjectReport;
-      status: 'completed';
-    }
-  | {
-      id: string;
-      status: 'failed';
-      errorCode: ReportAnalysisErrorCode;
-      errorMessage: string;
-    };
+export type CreateReportAnalysisResultBody = CreateReportAnalysisResponse;
+export type RetryReportAnalysisResultBody = RetryReportAnalysisResponse;
+export type RefreshReportAnalysisResultBody = RefreshReportAnalysisResponse;
+export type GetReportAnalysisResultBody = GetReportAnalysisResponse;
+export type ReportAnalysisProcessingSummary = Extract<
+  GetReportAnalysisResponse,
+  { status: 'queued' | 'running' }
+>['analysis'];
 
 interface ReportApplicationServiceOptions {
   analyzer: ReportAnalyzer;
@@ -129,32 +92,11 @@ export interface ReportApplicationService {
     language: SupportedLanguage;
     previousId?: string;
   }): Promise<ReportApplicationResult<GetReportComparisonResponse>>;
-  listReportAnalyses(): Promise<
-    ReportApplicationResult<{
-      items: Array<{
-        id: string;
-        owner: string;
-        repository: string;
-        normalizedUrl: string;
-        branch: string;
-        projectPath: string | null;
-        status: ReportAnalysisStatus;
-        latestCommitDate: string | null;
-        latestCommitSha: string | null;
-        latestCommitTitle: string | null;
-        createdAt: string;
-        updatedAt: string;
-        score?: number;
-        metricsCount?: number;
-        checksCount?: number;
-        recommendationsCount?: number;
-      }>;
-    }>
-  >;
+  listReportAnalyses(): Promise<ReportApplicationResult<ListReportAnalysesResponse>>;
   listRepositoryBranches(
     owner: string,
     repository: string,
-  ): Promise<ReportApplicationResult<RepositoryBranches>>;
+  ): Promise<ReportApplicationResult<ListRepositoryBranchesResponse>>;
   refreshReportAnalysis(
     id: string,
   ): Promise<ReportApplicationResult<RefreshReportAnalysisResultBody>>;
@@ -350,7 +292,7 @@ export const createReportApplicationService = ({
       try {
         return success(200, await analyzer.listRepositoryBranches(owner, repositoryName));
       } catch (error) {
-        if (isGithubApiError(error)) {
+        if (isReportAnalyzerApiError(error)) {
           return localizedError(error.code);
         }
 
@@ -399,7 +341,7 @@ export const createReportApplicationService = ({
           return localizedError('project_path_not_found', 422);
         }
 
-        if (isGithubApiError(error)) {
+        if (isReportAnalyzerApiError(error)) {
           return localizedError(error.code);
         }
 
@@ -573,7 +515,7 @@ export const createReportApplicationService = ({
           return localizedError('project_path_not_found', 422);
         }
 
-        if (isGithubApiError(error)) {
+        if (isReportAnalyzerApiError(error)) {
           return localizedError(error.code);
         }
 

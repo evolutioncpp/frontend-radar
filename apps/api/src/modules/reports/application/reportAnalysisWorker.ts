@@ -1,16 +1,16 @@
 import { randomUUID } from 'node:crypto';
 
-import type { ReportAnalyzer } from '../analysis/githubReportAnalyzer.js';
-import { getReportAnalysisFailure } from '../analysis/githubReportAnalyzer.js';
-import { isReportAnalysisLeaseConflictError } from '../infrastructure/persistence/reportAnalysisRepository.js';
+import { env } from '../../../config/env.js';
+import { getReportAnalysisFailure, type ReportAnalyzer } from './ports/reportAnalyzer.js';
+import { isReportAnalysisLeaseConflictError } from './ports/reportAnalysisRepository.js';
 import type {
   ReportAnalysisEntity,
   ReportAnalysisRepository,
-} from '../infrastructure/persistence/reportAnalysisRepository.js';
+} from './ports/reportAnalysisRepository.js';
 
-const recoveryLeaseDurationMs = 5 * 60 * 1000;
+const recoveryLeaseDurationMs = env.REPORT_ANALYSIS_LEASE_TTL_MS;
 const leaseRefreshIntervalMs = Math.floor(recoveryLeaseDurationMs / 3);
-const recoveryBatchLimit = 25;
+const recoveryBatchLimit = env.REPORT_ANALYSIS_RECOVERY_BATCH_LIMIT;
 
 export interface ReportAnalysisLease {
   expiresAt: Date;
@@ -22,6 +22,7 @@ interface StartReportAnalysisOptions {
   analyzer: ReportAnalyzer;
   logger: {
     error: (value: unknown, message?: string) => void;
+    warn: (value: unknown, message?: string) => void;
   };
   repository: ReportAnalysisRepository;
   lease?: ReportAnalysisLease;
@@ -55,17 +56,53 @@ export const startReportAnalysis = async ({
     return;
   }
 
+  let isFinished = false;
+  let isLeaseLost = false;
   const heartbeat = setInterval(() => {
-    void repository.refreshLease({
-      id: claimedAnalysis.id,
-      leaseExpiresAt: createLeaseExpiresAt(),
-      leaseOwner: lease.owner,
-    });
+    void repository
+      .refreshLease({
+        id: claimedAnalysis.id,
+        leaseExpiresAt: createLeaseExpiresAt(),
+        leaseOwner: lease.owner,
+      })
+      .then((refreshedAnalysis) => {
+        if (refreshedAnalysis || isFinished) {
+          return;
+        }
+
+        isLeaseLost = true;
+        clearInterval(heartbeat);
+        logger.warn(
+          {
+            analysisId: claimedAnalysis.id,
+            leaseOwner: lease.owner,
+          },
+          'Report analysis lease was lost',
+        );
+      })
+      .catch((error: unknown) => {
+        if (isFinished) {
+          return;
+        }
+
+        logger.warn(
+          {
+            analysisId: claimedAnalysis.id,
+            error,
+            leaseOwner: lease.owner,
+          },
+          'Report analysis lease refresh failed',
+        );
+      });
   }, leaseRefreshIntervalMs);
   heartbeat.unref?.();
 
   try {
     const report = await analyzer.analyze(claimedAnalysis);
+
+    if (isLeaseLost) {
+      return;
+    }
 
     await repository.complete(claimedAnalysis.id, report, { leaseOwner: lease.owner });
   } catch (error) {
@@ -93,8 +130,21 @@ export const startReportAnalysis = async ({
       'Report analysis failed',
     );
   } finally {
+    isFinished = true;
     clearInterval(heartbeat);
   }
+};
+
+export const startReportAnalysisSafely = (options: StartReportAnalysisOptions) => {
+  void startReportAnalysis(options).catch((error: unknown) => {
+    options.logger.error(
+      {
+        analysisId: options.analysis.id,
+        error,
+      },
+      'Report analysis worker crashed',
+    );
+  });
 };
 
 export const recoverReportAnalyses = async ({
@@ -115,7 +165,7 @@ export const recoverReportAnalyses = async ({
       continue;
     }
 
-    void startReportAnalysis({
+    startReportAnalysisSafely({
       analysis,
       analyzer,
       lease: {

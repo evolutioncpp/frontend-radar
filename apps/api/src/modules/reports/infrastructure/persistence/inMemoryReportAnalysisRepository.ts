@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { ReportAnalysisLeaseConflictError } from './reportAnalysisRepository.js';
+import { ReportAnalysisLeaseConflictError } from '../../application/ports/reportAnalysisRepository.js';
 
 import type {
   ClaimReportAnalysisForProcessingInput,
@@ -11,7 +11,7 @@ import type {
   ReportAnalysisLeaseOptions,
   ReportAnalysisRepository,
   ReportAnalysisSnapshotLookup,
-} from './reportAnalysisRepository.js';
+} from '../../application/ports/reportAnalysisRepository.js';
 import type { ProjectReport, ReportAnalysisStatus } from '../../domain/reportSchemas.js';
 
 const getReusableRank = (status: ReportAnalysisStatus) => {

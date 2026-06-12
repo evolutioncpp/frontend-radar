@@ -1,5 +1,6 @@
 import { repositorySignalConfig } from '../../domain/reportAnalysisConfig.js';
 import { joinRepositoryPath } from '../../infrastructure/github/githubRepositoryReader.js';
+import { ReportProjectPathNotFoundError } from '../../application/ports/reportAnalyzer.js';
 
 import type {
   GithubRepositoryReader,
@@ -19,18 +20,10 @@ export interface ReportProjectContext {
   rootPackageJson: PackageJson | null;
 }
 
-export class ReportProjectPathNotFoundError extends Error {
-  constructor(projectPath: string) {
-    super(`Frontend project package.json was not found at ${projectPath}`);
-    this.name = 'ReportProjectPathNotFoundError';
-  }
-}
-
-export const isReportProjectPathNotFoundError = (
-  error: unknown,
-): error is ReportProjectPathNotFoundError => {
-  return error instanceof ReportProjectPathNotFoundError;
-};
+export {
+  ReportProjectPathNotFoundError,
+  isReportProjectPathNotFoundError,
+} from '../../application/ports/reportAnalyzer.js';
 
 const dependencySections = [
   'dependencies',
