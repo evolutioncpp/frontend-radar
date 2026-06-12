@@ -6,19 +6,19 @@ import {
   GithubApiError,
   GithubBranchNotFoundError,
   GithubRepositoryNotFoundError,
-} from '../modules/reports/githubReportAnalyzer.js';
-import { InMemoryReportAnalysisRepository } from '../modules/reports/inMemoryReportAnalysisRepository.js';
-import { REPORT_ANALYSIS_VERSION } from '../modules/reports/reportAnalysisConfig.js';
-import { createReportAnalysisSnapshotKey } from '../modules/reports/reportAnalysisSnapshot.js';
-import { startReportAnalysis } from '../modules/reports/reportAnalysisWorker.js';
-import { ReportProjectPathNotFoundError } from '../modules/reports/reportProjectDetector.js';
+} from '../modules/reports/analysis/githubReportAnalyzer.js';
+import { InMemoryReportAnalysisRepository } from '../modules/reports/infrastructure/persistence/inMemoryReportAnalysisRepository.js';
+import { REPORT_ANALYSIS_VERSION } from '../modules/reports/domain/reportAnalysisConfig.js';
+import { createReportAnalysisSnapshotKey } from '../modules/reports/domain/reportAnalysisSnapshot.js';
+import { startReportAnalysis } from '../modules/reports/application/reportAnalysisWorker.js';
+import { ReportProjectPathNotFoundError } from '../modules/reports/analysis/project-detector/reportProjectDetector.js';
 
-import type { ReportAnalyzer } from '../modules/reports/githubReportAnalyzer.js';
+import type { ReportAnalyzer } from '../modules/reports/analysis/githubReportAnalyzer.js';
 import type {
   CreateReportAnalysisRecordInput,
   ReportAnalysisFailure,
-} from '../modules/reports/reportAnalysisRepository.js';
-import type { ProjectReport } from '../modules/reports/reportSchemas.js';
+} from '../modules/reports/infrastructure/persistence/reportAnalysisRepository.js';
+import type { ProjectReport } from '../modules/reports/domain/reportSchemas.js';
 
 const DEFAULT_COMMIT_DATE = '2026-06-09T00:00:00.000Z';
 const DEFAULT_COMMIT_SHA = 'abc123';

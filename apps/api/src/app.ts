@@ -15,13 +15,17 @@ import { prisma } from './config/prisma.js';
 import {
   GithubReportAnalyzer,
   type ReportAnalyzer,
-} from './modules/reports/githubReportAnalyzer.js';
-import { recoverReportAnalyses } from './modules/reports/reportAnalysisWorker.js';
+} from './modules/reports/analysis/githubReportAnalyzer.js';
+import { createReportApplicationService } from './modules/reports/application/reportApplicationService.js';
 import {
-  PrismaReportAnalysisRepository,
+  recoverReportAnalyses,
+  startReportAnalysis,
+} from './modules/reports/application/reportAnalysisWorker.js';
+import {
   type ReportAnalysisEntity,
   type ReportAnalysisRepository,
-} from './modules/reports/reportAnalysisRepository.js';
+} from './modules/reports/infrastructure/persistence/reportAnalysisRepository.js';
+import { PrismaReportAnalysisRepository } from './modules/reports/infrastructure/persistence/prismaReportAnalysisRepository.js';
 import { healthRoutes } from './routes/health.js';
 import { createReportRoutes } from './routes/reports.js';
 
@@ -42,6 +46,21 @@ export const buildApp = (
     dependencies.reportAnalysisRepository ?? new PrismaReportAnalysisRepository(prisma);
   const reportAnalyzer = dependencies.reportAnalyzer ?? new GithubReportAnalyzer();
   const recoverOnStart = dependencies.recoverOnStart ?? process.env.NODE_ENV !== 'test';
+  const runReportAnalysis =
+    dependencies.startReportAnalysis ??
+    ((analysis: ReportAnalysisEntity) => {
+      void startReportAnalysis({
+        analysis,
+        analyzer: reportAnalyzer,
+        logger: app.log,
+        repository: reportAnalysisRepository,
+      });
+    });
+  const reportApplication = createReportApplicationService({
+    analyzer: reportAnalyzer,
+    repository: reportAnalysisRepository,
+    startAnalysis: runReportAnalysis,
+  });
 
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
@@ -70,13 +89,7 @@ export const buildApp = (
   );
 
   typedApp.register(healthRoutes);
-  typedApp.register(
-    createReportRoutes({
-      analyzer: reportAnalyzer,
-      repository: reportAnalysisRepository,
-      startAnalysis: dependencies.startReportAnalysis,
-    }),
-  );
+  typedApp.register(createReportRoutes({ reports: reportApplication }));
 
   if (recoverOnStart) {
     app.addHook('onReady', async () => {
