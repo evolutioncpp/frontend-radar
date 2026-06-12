@@ -56,7 +56,12 @@ export interface ReportAnalyzer {
   ): Promise<string>;
 }
 
+export const reportAnalyzerApiErrorBrand: unique symbol = Symbol(
+  'frontend-radar.reportAnalyzerApiError',
+);
+
 export type ReportAnalyzerApiError = Error & {
+  readonly [reportAnalyzerApiErrorBrand]: true;
   code: ReportAnalysisErrorCode;
   userMessage?: string;
 };
@@ -65,6 +70,12 @@ const reportAnalysisErrorCodeSet = new Set<string>(reportAnalysisErrorCodes);
 
 export const isReportAnalyzerApiError = (error: unknown): error is ReportAnalyzerApiError => {
   if (typeof error !== 'object' || error === null || !('code' in error)) {
+    return false;
+  }
+
+  if (
+    (error as { [reportAnalyzerApiErrorBrand]?: unknown })[reportAnalyzerApiErrorBrand] !== true
+  ) {
     return false;
   }
 

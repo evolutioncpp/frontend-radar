@@ -1,4 +1,5 @@
 import { sourcePreviewConfig } from '../../domain/reportAnalysisConfig.js';
+import { reportAnalysisSourceIds } from '../../domain/reportSignalContracts.js';
 
 import type { ProjectReport } from '../../domain/reportSchemas.js';
 import type {
@@ -6,37 +7,9 @@ import type {
   RepositorySignals,
   ScriptSignal,
   ToolSignal,
-} from '../signals/reportSignals.js';
+} from '../../domain/reportSignalContracts.js';
 
 type AnalysisSource = ProjectReport['analysisSources'][number];
-
-export const reportAnalysisSourceIds = [
-  'github-repository-metadata',
-  'project-package-json',
-  'root-package-json',
-  'readme',
-  'env-example',
-  'lockfile',
-  'lockfile-consistency',
-  'package-manager',
-  'dependency-hygiene',
-  'github-actions',
-  'ci-pr-trigger',
-  'ci-install-step',
-  'ci-quality-steps',
-  'ci-project-scope',
-  'build-script',
-  'test-script',
-  'lint-script',
-  'typescript',
-  'storybook',
-  'frameworks',
-  'bundler',
-  'testing',
-  'linting',
-  'formatting',
-  'accessibility',
-] as const;
 
 const getScope = (scope: AnalysisSource['scope'] | null | undefined) => scope ?? 'project';
 

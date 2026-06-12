@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { reportAnalysisSourceIds } from '../analysis/sources/reportAnalysisSources.js';
 import { getCatalog } from './catalogs/reportLocalizationCatalogs.js';
 import { localizeProjectReport } from './reportLocalization.js';
-import { reportProjectDetectionSignalIds } from '../analysis/project-detector/reportProjectDetector.js';
+import {
+  reportAnalysisSourceIds,
+  reportProjectDetectionSignalIds,
+} from '../domain/reportSignalContracts.js';
 import { reportScoreCheckIds } from '../scoring/reportScoreCheckIds.js';
 
 import type { ProjectReport } from '../domain/reportSchemas.js';

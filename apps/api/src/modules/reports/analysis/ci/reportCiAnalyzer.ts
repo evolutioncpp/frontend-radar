@@ -1,28 +1,10 @@
 import { ciWorkflowAnalysisConfig } from '../../domain/reportAnalysisConfig.js';
 
-export type CiCheckSignal = {
-  found: boolean;
-  sources: string[];
-};
-
-export type CiAnalysis = {
-  analyzedWorkflowPaths: string[];
-  build: CiCheckSignal;
-  cache: CiCheckSignal;
-  install: CiCheckSignal;
-  isWorkflowAnalysisTruncated?: boolean;
-  lint: CiCheckSignal;
-  projectScope: CiCheckSignal;
-  pullRequest: CiCheckSignal;
-  push: CiCheckSignal;
-  test: CiCheckSignal;
-};
-
-export type WorkflowFile = {
-  content: string;
-  name: string;
-  path: string;
-};
+import type {
+  CiAnalysis,
+  CiCheckSignal,
+  WorkflowFile,
+} from '../../domain/reportSignalContracts.js';
 
 const matchesAnyPattern = (content: string, patterns: readonly RegExp[]) => {
   return patterns.some((pattern) => pattern.test(content));

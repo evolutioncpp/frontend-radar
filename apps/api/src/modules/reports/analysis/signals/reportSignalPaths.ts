@@ -11,8 +11,7 @@ import type {
   GithubRepositoryReader,
   TextFileMatch,
 } from '../../infrastructure/github/githubRepositoryReader.js';
-import type { WorkflowFile } from '../ci/reportCiAnalyzer.js';
-import type { LockfileSignal } from '../dependencies/reportDependencyAnalyzer.js';
+import type { LockfileSignal, WorkflowFile } from '../../domain/reportSignalContracts.js';
 import type { PathSignal, SignalScope } from './reportSignalTypes.js';
 
 export const createPathSignal = (path: string | null, scope: SignalScope): PathSignal => ({

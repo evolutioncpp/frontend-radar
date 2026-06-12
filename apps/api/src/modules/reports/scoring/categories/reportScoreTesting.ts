@@ -5,7 +5,7 @@ import {
   createToolCheck,
 } from '../reportScoreCheckBuilders.js';
 
-import type { RepositorySignals } from '../../analysis/signals/reportSignals.js';
+import type { RepositorySignals } from '../../domain/reportSignalContracts.js';
 
 export const buildTestingScore = (signals: RepositorySignals) =>
   createMetric({

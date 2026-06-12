@@ -1,5 +1,5 @@
 import type { ProjectReport } from './reportSchemas.js';
-import type { RepositorySignals } from '../analysis/signals/reportSignals.js';
+import type { RepositorySignals } from './reportSignalContracts.js';
 
 type ReportRecommendation = ProjectReport['recommendations'][number];
 

@@ -1,8 +1,6 @@
-import type { ProjectReport } from '../../domain/reportSchemas.js';
+import type { ToolingSource, ToolingSourceSection } from '../../domain/reportSignalContracts.js';
 
-export type ToolingSource =
-  ProjectReport['tooling'][keyof ProjectReport['tooling']][number]['sources'][number];
-export type ToolingSourceSection = NonNullable<ToolingSource['section']>;
+export type { ToolingSource, ToolingSourceSection };
 
 const getFileLabel = (path: string) => {
   const segments = path.split('/');

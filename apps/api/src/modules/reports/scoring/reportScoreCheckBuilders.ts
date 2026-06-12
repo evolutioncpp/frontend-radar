@@ -8,7 +8,7 @@ import type {
   ScriptSignal,
   SignalScope,
   ToolSignal,
-} from '../analysis/signals/reportSignals.js';
+} from '../domain/reportSignalContracts.js';
 import type { ReportScoreCheckId } from './reportScoreCheckIds.js';
 import type { ScoringCheck } from './reportScoringEngine.js';
 

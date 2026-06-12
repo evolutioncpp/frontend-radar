@@ -43,7 +43,7 @@ export const buildApp = (
   const reportAnalysisRepository =
     dependencies.reportAnalysisRepository ?? new PrismaReportAnalysisRepository(prisma);
   const reportAnalyzer = dependencies.reportAnalyzer ?? new GithubReportAnalyzer();
-  const recoverOnStart = dependencies.recoverOnStart ?? process.env.NODE_ENV !== 'test';
+  const recoverOnStart = dependencies.recoverOnStart ?? env.NODE_ENV !== 'test';
   const runReportAnalysis =
     dependencies.startReportAnalysis ??
     ((analysis: ReportAnalysisEntity) => {

@@ -1,6 +1,6 @@
 import { createMetric, createToolCheck } from '../reportScoreCheckBuilders.js';
 
-import type { RepositorySignals } from '../../analysis/signals/reportSignals.js';
+import type { RepositorySignals } from '../../domain/reportSignalContracts.js';
 
 export const buildAccessibilityScore = (signals: RepositorySignals) =>
   createMetric({

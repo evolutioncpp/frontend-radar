@@ -1,30 +1,11 @@
 import { dependencyAnalysisConfig } from '../../domain/reportAnalysisConfig.js';
 
 import type { PackageJson } from '../../infrastructure/github/githubRepositoryReader.js';
-import type { SignalScope } from '../signals/reportSignals.js';
-
-type DependencySection =
-  | 'dependencies'
-  | 'devDependencies'
-  | 'optionalDependencies'
-  | 'peerDependencies';
-
-export type LockfileSignal = {
-  packageManager: string | null;
-  path: string;
-  scope: SignalScope;
-};
-
-export type DependencyHealth = {
-  declaredPackageManager: string | null;
-  declaredPackageManagerSource: string | null;
-  hasMixedLockfiles: boolean;
-  lockfiles: LockfileSignal[];
-  misplacedDevDependencies: string[];
-  misplacedDevDependencySources: string[];
-  packageManagerMismatch: boolean;
-  primaryPackageManager: string | null;
-};
+import type {
+  DependencyHealth,
+  DependencySection,
+  LockfileSignal,
+} from '../../domain/reportSignalContracts.js';
 
 export const getPackageManagerFromLockfile = (lockfilePath: string | null) => {
   const lockfileName = lockfilePath?.split('/').at(-1) ?? null;

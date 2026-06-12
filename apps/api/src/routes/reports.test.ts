@@ -7,7 +7,7 @@ import {
   GithubBranchNotFoundError,
   GithubRepositoryNotFoundError,
 } from '../modules/reports/infrastructure/github/githubErrors.js';
-import { InMemoryReportAnalysisRepository } from '../modules/reports/infrastructure/persistence/inMemoryReportAnalysisRepository.js';
+import { InMemoryReportAnalysisRepository } from '../test-utils/inMemoryReportAnalysisRepository.js';
 import { REPORT_ANALYSIS_VERSION } from '../modules/reports/domain/reportAnalysisConfig.js';
 import { createReportAnalysisSnapshotKey } from '../modules/reports/domain/reportAnalysisSnapshot.js';
 import {

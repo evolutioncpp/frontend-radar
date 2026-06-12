@@ -1,4 +1,4 @@
-import type { RepositorySignals } from '../analysis/signals/reportSignals.js';
+import type { RepositorySignals } from './reportSignalContracts.js';
 
 const createCheck = (id: string, label: string, passed: boolean, failedDescription: string) => ({
   id,

@@ -15,6 +15,14 @@ describe('env config', () => {
     );
   });
 
+  it('rejects unsafe report analysis lease ttl values', () => {
+    expect(() =>
+      createEnv({
+        REPORT_ANALYSIS_LEASE_TTL_MS: '2',
+      }),
+    ).toThrow();
+  });
+
   it('parses report analysis worker runtime settings', () => {
     expect(
       createEnv({

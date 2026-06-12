@@ -5,7 +5,7 @@ import {
   getScope,
 } from '../reportScoreCheckBuilders.js';
 
-import type { RepositorySignals } from '../../analysis/signals/reportSignals.js';
+import type { RepositorySignals } from '../../domain/reportSignalContracts.js';
 import type { ScoringCheck } from '../reportScoringEngine.js';
 
 const getReadmeQualityCheck = (signals: RepositorySignals): ScoringCheck => {

@@ -1,6 +1,10 @@
+import { reportAnalyzerApiErrorBrand } from '../../application/ports/reportAnalyzer.js';
+
 import type { ReportAnalysisErrorCode } from '../../domain/reportSchemas.js';
 
 export class GithubApiError extends Error {
+  readonly [reportAnalyzerApiErrorBrand] = true as const;
+
   constructor(
     message: string,
     readonly code: ReportAnalysisErrorCode,

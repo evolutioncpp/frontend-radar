@@ -10,7 +10,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url().optional(),
   GITHUB_API_BASE_URL: z.string().url().default('https://api.github.com'),
   GITHUB_TOKEN: z.string().min(1).optional(),
-  REPORT_ANALYSIS_LEASE_TTL_MS: z.coerce.number().int().positive().default(300000),
+  REPORT_ANALYSIS_LEASE_TTL_MS: z.coerce.number().int().min(3000).default(300000),
   REPORT_ANALYSIS_RECOVERY_BATCH_LIMIT: z.coerce.number().int().positive().default(25),
   WEB_ORIGIN: z.string().min(1).default('http://localhost:5173'),
 });

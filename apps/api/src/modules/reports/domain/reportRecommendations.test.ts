@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildRecommendations } from './reportRecommendations.js';
-import { createDependencyNameSource } from '../analysis/tooling/reportToolingSources.js';
 
 import type {
   RepositorySignals,
   ScriptSignal,
+  ToolingSource,
   ToolSignal,
-} from '../analysis/signals/reportSignals.js';
+} from './reportSignalContracts.js';
 
 const createScriptSignal = (
   name: ScriptSignal['name'],
@@ -21,7 +21,14 @@ const createScriptSignal = (
 });
 
 const createToolSignal = (sources: string[] = []): ToolSignal => {
-  const toolingSources = sources.map(createDependencyNameSource);
+  const toolingSources = sources.map(
+    (source): ToolingSource => ({
+      kind: 'dependency',
+      label: source,
+      name: source,
+      raw: source,
+    }),
+  );
 
   return {
     configPaths: [],

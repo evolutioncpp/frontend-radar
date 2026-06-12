@@ -1,6 +1,6 @@
 import { createCheck, createCiCheck, createMetric } from '../reportScoreCheckBuilders.js';
 
-import type { RepositorySignals } from '../../analysis/signals/reportSignals.js';
+import type { RepositorySignals } from '../../domain/reportSignalContracts.js';
 
 export const buildCiScore = (signals: RepositorySignals) =>
   createMetric({

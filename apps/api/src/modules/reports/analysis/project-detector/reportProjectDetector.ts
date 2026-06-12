@@ -7,6 +7,7 @@ import type {
   PackageJson,
 } from '../../infrastructure/github/githubRepositoryReader.js';
 import type { ProjectReport, ReportProjectPathSource } from '../../domain/reportSchemas.js';
+import type { ReportProjectDetectionSignalId } from '../../domain/reportSignalContracts.js';
 
 export type ReportProjectDetection = ProjectReport['repository']['projectDetection'];
 type ReportProjectDetectionSignal = ReportProjectDetection['signals'][number];
@@ -33,13 +34,7 @@ const dependencySections = [
 ] as const;
 const frontendPathSegmentSet = new Set<string>(repositorySignalConfig.frontendPathSegments);
 
-const projectDetectionSignalTexts: Record<
-  string,
-  {
-    label: string;
-    descriptions: Partial<Record<ReportProjectDetectionSignalStatus, string>>;
-  }
-> = {
+const projectDetectionSignalTexts = {
   'project-package-json': {
     label: 'Frontend package.json',
     descriptions: {
@@ -89,11 +84,13 @@ const projectDetectionSignalTexts: Record<
       missing: 'The selected path was not matched to a root workspace entry.',
     },
   },
-};
-
-export const reportProjectDetectionSignalIds = Object.keys(projectDetectionSignalTexts);
-
-type ReportProjectDetectionSignalId = keyof typeof projectDetectionSignalTexts;
+} satisfies Record<
+  ReportProjectDetectionSignalId,
+  {
+    label: string;
+    descriptions: Partial<Record<ReportProjectDetectionSignalStatus, string>>;
+  }
+>;
 
 const normalizeProjectPath = (path: string) => {
   const normalizedPath = joinRepositoryPath(
@@ -235,7 +232,10 @@ const createProjectDetectionSignal = ({
   source?: string;
   status: ReportProjectDetectionSignalStatus;
 }): ReportProjectDetectionSignal => {
-  const fallback = projectDetectionSignalTexts[id];
+  const fallback: {
+    label: string;
+    descriptions: Partial<Record<ReportProjectDetectionSignalStatus, string>>;
+  } = projectDetectionSignalTexts[id];
   const description = fallback.descriptions[status];
 
   return {

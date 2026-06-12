@@ -6,7 +6,7 @@ import type {
   RepositorySignals,
   ScriptSignal,
   ToolSignal,
-} from '../analysis/signals/reportSignals.js';
+} from '../domain/reportSignalContracts.js';
 
 const createScriptSignal = (
   name: ScriptSignal['name'],

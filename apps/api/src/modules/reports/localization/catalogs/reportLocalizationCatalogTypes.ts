@@ -1,5 +1,7 @@
-import { reportAnalysisSourceIds } from '../../analysis/sources/reportAnalysisSources.js';
-import { reportProjectDetectionSignalIds } from '../../analysis/project-detector/reportProjectDetector.js';
+import {
+  reportAnalysisSourceIds,
+  reportProjectDetectionSignalIds,
+} from '../../domain/reportSignalContracts.js';
 
 import type { ProjectReport, ReportAnalysisErrorCode } from '../../domain/reportSchemas.js';
 import type { ReportScoreCheckId } from '../../scoring/reportScoreCheckIds.js';

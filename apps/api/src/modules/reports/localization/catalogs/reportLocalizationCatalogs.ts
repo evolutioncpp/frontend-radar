@@ -1,6 +1,5 @@
 import { normalizeSupportedLanguage } from '@frontend-radar/localization';
 
-import { reportAnalysisSourceIds } from '../../analysis/sources/reportAnalysisSources.js';
 import { reportLocalizationAnalysisSources } from './reportLocalizationAnalysisSources.js';
 import { reportLocalizationChecks } from './reportLocalizationChecks.js';
 import { reportLocalizationErrors } from './reportLocalizationErrors.js';
@@ -10,7 +9,10 @@ import { reportLocalizationProjectDetection } from './reportLocalizationProjectD
 import { reportLocalizationRecommendations } from './reportLocalizationRecommendations.js';
 import { reportLocalizationScoreCaps } from './reportLocalizationScoreCaps.js';
 import { reportLocalizationScoreChecks } from './reportLocalizationScoreChecks.js';
-import { reportProjectDetectionSignalIds } from '../../analysis/project-detector/reportProjectDetector.js';
+import {
+  reportAnalysisSourceIds,
+  reportProjectDetectionSignalIds,
+} from '../../domain/reportSignalContracts.js';
 import { reportScoreCheckIds } from '../../scoring/reportScoreCheckIds.js';
 
 import type {

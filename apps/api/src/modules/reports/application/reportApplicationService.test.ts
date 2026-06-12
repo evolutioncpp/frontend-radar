@@ -1,7 +1,7 @@
 import { getGithubRepositoryKey } from '@frontend-radar/github-repository';
 import { describe, expect, it, vi } from 'vitest';
 
-import { InMemoryReportAnalysisRepository } from '../infrastructure/persistence/inMemoryReportAnalysisRepository.js';
+import { InMemoryReportAnalysisRepository } from '../../../test-utils/inMemoryReportAnalysisRepository.js';
 import { REPORT_ANALYSIS_VERSION } from '../domain/reportAnalysisConfig.js';
 import { createReportAnalysisSnapshotKey } from '../domain/reportAnalysisSnapshot.js';
 import {
@@ -206,6 +206,32 @@ describe('report application service', () => {
     });
     expect(startAnalysis).toHaveBeenCalledOnce();
     expect(startAnalysis).toHaveBeenCalledWith(expect.objectContaining({ id: result.body.id }));
+  });
+
+  it('does not treat unbranded analyzer-like errors as user-facing GitHub errors', async () => {
+    const { service } = createService({
+      analyzer: createAnalyzer({
+        getRepositorySnapshot: async () => {
+          throw Object.assign(new Error('Not an analyzer API error'), {
+            code: 'repository_not_found',
+          });
+        },
+      }),
+    });
+
+    const result = await service.createReportAnalysis({
+      normalizedUrl: 'https://github.com/owner/repo',
+      owner: 'owner',
+      repository: 'repo',
+    });
+
+    expect(result).toMatchObject({
+      error: {
+        code: 'repository_verification_failed',
+        statusCode: 502,
+      },
+      type: 'error',
+    });
   });
 
   it('reuses a completed analysis for the same repository snapshot', async () => {

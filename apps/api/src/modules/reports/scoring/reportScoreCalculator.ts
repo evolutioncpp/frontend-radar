@@ -7,7 +7,7 @@ import { buildPerformanceScore } from './categories/reportScorePerformance.js';
 import { getStatusByScore } from './reportScoreCheckBuilders.js';
 import { buildTestingScore } from './categories/reportScoreTesting.js';
 
-import type { RepositorySignals } from '../analysis/signals/reportSignals.js';
+import type { RepositorySignals } from '../domain/reportSignalContracts.js';
 
 export { getStatusByScore };
 
