@@ -61,9 +61,12 @@ vi.mock('react-i18next', () => ({
         'form.errors.invalidBranch': 'Select a valid GitHub branch.',
         'form.errors.branchLoadFailed': 'Could not load repository branches.',
         'form.errors.invalidProjectPath': 'Enter a valid repo-relative folder path.',
-        'form.errors.repositoryNotFound': 'Repository was not found on GitHub.',
+        'form.errors.repositoryNotFound':
+          'Repository was not found on GitHub, or the configured token does not have access to a private repository.',
         'form.errors.repositoryForbidden':
           'This repository is private, or the configured GitHub token does not have access.',
+        'form.errors.serviceUnavailable':
+          'Frontend Radar API is unavailable. Check that the backend and database are running, then try again.',
       };
 
       return translations[key] ?? key;
@@ -428,7 +431,11 @@ describe('RepositoryAnalysisForm', () => {
     fillRepository('https://github.com/owner/repo/tree/main/apps/web');
     fireEvent.click(screen.getByRole('button', { name: 'Analyze' }));
 
-    expect(await screen.findByText('Repository was not found on GitHub.')).toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        'Repository was not found on GitHub, or the configured token does not have access to a private repository.',
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByText('Branches unavailable')).toBeInTheDocument();
 
     fireEvent.click(screen.getByLabelText('Branch'));
@@ -462,5 +469,28 @@ describe('RepositoryAnalysisForm', () => {
         'Branch list is unavailable. You can run analysis without selecting a branch; Frontend Radar will use the repository default branch if GitHub access is available.',
       ),
     ).toBeInTheDocument();
+  });
+
+  test('shows service unavailable message when branch loading cannot reach the API', async () => {
+    branchApiMocks.loadRepositoryBranches.mockReturnValueOnce({
+      unwrap: () =>
+        Promise.reject(
+          Object.assign(new Error('API unavailable'), {
+            status: 'FETCH_ERROR',
+          }),
+        ),
+    });
+
+    render(<RepositoryAnalysisForm onSubmit={vi.fn()} />);
+
+    fillRepository('owner/repo');
+    fireEvent.click(screen.getByLabelText('Branch'));
+
+    expect(
+      await screen.findByText(
+        'Frontend Radar API is unavailable. Check that the backend and database are running, then try again.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Branches unavailable')).toBeInTheDocument();
   });
 });

@@ -260,6 +260,23 @@ describe('useProjectReport', () => {
     expect(refetch).not.toHaveBeenCalled();
   });
 
+  test('returns serviceUnavailable for transport errors', () => {
+    apiMocks.getReportAnalysis.mockReturnValue({
+      error: {
+        status: 'FETCH_ERROR',
+      },
+      isError: true,
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useProjectReport('analysis-id'));
+
+    expect(result.current).toEqual({
+      status: 'serviceUnavailable',
+    });
+  });
+
   test('does not poll after report returns not found with stale processing data', () => {
     vi.useFakeTimers();
     const refetch = vi.fn();

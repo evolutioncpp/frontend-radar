@@ -1,6 +1,8 @@
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useEffect } from 'react';
 
+import { getApiErrorStatus, isApiTransportErrorStatus } from '@/shared/api/apiErrors';
+
 import { useGetReportAnalysisQuery } from './reportApi';
 import { isReportProcessing } from './reportSelectors';
 
@@ -30,6 +32,9 @@ export type ProjectReportState =
     }
   | {
       status: 'error';
+    }
+  | {
+      status: 'serviceUnavailable';
     }
   | {
       status: 'failed';
@@ -64,14 +69,17 @@ export const useProjectReport = (reportId?: string): ProjectReportState => {
   }
 
   if (query.isError) {
-    if (
-      typeof query.error === 'object' &&
-      query.error !== null &&
-      'status' in query.error &&
-      query.error.status === 404
-    ) {
+    const errorStatus = getApiErrorStatus(query.error);
+
+    if (errorStatus === 404) {
       return {
         status: 'notFound',
+      };
+    }
+
+    if (errorStatus === 500 || errorStatus === 503 || isApiTransportErrorStatus(errorStatus)) {
+      return {
+        status: 'serviceUnavailable',
       };
     }
 

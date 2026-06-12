@@ -26,6 +26,10 @@ const reportFailureCopyKeys = {
     description: 'page.reportFailed.errors.analysisFailed.description',
     title: 'page.reportFailed.errors.analysisFailed.title',
   },
+  branch_not_found: {
+    description: 'page.reportFailed.errors.branchNotFound.description',
+    title: 'page.reportFailed.errors.branchNotFound.title',
+  },
   github_rate_limited: {
     description: 'page.reportFailed.errors.githubRateLimited.description',
     title: 'page.reportFailed.errors.githubRateLimited.title',
@@ -170,6 +174,13 @@ export const ReportPage = () => {
           actionLabel={t('page.reportStatusAction')}
           description={t('page.reportError.description')}
           title={t('page.reportError.title')}
+        />
+      ) : reportState.status === 'serviceUnavailable' ? (
+        <ReportStatusCard
+          actionHref={`#${repositoryAnalysisPanelId}`}
+          actionLabel={t('page.reportStatusAction')}
+          description={t('page.reportServiceUnavailable.description')}
+          title={t('page.reportServiceUnavailable.title')}
         />
       ) : reportState.status === 'failed' ? (
         <ReportStatusCard

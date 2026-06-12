@@ -84,11 +84,14 @@ vi.mock('react-i18next', () => ({
         'form.submit': 'Analyze',
         'form.submitLoading': 'Checking...',
         'form.errors.invalidRepository': 'Enter a valid GitHub repository.',
-        'form.errors.repositoryNotFound': 'Repository was not found on GitHub.',
+        'form.errors.repositoryNotFound':
+          'Repository was not found on GitHub, or the configured token does not have access to a private repository.',
         'form.errors.repositoryForbidden':
           'This repository is private or GitHub access is forbidden.',
         'form.errors.githubRateLimited': 'GitHub rate limit was reached. Try again later.',
         'form.errors.githubUnavailable': 'GitHub is unavailable right now. Try again later.',
+        'form.errors.serviceUnavailable':
+          'Frontend Radar API is unavailable. Check that the backend and database are running, then try again.',
         'form.errors.repositoryVerificationFailed':
           'GitHub could not verify this repository. Try again in a moment.',
         'form.errors.unknown': 'Could not start repository analysis. Try again.',
@@ -178,7 +181,11 @@ describe('DashboardPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Analyze' }));
 
     await waitFor(() => {
-      expect(screen.getByText('Repository was not found on GitHub.')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Repository was not found on GitHub, or the configured token does not have access to a private repository.',
+        ),
+      ).toBeInTheDocument();
     });
     expect(screen.queryByRole('heading', { name: 'Demo report route' })).not.toBeInTheDocument();
   });
@@ -206,6 +213,34 @@ describe('DashboardPage', () => {
     await waitFor(() => {
       expect(
         screen.getByText('GitHub rate limit was reached. Try again later.'),
+      ).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('heading', { name: 'Demo report route' })).not.toBeInTheDocument();
+  });
+
+  test('shows service unavailable error when backend cannot be reached', async () => {
+    apiMocks.createReportAnalysis.mockReturnValue({
+      unwrap: () =>
+        Promise.reject(
+          Object.assign(new Error('API unavailable'), {
+            status: 'FETCH_ERROR',
+          }),
+        ),
+    });
+    renderDashboardPage();
+
+    fireEvent.change(screen.getByLabelText('Repository'), {
+      target: {
+        value: 'https://github.com/facebook/react',
+      },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Analyze' }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          'Frontend Radar API is unavailable. Check that the backend and database are running, then try again.',
+        ),
       ).toBeInTheDocument();
     });
     expect(screen.queryByRole('heading', { name: 'Demo report route' })).not.toBeInTheDocument();

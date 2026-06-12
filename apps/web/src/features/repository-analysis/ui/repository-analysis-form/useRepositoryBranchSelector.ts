@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useLazyListRepositoryBranchesQuery } from '../../model/reportAnalysisApi';
+import { getRepositoryAnalysisSubmitError } from '../../model/repositoryAnalysisErrors';
 
 import type { ListRepositoryBranchesApiResponse } from '../../model/reportAnalysisApi';
 import type { RepositoryAnalysisFormValues } from '../../model/repositoryAnalysisSchema';
@@ -8,37 +9,24 @@ import type { ParsedRepositoryInput } from '../../model/repositoryAnalysisTypes'
 import type { TFunction } from 'i18next';
 import type { UseFormClearErrors, UseFormSetError, UseFormSetValue } from 'react-hook-form';
 
-const getApiErrorCode = (error: unknown) => {
-  if (
-    typeof error === 'object' &&
-    error !== null &&
-    'data' in error &&
-    typeof error.data === 'object' &&
-    error.data !== null &&
-    'code' in error.data &&
-    typeof error.data.code === 'string'
-  ) {
-    return error.data.code;
-  }
-
-  return null;
-};
-
 const repositoryAccessErrorMessageKeys = {
-  github_rate_limited: 'form.errors.githubRateLimited',
-  github_unavailable: 'form.errors.githubUnavailable',
-  repository_forbidden: 'form.errors.repositoryForbidden',
-  repository_not_found: 'form.errors.repositoryNotFound',
-  repository_verification_failed: 'form.errors.repositoryVerificationFailed',
+  githubRateLimited: 'form.errors.githubRateLimited',
+  githubUnavailable: 'form.errors.githubUnavailable',
+  repositoryForbidden: 'form.errors.repositoryForbidden',
+  repositoryNotFound: 'form.errors.repositoryNotFound',
+  repositoryVerificationFailed: 'form.errors.repositoryVerificationFailed',
+  serviceUnavailable: 'form.errors.serviceUnavailable',
 } as const;
 
-const getRepositoryAccessErrorMessageKey = (errorCode: string | null) => {
-  if (!errorCode || !(errorCode in repositoryAccessErrorMessageKeys)) {
+const getRepositoryAccessErrorMessageKey = (error: unknown) => {
+  const submitError = getRepositoryAnalysisSubmitError(error);
+
+  if (!submitError || !(submitError in repositoryAccessErrorMessageKeys)) {
     return null;
   }
 
   return repositoryAccessErrorMessageKeys[
-    errorCode as keyof typeof repositoryAccessErrorMessageKeys
+    submitError as keyof typeof repositoryAccessErrorMessageKeys
   ];
 };
 
@@ -165,9 +153,7 @@ export const useRepositoryBranchSelector = ({
       })
       .catch((error) => {
         if (activeBranchRepositoryKeyRef.current === requestKey) {
-          const repositoryErrorMessageKey = getRepositoryAccessErrorMessageKey(
-            getApiErrorCode(error),
-          );
+          const repositoryErrorMessageKey = getRepositoryAccessErrorMessageKey(error);
 
           setLoadedBranchesRepositoryKey(null);
           setLoadedBranchesData(null);

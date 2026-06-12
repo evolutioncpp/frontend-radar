@@ -115,6 +115,9 @@ vi.mock('react-i18next', () => ({
         'page.reportError.title': 'Report could not be loaded',
         'page.reportError.description':
           'Frontend Radar could not load this report. You can start a new analysis from the form above.',
+        'page.reportServiceUnavailable.title': 'Frontend Radar API is unavailable',
+        'page.reportServiceUnavailable.description':
+          'The backend or database is not reachable right now. Check that local services are running and try again.',
         'page.reportStatusAction': 'Start a new analysis',
         'page.reportStatusActionLoading': 'Starting analysis...',
         'page.reportRetry.error.title': 'Could not restart analysis',
@@ -126,6 +129,9 @@ vi.mock('react-i18next', () => ({
         'page.reportFailed.errors.githubUnavailable.title': 'Could not reach GitHub',
         'page.reportFailed.errors.githubUnavailable.description':
           'GitHub API did not respond during analysis. Check the connection, token access or try again later.',
+        'page.reportFailed.errors.branchNotFound.title': 'Branch was not found',
+        'page.reportFailed.errors.branchNotFound.description':
+          'The selected branch is no longer available on GitHub. Choose an existing branch and start a new analysis.',
         'page.reportReuse.completed.title': 'Using the current report',
         'page.reportReuse.completed.description':
           'The repository has not changed since the latest completed analysis, so Frontend Radar reused the existing report.',
@@ -289,13 +295,16 @@ vi.mock('react-i18next', () => ({
         'form.projectPathClear': 'Clear frontend path',
         'form.errors.invalidRepository': 'Enter a valid GitHub repository.',
         'form.errors.invalidProjectPath': 'Enter a valid frontend folder path.',
-        'form.errors.repositoryNotFound': 'Repository was not found on GitHub.',
+        'form.errors.repositoryNotFound':
+          'Repository was not found on GitHub, or the configured token does not have access to a private repository.',
         'form.errors.repositoryForbidden':
           'This repository is private or GitHub access is forbidden.',
         'form.errors.projectPathNotFound':
           'Frontend package.json was not found in the selected path.',
         'form.errors.githubRateLimited': 'GitHub rate limit was reached. Try again later.',
         'form.errors.githubUnavailable': 'GitHub is unavailable right now. Try again later.',
+        'form.errors.serviceUnavailable':
+          'Frontend Radar API is unavailable. Check that the backend and database are running, then try again.',
         'form.errors.repositoryVerificationFailed':
           'GitHub could not verify this repository. Try again in a moment.',
         'form.errors.unknown': 'Could not start repository analysis. Try again.',
@@ -804,7 +813,7 @@ describe('ReportPage', () => {
   test('renders error state', () => {
     apiMocks.getReportAnalysis.mockReturnValue({
       error: {
-        status: 500,
+        status: 418,
       },
       isError: true,
       isLoading: false,
@@ -814,6 +823,27 @@ describe('ReportPage', () => {
 
     expect(screen.getByRole('heading', { name: 'Report could not be loaded' })).toBeInTheDocument();
     expect(screen.getByText(/could not load this report/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Start a new analysis' })).toHaveAttribute(
+      'href',
+      '#repository-analysis',
+    );
+  });
+
+  test('renders service unavailable state for transport errors', () => {
+    apiMocks.getReportAnalysis.mockReturnValue({
+      error: {
+        status: 'FETCH_ERROR',
+      },
+      isError: true,
+      isLoading: false,
+    });
+
+    renderReportPage('/dashboard/report/analysis-id');
+
+    expect(
+      screen.getByRole('heading', { name: 'Frontend Radar API is unavailable' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/backend or database is not reachable/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Start a new analysis' })).toHaveAttribute(
       'href',
       '#repository-analysis',
@@ -843,6 +873,24 @@ describe('ReportPage', () => {
         id: 'analysis-id',
       });
     });
+  });
+
+  test('renders branch not found failed state', () => {
+    apiMocks.getReportAnalysis.mockReturnValue({
+      data: {
+        id: 'analysis-id',
+        status: 'failed',
+        errorCode: 'branch_not_found',
+        errorMessage: 'Branch was not found.',
+      },
+      isError: false,
+      isLoading: false,
+    });
+
+    renderReportPage('/dashboard/report/analysis-id');
+
+    expect(screen.getByRole('heading', { name: 'Branch was not found' })).toBeInTheDocument();
+    expect(screen.getByText(/selected branch is no longer available/i)).toBeInTheDocument();
   });
 
   test('shows retry error notice when failed report restart fails', async () => {

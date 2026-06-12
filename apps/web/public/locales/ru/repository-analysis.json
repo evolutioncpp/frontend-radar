@@ -28,11 +28,12 @@
       "branchLoadFailed": "Не удалось загрузить ветки репозитория.",
       "branchNotFound": "Выбранная ветка не найдена на GitHub.",
       "invalidProjectPath": "Введите корректный путь к папке внутри репозитория.",
-      "repositoryNotFound": "Репозиторий не найден на GitHub.",
+      "repositoryNotFound": "Репозиторий не найден на GitHub или настроенный токен не имеет доступа к приватному репозиторию.",
       "projectPathNotFound": "В указанной папке frontend не найден package.json.",
       "repositoryForbidden": "Этот репозиторий приватный или у настроенного GitHub-токена нет доступа.",
       "githubRateLimited": "Достигнут лимит GitHub API. Проверьте GitHub-токен или попробуйте позже.",
       "githubUnavailable": "GitHub сейчас недоступен. Попробуйте позже.",
+      "serviceUnavailable": "API Frontend Radar недоступен. Проверьте, что backend и база данных запущены, затем попробуйте снова.",
       "repositoryVerificationFailed": "GitHub не смог проверить этот репозиторий. Проверьте доступ и попробуйте чуть позже.",
       "unknown": "Не удалось запустить анализ репозитория. Попробуйте еще раз."
     }

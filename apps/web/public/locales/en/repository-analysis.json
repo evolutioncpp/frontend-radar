@@ -28,11 +28,12 @@
       "branchLoadFailed": "Could not load repository branches.",
       "branchNotFound": "Selected branch was not found on GitHub.",
       "invalidProjectPath": "Enter a valid repo-relative folder path.",
-      "repositoryNotFound": "Repository was not found on GitHub.",
+      "repositoryNotFound": "Repository was not found on GitHub, or the configured token does not have access to a private repository.",
       "projectPathNotFound": "package.json was not found in the selected frontend path.",
       "repositoryForbidden": "This repository is private, or the configured GitHub token does not have access.",
       "githubRateLimited": "GitHub API rate limit was reached. Check the GitHub token or try again later.",
       "githubUnavailable": "GitHub is unavailable right now. Try again later.",
+      "serviceUnavailable": "Frontend Radar API is unavailable. Check that the backend and database are running, then try again.",
       "repositoryVerificationFailed": "GitHub could not verify this repository. Check access and try again in a moment.",
       "unknown": "Could not start repository analysis. Try again."
     }

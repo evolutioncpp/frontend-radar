@@ -117,6 +117,10 @@
       "title": "Report could not be loaded",
       "description": "Frontend Radar could not load this report. You can start a new analysis from the form above."
     },
+    "reportServiceUnavailable": {
+      "title": "Frontend Radar API is unavailable",
+      "description": "The backend or database is not reachable right now. Check that local services are running and try again."
+    },
     "reportFailed": {
       "title": "Analysis failed",
       "description": "Repository analysis failed. Start a new analysis when you are ready.",
@@ -124,6 +128,10 @@
         "analysisFailed": {
           "title": "Analysis failed",
           "description": "Frontend Radar could not finish the repository analysis. Check the repository input and try again."
+        },
+        "branchNotFound": {
+          "title": "Branch was not found",
+          "description": "The selected branch is no longer available on GitHub. Choose an existing branch and start a new analysis."
         },
         "githubRateLimited": {
           "title": "GitHub rate limit reached",
