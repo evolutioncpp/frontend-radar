@@ -6,12 +6,14 @@ import {
   getReportComparisonQuerySchema,
   getReportComparisonResponseSchema,
   getReportAnalysisResponseSchema,
+  githubTokenHeadersSchema,
   listRepositoryBranchesResponseSchema,
   listReportAnalysesResponseSchema,
   reportAnalysisParamsSchema,
   repositoryBranchesParamsSchema,
   refreshReportAnalysisResponseSchema,
   retryReportAnalysisResponseSchema,
+  validateGithubTokenResponseSchema,
 } from '../modules/reports/domain/reportSchemas.js';
 import { getReportLanguage } from '../modules/reports/domain/reportLanguage.js';
 import {
@@ -63,6 +65,21 @@ const logApplicationWarning = (request: FastifyRequest, error: ReportApplication
   request.log.warn(error.warning.context, error.warning.message);
 };
 
+const getGithubTokenFromHeaders = (headers: FastifyRequest['headers']) => {
+  const rawValue = headers['x-github-token'];
+  const value = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  return value.trim() || undefined;
+};
+
+const getRequestContext = (request: FastifyRequest) => ({
+  githubToken: getGithubTokenFromHeaders(request.headers),
+});
+
 const sendResult = <TBody>(
   result: ReportApplicationResult<TBody>,
   language: ReturnType<typeof getReportLanguage>,
@@ -80,12 +97,36 @@ const sendResult = <TBody>(
 export const createReportRoutes = ({ reports }: ReportRoutesOptions): FastifyPluginAsyncZod => {
   return async (app) => {
     app.get(
+      '/github/token/validate',
+      {
+        schema: {
+          hide: true,
+          tags: ['GitHub'],
+          operationId: 'validateGithubToken',
+          headers: githubTokenHeadersSchema,
+          response: {
+            200: validateGithubTokenResponseSchema,
+            403: errorResponseSchema,
+            429: errorResponseSchema,
+            502: errorResponseSchema,
+          },
+        },
+      },
+      async (request, reply) => {
+        const language = getReportLanguage(request.headers['accept-language']);
+        const result = await reports.validateGithubToken(getRequestContext(request));
+
+        return sendResult(result, language, request, reply);
+      },
+    );
+
+    app.get(
       '/repositories/:owner/:repository/branches',
       {
         schema: {
           tags: ['Repositories'],
           operationId: 'listRepositoryBranches',
-          headers: acceptLanguageHeadersSchema,
+          headers: githubTokenHeadersSchema,
           params: repositoryBranchesParamsSchema,
           response: {
             200: listRepositoryBranchesResponseSchema,
@@ -102,6 +143,7 @@ export const createReportRoutes = ({ reports }: ReportRoutesOptions): FastifyPlu
         const result = await reports.listRepositoryBranches(
           request.params.owner,
           request.params.repository,
+          getRequestContext(request),
         );
 
         return sendResult(result, language, request, reply);
@@ -115,7 +157,7 @@ export const createReportRoutes = ({ reports }: ReportRoutesOptions): FastifyPlu
           tags: ['Reports'],
           operationId: 'createReportAnalysis',
           body: createReportAnalysisRequestSchema,
-          headers: acceptLanguageHeadersSchema,
+          headers: githubTokenHeadersSchema,
           response: {
             200: createReportAnalysisResponseSchema,
             201: createReportAnalysisResponseSchema,
@@ -129,7 +171,7 @@ export const createReportRoutes = ({ reports }: ReportRoutesOptions): FastifyPlu
       },
       async (request, reply) => {
         const language = getReportLanguage(request.headers['accept-language']);
-        const result = await reports.createReportAnalysis(request.body);
+        const result = await reports.createReportAnalysis(request.body, getRequestContext(request));
 
         return sendResult(result, language, request, reply);
       },
@@ -161,7 +203,7 @@ export const createReportRoutes = ({ reports }: ReportRoutesOptions): FastifyPlu
         schema: {
           tags: ['Reports'],
           operationId: 'retryReportAnalysis',
-          headers: acceptLanguageHeadersSchema,
+          headers: githubTokenHeadersSchema,
           params: reportAnalysisParamsSchema,
           response: {
             200: retryReportAnalysisResponseSchema,
@@ -171,7 +213,10 @@ export const createReportRoutes = ({ reports }: ReportRoutesOptions): FastifyPlu
       },
       async (request, reply) => {
         const language = getReportLanguage(request.headers['accept-language']);
-        const result = await reports.retryReportAnalysis(request.params.id);
+        const result = await reports.retryReportAnalysis(
+          request.params.id,
+          getRequestContext(request),
+        );
 
         return sendResult(result, language, request, reply);
       },
@@ -183,7 +228,7 @@ export const createReportRoutes = ({ reports }: ReportRoutesOptions): FastifyPlu
         schema: {
           tags: ['Reports'],
           operationId: 'forceRefreshReportAnalysis',
-          headers: acceptLanguageHeadersSchema,
+          headers: githubTokenHeadersSchema,
           params: reportAnalysisParamsSchema,
           response: {
             200: refreshReportAnalysisResponseSchema,
@@ -199,7 +244,10 @@ export const createReportRoutes = ({ reports }: ReportRoutesOptions): FastifyPlu
       },
       async (request, reply) => {
         const language = getReportLanguage(request.headers['accept-language']);
-        const result = await reports.refreshReportAnalysis(request.params.id);
+        const result = await reports.refreshReportAnalysis(
+          request.params.id,
+          getRequestContext(request),
+        );
 
         return sendResult(result, language, request, reply);
       },

@@ -13,7 +13,9 @@ const config = {
       parameterFilter: (parameterName, parameterDefinition) =>
         !(
           parameterDefinition.in === 'header' &&
-          ['accept-language', 'authorization'].includes(parameterName.toLowerCase())
+          ['accept-language', 'authorization', 'x-github-token'].includes(
+            parameterName.toLowerCase(),
+          )
         ),
     },
   ],

@@ -11,8 +11,17 @@ export const appStore = configureStore({
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(baseApi.middleware),
 });
 
+let previousAppSettingsState = appStore.getState().appSettings;
+
 appStore.subscribe(() => {
-  saveAppSettingsState(appStore.getState().appSettings);
+  const nextAppSettingsState = appStore.getState().appSettings;
+
+  if (nextAppSettingsState === previousAppSettingsState) {
+    return;
+  }
+
+  previousAppSettingsState = nextAppSettingsState;
+  saveAppSettingsState(nextAppSettingsState);
 });
 
 export type RootState = ReturnType<typeof appStore.getState>;

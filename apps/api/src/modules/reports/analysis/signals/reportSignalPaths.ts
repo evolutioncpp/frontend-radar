@@ -8,6 +8,7 @@ import { sortWorkflowNamesByAnalysisPriority } from '../ci/reportCiAnalyzer.js';
 import { getPackageManagerFromLockfile } from '../dependencies/reportDependencyAnalyzer.js';
 
 import type {
+  GithubReaderContext,
   GithubRepositoryReader,
   TextFileMatch,
 } from '../../infrastructure/github/githubRepositoryReader.js';
@@ -63,8 +64,10 @@ export const findScopedPath = async ({
   projectPath,
   reader,
   repository,
+  context = {},
 }: {
   branch: string;
+  context?: GithubReaderContext;
   owner: string;
   paths: readonly string[];
   projectPath: string;
@@ -73,7 +76,7 @@ export const findScopedPath = async ({
 }): Promise<PathSignal> => {
   if (!projectPath) {
     return createPathSignal(
-      await reader.findFirstPath(owner, repository, branch, paths),
+      await reader.findFirstPath(owner, repository, branch, paths, context),
       'project',
     );
   }
@@ -83,13 +86,17 @@ export const findScopedPath = async ({
     repository,
     branch,
     prefixPaths(projectPath, paths),
+    context,
   );
 
   if (projectPathMatch) {
     return createPathSignal(projectPathMatch, 'project');
   }
 
-  return createPathSignal(await reader.findFirstPath(owner, repository, branch, paths), 'root');
+  return createPathSignal(
+    await reader.findFirstPath(owner, repository, branch, paths, context),
+    'root',
+  );
 };
 
 export const findScopedPaths = async ({
@@ -99,8 +106,10 @@ export const findScopedPaths = async ({
   projectPath,
   reader,
   repository,
+  context = {},
 }: {
   branch: string;
+  context?: GithubReaderContext;
   owner: string;
   paths: readonly string[];
   projectPath: string;
@@ -108,7 +117,7 @@ export const findScopedPaths = async ({
   repository: string;
 }): Promise<LockfileSignal[]> => {
   if (!projectPath) {
-    const existingPaths = await reader.findExistingPaths(owner, repository, branch, paths);
+    const existingPaths = await reader.findExistingPaths(owner, repository, branch, paths, context);
 
     return existingPaths.map((path) => ({
       packageManager: getPackageManagerFromLockfile(path),
@@ -122,8 +131,9 @@ export const findScopedPaths = async ({
     repository,
     branch,
     prefixPaths(projectPath, paths),
+    context,
   );
-  const rootPaths = await reader.findExistingPaths(owner, repository, branch, paths);
+  const rootPaths = await reader.findExistingPaths(owner, repository, branch, paths, context);
 
   return [
     ...projectPaths.map((path) => ({
@@ -145,8 +155,10 @@ export const readWorkflowFiles = async ({
   reader,
   repository,
   workflowNames,
+  context = {},
 }: {
   branch: string;
+  context?: GithubReaderContext;
   owner: string;
   reader: GithubRepositoryReader;
   repository: string;
@@ -157,7 +169,7 @@ export const readWorkflowFiles = async ({
   const workflowFiles = await Promise.all(
     workflowNamesToAnalyze.map(async (workflowName) => {
       const path = `${repositorySignalConfig.workflowsPath}/${workflowName}`;
-      const content = await reader.readTextFile(owner, repository, branch, path);
+      const content = await reader.readTextFile(owner, repository, branch, path, context);
 
       return content === null
         ? null
@@ -184,8 +196,10 @@ export const readScopedTextFile = async ({
   projectPath,
   reader,
   repository,
+  context = {},
 }: {
   branch: string;
+  context?: GithubReaderContext;
   owner: string;
   paths: readonly string[];
   projectPath: string;
@@ -193,7 +207,7 @@ export const readScopedTextFile = async ({
   repository: string;
 }): Promise<(TextFileMatch & { scope: SignalScope }) | null> => {
   if (!projectPath) {
-    const file = await reader.readFirstTextFile(owner, repository, branch, paths);
+    const file = await reader.readFirstTextFile(owner, repository, branch, paths, context);
 
     return file ? { ...file, scope: 'project' } : null;
   }
@@ -203,13 +217,14 @@ export const readScopedTextFile = async ({
     repository,
     branch,
     prefixPaths(projectPath, paths),
+    context,
   );
 
   if (projectFile) {
     return { ...projectFile, scope: 'project' };
   }
 
-  const rootFile = await reader.readFirstTextFile(owner, repository, branch, paths);
+  const rootFile = await reader.readFirstTextFile(owner, repository, branch, paths, context);
 
   return rootFile ? { ...rootFile, scope: 'root' } : null;
 };

@@ -108,6 +108,15 @@ export const createGithubErrorFromResponse = async (response: Response) => {
     );
   }
 
+  if (response.status === 401) {
+    return new GithubApiError(
+      'GitHub token is invalid or unauthorized',
+      'repository_forbidden',
+      'GitHub repository is private or access is forbidden.',
+      response.status,
+    );
+  }
+
   if (response.status === 429) {
     return new GithubApiError(
       'GitHub API rate limit exceeded',

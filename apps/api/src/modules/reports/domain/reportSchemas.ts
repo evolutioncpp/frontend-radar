@@ -96,6 +96,10 @@ export const acceptLanguageHeadersSchema = z
   })
   .passthrough();
 
+export const githubTokenHeadersSchema = acceptLanguageHeadersSchema.extend({
+  'x-github-token': z.string().optional(),
+});
+
 export const createReportAnalysisRequestSchema = z.object({
   owner: z.string().regex(githubOwnerPattern),
   repository: z.string().regex(githubRepositoryPattern),
@@ -129,6 +133,10 @@ export const retryReportAnalysisResponseSchema = z.object({
   id: z.string(),
   retryReason: z.enum(['retried', 'active', 'completed']),
   status: z.enum(['queued', 'running', 'completed']),
+});
+
+export const validateGithubTokenResponseSchema = z.object({
+  status: z.literal('valid'),
 });
 
 export const projectDetectionSignalSchema = z.object({
@@ -419,3 +427,4 @@ export type ReportAnalysisStatus = z.infer<typeof reportAnalysisStatusSchema>;
 export type ReportProjectPathSource = z.infer<typeof reportProjectPathSourceSchema>;
 export type RefreshReportAnalysisResponse = z.infer<typeof refreshReportAnalysisResponseSchema>;
 export type RetryReportAnalysisResponse = z.infer<typeof retryReportAnalysisResponseSchema>;
+export type ValidateGithubTokenResponse = z.infer<typeof validateGithubTokenResponseSchema>;

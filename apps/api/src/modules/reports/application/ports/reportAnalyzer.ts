@@ -25,6 +25,10 @@ export interface RepositoryBranches {
   isTruncated: boolean;
 }
 
+export interface ReportAnalyzerRequestContext {
+  githubToken?: string;
+}
+
 export type ReportAnalysisInput = Omit<
   CreateReportAnalysisRequest,
   'branch' | 'projectPath' | 'projectPathSource'
@@ -40,20 +44,30 @@ export type ReportAnalysisInput = Omit<
 };
 
 export interface ReportAnalyzer {
-  analyze(input: ReportAnalysisInput): Promise<ProjectReport>;
+  analyze(
+    input: ReportAnalysisInput,
+    context?: ReportAnalyzerRequestContext,
+  ): Promise<ProjectReport>;
   getRepositorySnapshot(
     owner: string,
     repository: string,
     branch?: string | null,
+    context?: ReportAnalyzerRequestContext,
   ): Promise<RepositorySnapshot>;
-  listRepositoryBranches(owner: string, repository: string): Promise<RepositoryBranches>;
+  listRepositoryBranches(
+    owner: string,
+    repository: string,
+    context?: ReportAnalyzerRequestContext,
+  ): Promise<RepositoryBranches>;
   resolveProjectPath(
     owner: string,
     repository: string,
     ref: string,
     projectPath?: string | null,
     projectPathSource?: ReportProjectPathSource | null,
+    context?: ReportAnalyzerRequestContext,
   ): Promise<string>;
+  validateGithubToken(context: ReportAnalyzerRequestContext): Promise<void>;
 }
 
 export const reportAnalyzerApiErrorBrand: unique symbol = Symbol(

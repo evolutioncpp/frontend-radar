@@ -3,6 +3,11 @@ import { env } from '../../../../config/env.js';
 import { createGithubErrorFromResponse, createGithubUnavailableError } from './githubErrors.js';
 import { githubApiVersion, githubRequestTimeoutMs } from '../../domain/reportAnalysisConfig.js';
 
+export interface GithubRequestOptions {
+  allowNotFound?: boolean;
+  githubToken?: string;
+}
+
 const isAbortError = (error: unknown) => {
   return (
     typeof error === 'object' && error !== null && 'name' in error && error.name === 'AbortError'
@@ -10,12 +15,13 @@ const isAbortError = (error: unknown) => {
 };
 
 export class GithubClient {
-  async requestJson(path: string, options: { allowNotFound?: boolean } = {}) {
+  async requestJson(path: string, options: GithubRequestOptions = {}) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
       controller.abort();
     }, githubRequestTimeoutMs);
     let response: Response;
+    const authorizationToken = options.githubToken?.trim() || env.GITHUB_TOKEN;
 
     try {
       response = await fetch(`${env.GITHUB_API_BASE_URL}${path}`, {
@@ -23,9 +29,9 @@ export class GithubClient {
           Accept: 'application/vnd.github+json',
           'User-Agent': 'frontend-radar-api',
           'X-GitHub-Api-Version': githubApiVersion,
-          ...(env.GITHUB_TOKEN
+          ...(authorizationToken
             ? {
-                Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+                Authorization: `Bearer ${authorizationToken}`,
               }
             : {}),
         },

@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const isExternalServer = process.env.FRONTEND_RADAR_E2E_EXTERNAL_SERVER === '1';
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -12,12 +14,16 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
-  webServer: {
-    command: 'npm run dev -- --host 127.0.0.1 --port 5173',
-    url: 'http://127.0.0.1:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  ...(isExternalServer
+    ? {}
+    : {
+        webServer: {
+          command: 'npm run preview -- --host 127.0.0.1 --port 5173 --strictPort',
+          reuseExistingServer: !process.env.CI,
+          timeout: 120_000,
+          url: 'http://127.0.0.1:5173',
+        },
+      }),
   projects: [
     {
       name: 'chromium',

@@ -26,6 +26,8 @@ const normalizeAppSettingsState = (value: unknown): AppSettingsState => {
     return defaultAppSettingsState;
   }
 
+  const githubToken = typeof value.githubToken === 'string' ? value.githubToken.trim() : '';
+
   return {
     theme: isAppTheme(value.theme) ? value.theme : defaultAppSettingsState.theme,
     language: normalizeSupportedLanguage(value.language),
@@ -33,6 +35,7 @@ const normalizeAppSettingsState = (value: unknown): AppSettingsState => {
       typeof value.isDashboardSidebarCollapsed === 'boolean'
         ? value.isDashboardSidebarCollapsed
         : defaultAppSettingsState.isDashboardSidebarCollapsed,
+    ...(githubToken ? { githubToken } : {}),
   };
 };
 
@@ -80,7 +83,15 @@ export const saveAppSettingsState = (state: AppSettingsState) => {
   }
 
   try {
-    localStorage.setItem(StorageKeys.APP_SETTINGS, JSON.stringify(state));
+    const githubToken = state.githubToken?.trim();
+
+    localStorage.setItem(
+      StorageKeys.APP_SETTINGS,
+      JSON.stringify({
+        ...state,
+        ...(githubToken ? { githubToken } : { githubToken: undefined }),
+      }),
+    );
   } catch {
     // Ignore localStorage write errors.
   }

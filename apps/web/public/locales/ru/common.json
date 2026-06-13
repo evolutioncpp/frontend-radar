@@ -1,6 +1,8 @@
 {
   "actions": {
-    "switchLanguage": "Сменить язык"
+    "switchLanguage": "Сменить язык",
+    "switchToDarkTheme": "Переключить на тёмную тему",
+    "switchToLightTheme": "Переключить на светлую тему"
   },
   "common": {
     "language": "Язык",

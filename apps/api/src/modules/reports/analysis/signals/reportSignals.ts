@@ -24,6 +24,7 @@ import {
 import { buildScopedToolSignal } from './reportSignalTools.js';
 
 import type {
+  GithubReaderContext,
   GithubRepositoryReader,
   PackageJson,
 } from '../../infrastructure/github/githubRepositoryReader.js';
@@ -50,8 +51,10 @@ export const collectRepositorySignals = async ({
   reader,
   repository,
   rootPackageJson,
+  context = {},
 }: {
   branch: string;
+  context?: GithubReaderContext;
   owner: string;
   packageJson: PackageJson | null;
   packageJsonPath: string | null;
@@ -89,6 +92,7 @@ export const collectRepositorySignals = async ({
       projectPath,
       reader,
       repository,
+      context,
     }),
     findScopedPath({
       branch,
@@ -97,8 +101,15 @@ export const collectRepositorySignals = async ({
       projectPath,
       reader,
       repository,
+      context,
     }),
-    reader.listDirectoryFiles(owner, repository, branch, repositorySignalConfig.workflowsPath),
+    reader.listDirectoryFiles(
+      owner,
+      repository,
+      branch,
+      repositorySignalConfig.workflowsPath,
+      context,
+    ),
     findScopedPath({
       branch,
       owner,
@@ -106,6 +117,7 @@ export const collectRepositorySignals = async ({
       projectPath,
       reader,
       repository,
+      context,
     }),
     findScopedPaths({
       branch,
@@ -114,6 +126,7 @@ export const collectRepositorySignals = async ({
       projectPath,
       reader,
       repository,
+      context,
     }),
     findScopedPath({
       branch,
@@ -122,6 +135,7 @@ export const collectRepositorySignals = async ({
       projectPath,
       reader,
       repository,
+      context,
     }),
     findScopedPath({
       branch,
@@ -130,6 +144,7 @@ export const collectRepositorySignals = async ({
       projectPath,
       reader,
       repository,
+      context,
     }),
     findScopedPath({
       branch,
@@ -138,6 +153,7 @@ export const collectRepositorySignals = async ({
       projectPath,
       reader,
       repository,
+      context,
     }),
     findScopedPath({
       branch,
@@ -146,6 +162,7 @@ export const collectRepositorySignals = async ({
       projectPath,
       reader,
       repository,
+      context,
     }),
     findScopedPath({
       branch,
@@ -154,6 +171,7 @@ export const collectRepositorySignals = async ({
       projectPath,
       reader,
       repository,
+      context,
     }),
     findScopedPath({
       branch,
@@ -162,6 +180,7 @@ export const collectRepositorySignals = async ({
       projectPath,
       reader,
       repository,
+      context,
     }),
     findScopedPath({
       branch,
@@ -170,6 +189,7 @@ export const collectRepositorySignals = async ({
       projectPath,
       reader,
       repository,
+      context,
     }),
   ]);
   const validWorkflowNames = getValidWorkflowNames(workflowNames);
@@ -178,6 +198,7 @@ export const collectRepositorySignals = async ({
     owner,
     reader,
     repository,
+    context,
     workflowNames: validWorkflowNames,
   });
   const primaryLockfile = getPrimaryLockfile(lockfiles);

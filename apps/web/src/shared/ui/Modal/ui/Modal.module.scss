@@ -1,0 +1,176 @@
+@use 'app/styles/helpers' as *;
+
+.overlay {
+  --modal-backdrop-filter: blur(2px);
+  --modal-overlay-bg: rgba(1, 4, 9, 0.64);
+
+  position: fixed;
+  inset: 0;
+  z-index: $z-index-modal;
+  display: grid;
+  place-items: center;
+  padding: $space-4;
+  background: var(--modal-overlay-bg);
+  backdrop-filter: var(--modal-backdrop-filter);
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+  padding: 0;
+}
+
+.modal {
+  --modal-max-height: min(90dvh, 48rem);
+  --modal-width: 42rem;
+
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(100%, var(--modal-width));
+  max-height: var(--modal-max-height);
+  overflow: hidden;
+  border: 1px solid var(--color-border-primary);
+  border-radius: $radius-md;
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-popover);
+  color: var(--color-text-primary);
+}
+
+.modal_sm {
+  --modal-width: 32rem;
+}
+
+.modal_md {
+  --modal-width: 42rem;
+}
+
+.modal_lg {
+  --modal-width: 56rem;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: $space-4;
+  padding: $space-5 $space-5 $space-4;
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.heading {
+  display: grid;
+  min-width: 0;
+  gap: $space-2;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  line-height: $line-height-sm;
+}
+
+.description {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: $font-size-sm;
+  line-height: $line-height-md;
+}
+
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid transparent;
+  border-radius: $radius-md;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0;
+  transition:
+    background-color $transition-base,
+    color $transition-base;
+
+  @include focus-visible;
+
+  &:hover {
+    background: var(--color-bg-surface-hover);
+    color: var(--color-text-primary);
+  }
+}
+
+.closeButton svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.body {
+  overflow: auto;
+  min-width: 0;
+  padding: $space-5;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: $space-3;
+  padding: $space-4 $space-5 $space-5;
+  border-top: 1px solid var(--color-border-primary);
+}
+
+@include media-max($breakpoint-sm) {
+  .overlay {
+    align-items: end;
+    padding: $space-3;
+  }
+
+  .modal {
+    --modal-max-height: calc(100dvh - #{$space-6});
+  }
+
+  .header,
+  .body,
+  .footer {
+    padding-inline: $space-4;
+  }
+
+  .body {
+    min-height: 0;
+  }
+
+  .footer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-content: stretch;
+    justify-items: stretch;
+    padding-bottom: max($space-4, env(safe-area-inset-bottom));
+    padding-inline: $space-3;
+  }
+
+  .footer > * {
+    min-width: 0;
+    width: auto;
+    justify-self: stretch;
+  }
+
+  .closeButton {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-color: var(--color-border-primary);
+    background: var(--color-bg-subtle);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .closeButton {
+    transition: none;
+  }
+}

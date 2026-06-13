@@ -1,0 +1,48 @@
+@use 'app/styles/helpers' as *;
+
+.page {
+  display: grid;
+  gap: $space-6;
+  min-width: 0;
+}
+
+.header {
+  display: grid;
+  gap: $space-3;
+  max-width: 46rem;
+  margin-bottom: $space-6;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0;
+  line-height: $line-height-sm;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 2.75rem;
+  line-height: 1.1;
+}
+
+.description {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: $font-size-md;
+  line-height: $line-height-lg;
+}
+
+@include media-max($breakpoint-md) {
+  .page {
+    gap: $space-5;
+  }
+
+  .title {
+    font-size: $font-size-3xl;
+  }
+}

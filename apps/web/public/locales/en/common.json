@@ -1,6 +1,8 @@
 {
   "actions": {
-    "switchLanguage": "Switch language"
+    "switchLanguage": "Switch language",
+    "switchToDarkTheme": "Switch to dark theme",
+    "switchToLightTheme": "Switch to light theme"
   },
   "common": {
     "language": "Language",

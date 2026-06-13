@@ -1,0 +1,71 @@
+{
+  "page": {
+    "label": "Settings",
+    "title": "Application settings",
+    "description": "Configure local access options for repository analysis."
+  },
+  "githubAccess": {
+    "title": "GitHub access",
+    "description": "Add a personal access token to analyze private repositories and reduce GitHub API rate-limit issues.",
+    "saved": {
+      "title": "GitHub token saved",
+      "description": "Frontend Radar will send {{token}} with analysis requests from this browser."
+    },
+    "empty": {
+      "title": "No GitHub token saved",
+      "description": "Public repositories still work, but private repositories require a token with repository access."
+    },
+    "token": {
+      "label": "GitHub token",
+      "placeholder": "github_pat_...",
+      "hint": "The token is stored only in this browser and is never saved by the backend."
+    },
+    "actions": {
+      "save": "Save token",
+      "check": "Check token",
+      "validateAndSave": "Check and save token",
+      "checking": "Checking...",
+      "remove": "Remove",
+      "help": "How to create token?"
+    },
+    "help": {
+      "title": "Create a GitHub token",
+      "description": "Use a fine-grained personal access token with the smallest repository permissions needed for analysis.",
+      "close": "Close",
+      "openGithub": "Open GitHub token settings",
+      "steps": {
+        "title": "Steps",
+        "openSettings": "Open GitHub developer settings and choose Personal access tokens → Fine-grained tokens.",
+        "createFineGrained": "Create a new fine-grained token and set an expiration date you are comfortable with.",
+        "selectRepositories": "Select only the repositories you want Frontend Radar to analyze.",
+        "copyToken": "Copy the token, paste it here, and use Check token before saving."
+      },
+      "permissions": {
+        "title": "Required permissions",
+        "contents": {
+          "title": "Contents: Read-only",
+          "description": "Allows Frontend Radar to read package.json, README, workflow files and project configuration."
+        },
+        "metadata": {
+          "title": "Metadata: Read-only",
+          "description": "Usually enabled by GitHub by default; needed to read basic repository information."
+        }
+      },
+      "storage": {
+        "title": "Where the token is stored",
+        "description": "The token is stored only in this browser. The backend receives it in x-github-token for the current requests and does not save it in the database, reports or logs."
+      }
+    },
+    "validation": {
+      "missing": "Enter a GitHub token first.",
+      "success": "GitHub accepted this token.",
+      "errors": {
+        "forbidden": "GitHub rejected this token. Check that it is active; repository access is verified when an analysis starts.",
+        "missing": "Enter a GitHub token first.",
+        "rateLimited": "GitHub rate limit was reached while checking the token. Try again later.",
+        "unavailable": "GitHub or the local API is unavailable right now. Try again later.",
+        "unknown": "Could not validate this token. Try again later."
+      }
+    }
+  }
+}

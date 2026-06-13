@@ -6,7 +6,6 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 import { setLanguage } from '@/features/app-settings';
 import { appSettingsReducer } from '@/features/app-settings/model/appSettingsSlice';
 import { baseApi } from '@/shared/api';
-import { generatedApi } from '@/shared/api/generatedApi';
 import { StorageKeys } from '@/shared/config/storage';
 
 import { I18nProvider } from './i18n-provider';
@@ -123,7 +122,7 @@ describe('I18nProvider', () => {
       expect(dispatchSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           payload: ['Reports'],
-          type: `${generatedApi.reducerPath}/invalidateTags`,
+          type: `${baseApi.reducerPath}/invalidateTags`,
         }),
       );
     });

@@ -14,6 +14,7 @@ import {
 import { createReportApplicationService } from './reportApplicationService.js';
 
 import type { ReportAnalyzer } from './ports/reportAnalyzer.js';
+import type { ReportAnalyzerRequestContext } from './ports/reportAnalyzer.js';
 import type {
   CreateReportAnalysisRecordInput,
   ReportAnalysisEntity,
@@ -96,6 +97,7 @@ const createAnalyzer = (overrides: Partial<ReportAnalyzer> = {}): ReportAnalyzer
     isTruncated: false,
   }),
   resolveProjectPath: async (_owner, _repository, _ref, projectPath) => projectPath ?? '',
+  validateGithubToken: async () => undefined,
   ...overrides,
 });
 
@@ -157,7 +159,8 @@ const createService = (
   const repository = overrides.repository ?? new InMemoryReportAnalysisRepository();
   const analyzer = overrides.analyzer ?? createAnalyzer();
   const startAnalysis =
-    overrides.startAnalysis ?? vi.fn<(analysis: ReportAnalysisEntity) => void>();
+    overrides.startAnalysis ??
+    vi.fn<(analysis: ReportAnalysisEntity, context?: ReportAnalyzerRequestContext) => void>();
 
   return {
     analyzer,
@@ -205,7 +208,45 @@ describe('report application service', () => {
       status: 'queued',
     });
     expect(startAnalysis).toHaveBeenCalledOnce();
-    expect(startAnalysis).toHaveBeenCalledWith(expect.objectContaining({ id: result.body.id }));
+    expect(startAnalysis).toHaveBeenCalledWith(expect.objectContaining({ id: result.body.id }), {});
+  });
+
+  it('passes GitHub token context to precheck and worker start', async () => {
+    const getRepositorySnapshot = vi.fn(createAnalyzer().getRepositorySnapshot);
+    const resolveProjectPath = vi.fn(createAnalyzer().resolveProjectPath);
+    const { service, startAnalysis } = createService({
+      analyzer: createAnalyzer({
+        getRepositorySnapshot,
+        resolveProjectPath,
+      }),
+    });
+    const context = {
+      githubToken: 'github_pat_request',
+    };
+
+    const result = await service.createReportAnalysis(
+      {
+        normalizedUrl: 'https://github.com/owner/repo',
+        owner: 'owner',
+        repository: 'repo',
+      },
+      context,
+    );
+
+    expect(result).toMatchObject({
+      statusCode: 201,
+      type: 'success',
+    });
+    expect(getRepositorySnapshot).toHaveBeenCalledWith('owner', 'repo', undefined, context);
+    expect(resolveProjectPath).toHaveBeenCalledWith(
+      'owner',
+      'repo',
+      DEFAULT_COMMIT_SHA,
+      undefined,
+      undefined,
+      context,
+    );
+    expect(startAnalysis).toHaveBeenCalledWith(expect.any(Object), context);
   });
 
   it('does not treat unbranded analyzer-like errors as user-facing GitHub errors', async () => {
@@ -285,6 +326,49 @@ describe('report application service', () => {
       status: 'queued',
     });
     expect(startAnalysis).toHaveBeenCalledOnce();
+  });
+
+  it('validates GitHub token through analyzer', async () => {
+    const validateGithubToken = vi.fn(async () => undefined);
+    const { service } = createService({
+      analyzer: createAnalyzer({
+        validateGithubToken,
+      }),
+    });
+    const context = {
+      githubToken: 'github_pat_valid',
+    };
+
+    const result = await service.validateGithubToken(context);
+
+    expect(result).toMatchObject({
+      body: {
+        status: 'valid',
+      },
+      statusCode: 200,
+      type: 'success',
+    });
+    expect(validateGithubToken).toHaveBeenCalledWith(context);
+  });
+
+  it('does not validate missing GitHub token through analyzer', async () => {
+    const validateGithubToken = vi.fn(async () => undefined);
+    const { service } = createService({
+      analyzer: createAnalyzer({
+        validateGithubToken,
+      }),
+    });
+
+    const result = await service.validateGithubToken({});
+
+    expect(result).toMatchObject({
+      error: {
+        code: 'repository_forbidden',
+        statusCode: 403,
+      },
+      type: 'error',
+    });
+    expect(validateGithubToken).not.toHaveBeenCalled();
   });
 
   it('returns up-to-date refresh without creating another run for the same snapshot', async () => {

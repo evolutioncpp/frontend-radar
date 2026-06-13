@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
+import { invalidateReportsCache } from '@/entities/report';
 import { hasStoredAppLanguage, selectAppLanguage, setLanguage } from '@/features/app-settings';
-import { generatedApi } from '@/shared/api/generatedApi';
 import { i18n, normalizeSupportedLanguage } from '@/shared/config/i18n';
 import { useAppDispatch, useAppSelector } from '@/shared/lib/redux/hooks';
 
@@ -27,7 +27,7 @@ export function I18nProvider() {
     }
 
     if (previousLanguageRef.current !== language) {
-      dispatch(generatedApi.util.invalidateTags(['Reports']));
+      dispatch(invalidateReportsCache());
       previousLanguageRef.current = language;
     }
   }, [dispatch, language]);

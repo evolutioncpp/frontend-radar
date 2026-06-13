@@ -1,7 +1,11 @@
 import { randomUUID } from 'node:crypto';
 
 import { env } from '../../../config/env.js';
-import { getReportAnalysisFailure, type ReportAnalyzer } from './ports/reportAnalyzer.js';
+import {
+  getReportAnalysisFailure,
+  type ReportAnalyzer,
+  type ReportAnalyzerRequestContext,
+} from './ports/reportAnalyzer.js';
 import { isReportAnalysisLeaseConflictError } from './ports/reportAnalysisRepository.js';
 import type {
   ReportAnalysisEntity,
@@ -26,6 +30,7 @@ interface StartReportAnalysisOptions {
   };
   repository: ReportAnalysisRepository;
   lease?: ReportAnalysisLease;
+  context?: ReportAnalyzerRequestContext;
 }
 
 const createLeaseOwner = (analysisId: string) =>
@@ -39,6 +44,7 @@ export const startReportAnalysis = async ({
   analyzer,
   logger,
   repository,
+  context = {},
   lease = {
     expiresAt: createLeaseExpiresAt(),
     owner: createLeaseOwner(analysis.id),
@@ -98,7 +104,7 @@ export const startReportAnalysis = async ({
   heartbeat.unref?.();
 
   try {
-    const report = await analyzer.analyze(claimedAnalysis);
+    const report = await analyzer.analyze(claimedAnalysis, context);
 
     if (isLeaseLost) {
       return;

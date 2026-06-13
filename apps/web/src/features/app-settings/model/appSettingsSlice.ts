@@ -17,6 +17,19 @@ const appSettingsSlice = createSlice({
     setLanguage: (state, action: PayloadAction<AppLanguage>) => {
       state.language = action.payload;
     },
+    setGithubToken: (state, action: PayloadAction<string>) => {
+      const githubToken = action.payload.trim();
+
+      if (githubToken) {
+        state.githubToken = githubToken;
+        return;
+      }
+
+      delete state.githubToken;
+    },
+    clearGithubToken: (state) => {
+      delete state.githubToken;
+    },
     setDashboardSidebarCollapsed: (state, action: PayloadAction<boolean>) => {
       state.isDashboardSidebarCollapsed = action.payload;
     },
@@ -27,7 +40,9 @@ const appSettingsSlice = createSlice({
 });
 
 export const {
+  clearGithubToken,
   setDashboardSidebarCollapsed,
+  setGithubToken,
   setLanguage,
   setTheme,
   toggleDashboardSidebar,

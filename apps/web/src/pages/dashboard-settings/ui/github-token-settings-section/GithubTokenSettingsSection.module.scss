@@ -1,0 +1,145 @@
+@use 'app/styles/helpers' as *;
+
+.section {
+  display: grid;
+  gap: $space-6;
+  padding: $space-6;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-4;
+}
+
+.sectionHeaderMain {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  gap: $space-4;
+}
+
+.sectionIcon,
+.tokenStatusIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
+}
+
+.sectionIcon {
+  width: 2rem;
+  height: 2rem;
+}
+
+.sectionIcon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.sectionTitle,
+.tokenStatusTitle {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-weight: $font-weight-semibold;
+}
+
+.sectionTitle {
+  font-size: $font-size-xl;
+  line-height: $line-height-md;
+}
+
+.sectionDescription,
+.tokenStatusDescription {
+  margin: $space-2 0 0;
+  color: var(--color-text-secondary);
+  line-height: $line-height-lg;
+}
+
+.helpButton {
+  flex: 0 0 auto;
+  min-height: 2.5rem;
+  padding: $space-2 $space-4;
+  font-size: $font-size-sm;
+}
+
+.tokenStatus {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-3;
+  border: 1px solid var(--color-border-primary);
+  border-radius: $radius-md;
+  background: var(--color-bg-subtle);
+  padding: $space-4;
+}
+
+.tokenStatus[data-state='saved'] .tokenStatusIcon {
+  color: var(--color-success);
+}
+
+.tokenStatusIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.tokenStatusIcon svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.tokenStatusTitle {
+  font-size: $font-size-md;
+  line-height: $line-height-md;
+}
+
+.form {
+  display: grid;
+  gap: $space-4;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3;
+}
+
+.validationSuccess,
+.validationError {
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-md;
+}
+
+.validationSuccess {
+  color: var(--color-success);
+}
+
+.validationError {
+  color: var(--color-danger);
+}
+
+@include media-max($breakpoint-md) {
+  .section {
+    padding: $space-5;
+  }
+
+  .sectionHeader {
+    display: grid;
+  }
+
+  .sectionHeaderMain,
+  .tokenStatus {
+    align-items: flex-start;
+  }
+
+  .helpButton {
+    width: fit-content;
+  }
+
+  .actions {
+    display: grid;
+  }
+}

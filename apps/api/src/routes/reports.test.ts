@@ -102,6 +102,7 @@ const createAnalyzer = (overrides: Partial<ReportAnalyzer> = {}): ReportAnalyzer
     isTruncated: false,
   }),
   resolveProjectPath: async (_owner, _repository, _ref, projectPath) => projectPath ?? '',
+  validateGithubToken: async () => undefined,
   ...overrides,
 });
 
@@ -246,6 +247,97 @@ describe('reports routes', () => {
     }
   });
 
+  it('passes GitHub token header to branch loader', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const listRepositoryBranches = vi.fn(createAnalyzer().listRepositoryBranches);
+    const app = buildApp(
+      {},
+      {
+        reportAnalysisRepository: repository,
+        reportAnalyzer: createAnalyzer({
+          listRepositoryBranches,
+        }),
+      },
+    );
+
+    try {
+      const response = await app.inject({
+        headers: {
+          'x-github-token': ' github_pat_branch ',
+        },
+        method: 'GET',
+        url: '/repositories/owner/repo/branches',
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(listRepositoryBranches).toHaveBeenCalledWith('owner', 'repo', {
+        githubToken: 'github_pat_branch',
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('validates GitHub token from request header', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const validateGithubToken = vi.fn(async () => undefined);
+    const app = buildApp(
+      {},
+      {
+        reportAnalysisRepository: repository,
+        reportAnalyzer: createAnalyzer({
+          validateGithubToken,
+        }),
+      },
+    );
+
+    try {
+      const response = await app.inject({
+        headers: {
+          'x-github-token': ' github_pat_valid ',
+        },
+        method: 'GET',
+        url: '/github/token/validate',
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toEqual({
+        status: 'valid',
+      });
+      expect(validateGithubToken).toHaveBeenCalledWith({
+        githubToken: 'github_pat_valid',
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('does not validate missing GitHub token through analyzer', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const validateGithubToken = vi.fn(async () => undefined);
+    const app = buildApp(
+      {},
+      {
+        reportAnalysisRepository: repository,
+        reportAnalyzer: createAnalyzer({
+          validateGithubToken,
+        }),
+      },
+    );
+
+    try {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/github/token/validate',
+      });
+
+      expect(response.statusCode).toBe(403);
+      expect(validateGithubToken).not.toHaveBeenCalled();
+    } finally {
+      await app.close();
+    }
+  });
+
   it('creates report analysis job and returns queued status', async () => {
     const repository = new InMemoryReportAnalysisRepository();
     const app = buildApp(
@@ -272,6 +364,41 @@ describe('reports routes', () => {
         id: expect.any(String),
         reuseReason: null,
         status: 'queued',
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('passes GitHub token header to created analysis worker', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const startReportAnalysis = vi.fn();
+    const app = buildApp(
+      {},
+      {
+        reportAnalysisRepository: repository,
+        reportAnalyzer: createAnalyzer(),
+        startReportAnalysis,
+      },
+    );
+
+    try {
+      const response = await app.inject({
+        headers: {
+          'x-github-token': ' github_pat_submit ',
+        },
+        method: 'POST',
+        url: '/reports/analyze',
+        payload: {
+          owner: 'owner',
+          repository: 'repo',
+          normalizedUrl: 'https://github.com/owner/repo',
+        },
+      });
+
+      expect(response.statusCode).toBe(201);
+      expect(startReportAnalysis).toHaveBeenCalledWith(expect.any(Object), {
+        githubToken: 'github_pat_submit',
       });
     } finally {
       await app.close();
@@ -318,6 +445,9 @@ describe('reports routes', () => {
         DEFAULT_COMMIT_SHA,
         'apps/web',
         'url',
+        {
+          githubToken: undefined,
+        },
       );
       expect(startedAnalyses).toEqual([
         {
@@ -1219,6 +1349,9 @@ describe('reports routes', () => {
         latestCommitSha,
         'apps/web',
         'autodetect',
+        {
+          githubToken: undefined,
+        },
       );
 
       const newAnalysis = await repository.findById(body.id);

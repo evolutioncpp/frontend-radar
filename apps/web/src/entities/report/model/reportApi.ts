@@ -1,3 +1,5 @@
+import { generatedApi } from '@/shared/api/generatedApi';
+
 export {
   useListReportAnalysesQuery,
   useLazyListReportAnalysesQuery,
@@ -6,6 +8,8 @@ export {
   useGetReportAnalysisQuery,
   useLazyGetReportAnalysisQuery,
 } from '@/shared/api/generatedApi';
+
+export const invalidateReportsCache = () => generatedApi.util.invalidateTags(['Reports']);
 
 export type {
   GetReportComparisonApiArg,

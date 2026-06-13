@@ -31,6 +31,13 @@ interface DropdownPosition {
 }
 
 const viewportPadding = 8;
+const menuItemSelector = [
+  '[role="menuitem"]',
+  '[role="menuitemcheckbox"]',
+  '[role="menuitemradio"]',
+  'button:not([disabled])',
+  'a[href]',
+].join(',');
 
 export const Dropdown = ({
   align = 'start',
@@ -54,6 +61,52 @@ export const Dropdown = ({
   const close = useCallback(() => {
     setIsOpen(false);
   }, []);
+
+  const closeAndFocusTrigger = useCallback(() => {
+    setIsOpen(false);
+    requestAnimationFrame(() => {
+      triggerRef.current?.focus();
+    });
+  }, []);
+
+  const getMenuItems = useCallback(() => {
+    const contentElement = contentRef.current;
+
+    if (!contentElement) {
+      return [];
+    }
+
+    return Array.from(contentElement.querySelectorAll<HTMLElement>(menuItemSelector)).filter(
+      (element) =>
+        !element.hasAttribute('disabled') && element.getAttribute('aria-disabled') !== 'true',
+    );
+  }, []);
+
+  const focusMenuItem = useCallback(
+    (index: number) => {
+      const menuItems = getMenuItems();
+
+      if (menuItems.length === 0) {
+        return;
+      }
+
+      const nextIndex = (index + menuItems.length) % menuItems.length;
+      menuItems[nextIndex]?.focus();
+    },
+    [getMenuItems],
+  );
+
+  const focusFirstMenuItem = useCallback(() => {
+    requestAnimationFrame(() => focusMenuItem(0));
+  }, [focusMenuItem]);
+
+  const focusLastMenuItem = useCallback(() => {
+    requestAnimationFrame(() => {
+      const menuItems = getMenuItems();
+
+      focusMenuItem(menuItems.length - 1);
+    });
+  }, [focusMenuItem, getMenuItems]);
 
   const clearCloseTimeout = () => {
     if (closeTimeoutRef.current !== null) {
@@ -187,7 +240,7 @@ export const Dropdown = ({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        close();
+        closeAndFocusTrigger();
       }
     };
 
@@ -198,7 +251,7 @@ export const Dropdown = ({
       window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [close, isOpen]);
+  }, [close, closeAndFocusTrigger, isOpen]);
 
   useEffect(() => {
     return () => {
@@ -226,6 +279,19 @@ export const Dropdown = ({
         aria-label={ariaLabel}
         className={clsx(s.trigger, triggerClassName)}
         onClick={() => setIsOpen((currentValue) => !currentValue)}
+        onKeyDown={(event) => {
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            openDropdown();
+            focusFirstMenuItem();
+          }
+
+          if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            openDropdown();
+            focusLastMenuItem();
+          }
+        }}
         ref={triggerRef}
         type="button"
       >
@@ -237,6 +303,46 @@ export const Dropdown = ({
             <div
               className={clsx(s.content, contentClassName)}
               id={contentId}
+              onKeyDown={(event) => {
+                const menuItems = getMenuItems();
+                const currentIndex = menuItems.findIndex(
+                  (element) => element === document.activeElement,
+                );
+
+                if (event.key === 'Escape') {
+                  event.preventDefault();
+                  closeAndFocusTrigger();
+                  return;
+                }
+
+                if (event.key === 'Tab') {
+                  close();
+                  return;
+                }
+
+                if (event.key === 'ArrowDown') {
+                  event.preventDefault();
+                  focusMenuItem(currentIndex + 1);
+                  return;
+                }
+
+                if (event.key === 'ArrowUp') {
+                  event.preventDefault();
+                  focusMenuItem(currentIndex - 1);
+                  return;
+                }
+
+                if (event.key === 'Home') {
+                  event.preventDefault();
+                  focusMenuItem(0);
+                  return;
+                }
+
+                if (event.key === 'End') {
+                  event.preventDefault();
+                  focusMenuItem(menuItems.length - 1);
+                }
+              }}
               onMouseEnter={openDropdown}
               onMouseLeave={scheduleClose}
               ref={contentRef}

@@ -332,6 +332,28 @@ const hasParameter = (
   });
 };
 
+const collectOperationIds = (document: Record<string, unknown>) => {
+  const paths = document.paths;
+
+  if (!isRecord(paths)) {
+    return [];
+  }
+
+  return Object.values(paths).flatMap((pathItem) => {
+    if (!isRecord(pathItem)) {
+      return [];
+    }
+
+    return Object.values(pathItem).flatMap((operation) => {
+      if (!isRecord(operation) || typeof operation.operationId !== 'string') {
+        return [];
+      }
+
+      return [operation.operationId];
+    });
+  });
+};
+
 describe('GET /openapi.json', () => {
   it('returns OpenAPI document with health and reports endpoints', async () => {
     const app = buildApp();
@@ -349,6 +371,8 @@ describe('GET /openapi.json', () => {
       expect(body.info.title).toBe('Frontend Radar API');
       expect(body.paths['/health']).toBeDefined();
       expect(body.paths['/health'].get.operationId).toBe('getHealth');
+      expect(body.paths['/github/token/validate']).toBeUndefined();
+      expect(collectOperationIds(body)).not.toContain('validateGithubToken');
       expect(body.paths['/reports/analyze']).toBeDefined();
       expect(body.paths['/reports/analyze'].post.operationId).toBe('createReportAnalysis');
       expect(hasParameter(body, '/reports/analyze', 'post', 'accept-language')).toBe(true);

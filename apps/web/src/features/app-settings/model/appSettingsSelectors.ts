@@ -15,3 +15,11 @@ export const selectAppLanguage = (state: AppSettingsRootState) => {
 export const selectIsDashboardSidebarCollapsed = (state: AppSettingsRootState) => {
   return state.appSettings.isDashboardSidebarCollapsed;
 };
+
+export const selectGithubToken = (state: AppSettingsRootState) => {
+  return state.appSettings.githubToken?.trim() || undefined;
+};
+
+export const selectHasGithubToken = (state: AppSettingsRootState) => {
+  return Boolean(selectGithubToken(state));
+};

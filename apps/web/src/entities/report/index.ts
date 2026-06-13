@@ -6,6 +6,7 @@ export {
   useLazyGetReportAnalysisQuery,
   useLazyListReportAnalysesQuery,
   useListReportAnalysesQuery,
+  invalidateReportsCache,
 } from './model/reportApi';
 export {
   getReportHistoryGroupsViewModel,

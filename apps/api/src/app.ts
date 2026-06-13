@@ -19,6 +19,7 @@ import {
   startReportAnalysisSafely,
 } from './modules/reports/application/reportAnalysisWorker.js';
 import type { ReportAnalyzer } from './modules/reports/application/ports/reportAnalyzer.js';
+import type { ReportAnalyzerRequestContext } from './modules/reports/application/ports/reportAnalyzer.js';
 import type {
   ReportAnalysisEntity,
   ReportAnalysisRepository,
@@ -31,7 +32,10 @@ interface AppDependencies {
   reportAnalysisRepository?: ReportAnalysisRepository;
   reportAnalyzer?: ReportAnalyzer;
   recoverOnStart?: boolean;
-  startReportAnalysis?: (analysis: ReportAnalysisEntity) => void;
+  startReportAnalysis?: (
+    analysis: ReportAnalysisEntity,
+    context?: ReportAnalyzerRequestContext,
+  ) => void;
 }
 
 export const buildApp = (
@@ -46,10 +50,11 @@ export const buildApp = (
   const recoverOnStart = dependencies.recoverOnStart ?? env.NODE_ENV !== 'test';
   const runReportAnalysis =
     dependencies.startReportAnalysis ??
-    ((analysis: ReportAnalysisEntity) => {
+    ((analysis: ReportAnalysisEntity, context?: ReportAnalyzerRequestContext) => {
       startReportAnalysisSafely({
         analysis,
         analyzer: reportAnalyzer,
+        context,
         logger: app.log,
         repository: reportAnalysisRepository,
       });
@@ -64,6 +69,7 @@ export const buildApp = (
   app.setSerializerCompiler(serializerCompiler);
 
   app.register(cors, {
+    allowedHeaders: ['Accept', 'Accept-Language', 'Content-Type', 'x-github-token'],
     origin: env.WEB_ORIGIN,
   });
 

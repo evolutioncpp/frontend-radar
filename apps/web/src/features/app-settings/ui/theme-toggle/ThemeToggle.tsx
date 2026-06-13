@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { Moon, Sun } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { selectAppTheme, toggleTheme } from '@/features/app-settings';
 import { useAppDispatch, useAppSelector } from '@/shared/lib/redux/hooks';
@@ -11,11 +12,13 @@ interface ThemeToggleProps {
 }
 
 export const ThemeToggle = ({ className }: ThemeToggleProps) => {
+  const { t } = useTranslation('common');
   const dispatch = useAppDispatch();
   const theme = useAppSelector(selectAppTheme);
 
   const isDarkTheme = theme === 'dark';
   const Icon = isDarkTheme ? Sun : Moon;
+  const label = isDarkTheme ? t('actions.switchToLightTheme') : t('actions.switchToDarkTheme');
 
   const handleClick = () => {
     dispatch(toggleTheme());
@@ -23,10 +26,10 @@ export const ThemeToggle = ({ className }: ThemeToggleProps) => {
 
   return (
     <button
-      aria-label={isDarkTheme ? 'Switch to light theme' : 'Switch to dark theme'}
+      aria-label={label}
       className={clsx(s.themeToggle, className)}
       onClick={handleClick}
-      title={isDarkTheme ? 'Switch to light theme' : 'Switch to dark theme'}
+      title={label}
       type="button"
     >
       <Icon aria-hidden="true" className={s.icon} strokeWidth={2} />

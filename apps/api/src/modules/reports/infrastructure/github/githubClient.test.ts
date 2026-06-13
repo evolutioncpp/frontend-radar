@@ -34,6 +34,30 @@ describe('GithubClient', () => {
     );
   });
 
+  it('uses request GitHub token for authorization', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        status: 200,
+      }),
+    );
+
+    await new GithubClient().requestJson('/rate_limit', {
+      githubToken: 'github_pat_request',
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer github_pat_request',
+        }),
+      }),
+    );
+  });
+
   it('returns null for optional missing contents', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(createGithubResponse(404));
 
@@ -49,6 +73,11 @@ describe('GithubClient', () => {
     headers?: Record<string, string>;
     status: number;
   }> = [
+    {
+      code: 'repository_forbidden',
+      headers: undefined,
+      status: 401,
+    },
     {
       code: 'repository_forbidden',
       headers: undefined,

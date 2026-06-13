@@ -4,6 +4,7 @@ import {
   isReportAnalyzerApiError,
   isReportProjectPathNotFoundError,
   type ReportAnalyzer,
+  type ReportAnalyzerRequestContext,
 } from './ports/reportAnalyzer.js';
 import { REPORT_ANALYSIS_VERSION, reportHistoryLimit } from '../domain/reportAnalysisConfig.js';
 import { createReportAnalysisSnapshotKey } from '../domain/reportAnalysisSnapshot.js';
@@ -29,6 +30,7 @@ import type {
   RefreshReportAnalysisResponse,
   ReportAnalysisErrorCode,
   RetryReportAnalysisResponse,
+  ValidateGithubTokenResponse,
 } from '../domain/reportSchemas.js';
 import type { SupportedLanguage } from '@frontend-radar/localization';
 
@@ -68,6 +70,7 @@ export type CreateReportAnalysisResultBody = CreateReportAnalysisResponse;
 export type RetryReportAnalysisResultBody = RetryReportAnalysisResponse;
 export type RefreshReportAnalysisResultBody = RefreshReportAnalysisResponse;
 export type GetReportAnalysisResultBody = GetReportAnalysisResponse;
+export type ValidateGithubTokenResultBody = ValidateGithubTokenResponse;
 export type ReportAnalysisProcessingSummary = Extract<
   GetReportAnalysisResponse,
   { status: 'queued' | 'running' }
@@ -76,12 +79,13 @@ export type ReportAnalysisProcessingSummary = Extract<
 interface ReportApplicationServiceOptions {
   analyzer: ReportAnalyzer;
   repository: ReportAnalysisRepository;
-  startAnalysis: (analysis: ReportAnalysisEntity) => void;
+  startAnalysis: (analysis: ReportAnalysisEntity, context?: ReportAnalyzerRequestContext) => void;
 }
 
 export interface ReportApplicationService {
   createReportAnalysis(
     request: CreateReportAnalysisRequest,
+    context?: ReportAnalyzerRequestContext,
   ): Promise<ReportApplicationResult<CreateReportAnalysisResultBody>>;
   getReportAnalysis(
     id: string,
@@ -96,11 +100,19 @@ export interface ReportApplicationService {
   listRepositoryBranches(
     owner: string,
     repository: string,
+    context?: ReportAnalyzerRequestContext,
   ): Promise<ReportApplicationResult<ListRepositoryBranchesResponse>>;
   refreshReportAnalysis(
     id: string,
+    context?: ReportAnalyzerRequestContext,
   ): Promise<ReportApplicationResult<RefreshReportAnalysisResultBody>>;
-  retryReportAnalysis(id: string): Promise<ReportApplicationResult<RetryReportAnalysisResultBody>>;
+  retryReportAnalysis(
+    id: string,
+    context?: ReportAnalyzerRequestContext,
+  ): Promise<ReportApplicationResult<RetryReportAnalysisResultBody>>;
+  validateGithubToken(
+    context: ReportAnalyzerRequestContext,
+  ): Promise<ReportApplicationResult<ValidateGithubTokenResultBody>>;
 }
 
 export const getGithubErrorHttpStatus = (code: string) => {
@@ -217,6 +229,7 @@ export const createReportApplicationService = ({
 }: ReportApplicationServiceOptions): ReportApplicationService => {
   const createReusableAnalysisResponse = async (
     analysis: ReportAnalysisEntity,
+    context: ReportAnalyzerRequestContext = {},
   ): Promise<ReportApplicationResult<CreateReportAnalysisResultBody>> => {
     let reusableAnalysis = analysis;
 
@@ -242,7 +255,7 @@ export const createReportApplicationService = ({
 
     const retriedAnalysis = await repository.resetForRetry(reusableAnalysis.id);
 
-    startAnalysis(retriedAnalysis);
+    startAnalysis(retriedAnalysis, context);
 
     return success(200, {
       id: retriedAnalysis.id,
@@ -253,11 +266,12 @@ export const createReportApplicationService = ({
 
   const createRefreshReusableAnalysisResponse = async (
     analysis: ReportAnalysisEntity,
+    context: ReportAnalyzerRequestContext = {},
   ): Promise<ReportApplicationResult<RefreshReportAnalysisResultBody>> => {
     if (analysis.status === 'failed') {
       const retriedAnalysis = await repository.resetForRetry(analysis.id);
 
-      startAnalysis(retriedAnalysis);
+      startAnalysis(retriedAnalysis, context);
 
       return success(200, {
         id: retriedAnalysis.id,
@@ -271,7 +285,7 @@ export const createReportApplicationService = ({
     if (refreshedAnalysis.status === 'failed') {
       const retriedAnalysis = await repository.resetForRetry(refreshedAnalysis.id);
 
-      startAnalysis(retriedAnalysis);
+      startAnalysis(retriedAnalysis, context);
 
       return success(200, {
         id: retriedAnalysis.id,
@@ -288,9 +302,9 @@ export const createReportApplicationService = ({
   };
 
   return {
-    async listRepositoryBranches(owner, repositoryName) {
+    async listRepositoryBranches(owner, repositoryName, context = {}) {
       try {
-        return success(200, await analyzer.listRepositoryBranches(owner, repositoryName));
+        return success(200, await analyzer.listRepositoryBranches(owner, repositoryName, context));
       } catch (error) {
         if (isReportAnalyzerApiError(error)) {
           return localizedError(error.code);
@@ -307,7 +321,7 @@ export const createReportApplicationService = ({
       }
     },
 
-    async createReportAnalysis(request) {
+    async createReportAnalysis(request, context = {}) {
       const repositoryKey = getGithubRepositoryKey(request.owner, request.repository);
       let latestCommitDate: string | null = null;
       let latestCommitSha: string | null = null;
@@ -322,6 +336,7 @@ export const createReportApplicationService = ({
           request.owner,
           request.repository,
           request.branch,
+          context,
         );
 
         branch = snapshot.branch;
@@ -335,6 +350,7 @@ export const createReportApplicationService = ({
           analysisRef,
           request.projectPath,
           request.projectPathSource,
+          context,
         );
       } catch (error) {
         if (isReportProjectPathNotFoundError(error)) {
@@ -365,7 +381,7 @@ export const createReportApplicationService = ({
       const reusableAnalysis = await repository.findReusableBySnapshot(snapshotLookup);
 
       if (reusableAnalysis) {
-        return createReusableAnalysisResponse(reusableAnalysis);
+        return createReusableAnalysisResponse(reusableAnalysis, context);
       }
 
       let analysis: ReportAnalysisEntity;
@@ -386,14 +402,14 @@ export const createReportApplicationService = ({
           const concurrentAnalysis = await repository.findReusableBySnapshot(snapshotLookup);
 
           if (concurrentAnalysis) {
-            return createReusableAnalysisResponse(concurrentAnalysis);
+            return createReusableAnalysisResponse(concurrentAnalysis, context);
           }
         }
 
         throw error;
       }
 
-      startAnalysis(analysis);
+      startAnalysis(analysis, context);
 
       return success(201, {
         id: analysis.id,
@@ -431,7 +447,7 @@ export const createReportApplicationService = ({
       });
     },
 
-    async retryReportAnalysis(id) {
+    async retryReportAnalysis(id, context = {}) {
       const analysis = await repository.findById(id);
 
       if (!analysis) {
@@ -464,7 +480,7 @@ export const createReportApplicationService = ({
 
       const retriedAnalysis = await repository.resetForRetry(retryTarget.id);
 
-      startAnalysis(retriedAnalysis);
+      startAnalysis(retriedAnalysis, context);
 
       return success(200, {
         id: retriedAnalysis.id,
@@ -473,7 +489,7 @@ export const createReportApplicationService = ({
       });
     },
 
-    async refreshReportAnalysis(id) {
+    async refreshReportAnalysis(id, context = {}) {
       const currentAnalysis = await repository.findById(id);
 
       if (!currentAnalysis) {
@@ -495,6 +511,7 @@ export const createReportApplicationService = ({
           currentAnalysis.owner,
           currentAnalysis.repository,
           currentAnalysis.branch,
+          context,
         );
 
         branch = snapshot.branch;
@@ -509,6 +526,7 @@ export const createReportApplicationService = ({
           analysisRef,
           currentAnalysis.projectPath,
           currentAnalysis.projectPathSource,
+          context,
         );
       } catch (error) {
         if (isReportProjectPathNotFoundError(error)) {
@@ -549,7 +567,7 @@ export const createReportApplicationService = ({
       const reusableAnalysis = await repository.findReusableBySnapshot(snapshotLookup);
 
       if (reusableAnalysis) {
-        return createRefreshReusableAnalysisResponse(reusableAnalysis);
+        return createRefreshReusableAnalysisResponse(reusableAnalysis, context);
       }
 
       let newAnalysis: ReportAnalysisEntity;
@@ -574,20 +592,45 @@ export const createReportApplicationService = ({
           const concurrentAnalysis = await repository.findReusableBySnapshot(snapshotLookup);
 
           if (concurrentAnalysis) {
-            return createRefreshReusableAnalysisResponse(concurrentAnalysis);
+            return createRefreshReusableAnalysisResponse(concurrentAnalysis, context);
           }
         }
 
         throw error;
       }
 
-      startAnalysis(newAnalysis);
+      startAnalysis(newAnalysis, context);
 
       return success(201, {
         id: newAnalysis.id,
         refreshReason: 'created',
         status: 'queued',
       });
+    },
+
+    async validateGithubToken(context) {
+      if (!context.githubToken) {
+        return localizedError('repository_forbidden', 403);
+      }
+
+      try {
+        await analyzer.validateGithubToken(context);
+
+        return success(200, {
+          status: 'valid',
+        } satisfies ValidateGithubTokenResultBody);
+      } catch (error) {
+        if (isReportAnalyzerApiError(error)) {
+          return localizedError(error.code);
+        }
+
+        return createVerificationFailedError({
+          context: {
+            error,
+          },
+          message: 'Failed to validate GitHub token',
+        });
+      }
     },
 
     async getReportComparison({ id, language, previousId }) {

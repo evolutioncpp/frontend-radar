@@ -1,0 +1,78 @@
+@use 'app/styles/helpers' as *;
+
+.content {
+  display: grid;
+  gap: $space-5;
+}
+
+.section {
+  display: grid;
+  gap: $space-3;
+}
+
+.sectionTitle {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-md;
+  line-height: $line-height-sm;
+}
+
+.steps,
+.permissionList {
+  display: grid;
+  gap: $space-3;
+  margin: 0;
+  padding-left: $space-5;
+}
+
+.steps li,
+.permissionList li,
+.text {
+  color: var(--color-text-secondary);
+  font-size: $font-size-sm;
+  line-height: $line-height-md;
+}
+
+.permissionList li {
+  display: grid;
+  gap: $space-1;
+}
+
+.permissionList strong {
+  color: var(--color-text-primary);
+}
+
+.text {
+  margin: 0;
+}
+
+.externalLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.125rem;
+  border: 1px solid var(--color-button-primary-bg);
+  border-radius: $radius-md;
+  background: var(--color-button-primary-bg);
+  color: var(--color-button-primary-text);
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  gap: $space-2;
+  line-height: $line-height-md;
+  padding: $space-3 $space-5;
+  transition:
+    background-color $transition-base,
+    border-color $transition-base;
+
+  @include focus-visible;
+
+  &:hover {
+    border-color: var(--color-button-primary-bg-hover);
+    background: var(--color-button-primary-bg-hover);
+  }
+}
+
+.externalLink svg {
+  width: 1rem;
+  height: 1rem;
+}

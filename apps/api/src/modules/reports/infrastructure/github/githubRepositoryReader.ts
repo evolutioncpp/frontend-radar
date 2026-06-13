@@ -1,6 +1,8 @@
 import { GithubBranchNotFoundError, isGithubRepositoryNotFoundError } from './githubErrors.js';
 
-import type { GithubClient } from './githubClient.js';
+import type { GithubClient, GithubRequestOptions } from './githubClient.js';
+
+export type GithubReaderContext = Pick<GithubRequestOptions, 'githubToken'>;
 
 export interface GithubRepositoryMetadata {
   defaultBranch: string;
@@ -138,12 +140,27 @@ const toPackageJson = (value: unknown): PackageJson | null => {
 export class GithubRepositoryReader {
   constructor(private readonly client: GithubClient) {}
 
-  async getRepositorySnapshot(owner: string, repository: string, branch?: string | null) {
-    const repositoryMetadata = await this.fetchRepositoryMetadata(owner, repository);
+  async validateToken(context: GithubReaderContext = {}) {
+    await this.client.requestJson('/rate_limit', context);
+  }
+
+  async getRepositorySnapshot(
+    owner: string,
+    repository: string,
+    branch?: string | null,
+    context: GithubReaderContext = {},
+  ) {
+    const repositoryMetadata = await this.fetchRepositoryMetadata(owner, repository, context);
     const targetBranch = branch || repositoryMetadata.defaultBranch;
-    const latestCommit = await this.fetchLatestCommit(owner, repository, targetBranch, {
-      throwOnNotFound: Boolean(branch),
-    });
+    const latestCommit = await this.fetchLatestCommit(
+      owner,
+      repository,
+      targetBranch,
+      {
+        throwOnNotFound: Boolean(branch),
+      },
+      context,
+    );
 
     return {
       branch: targetBranch,
@@ -154,8 +171,13 @@ export class GithubRepositoryReader {
     } satisfies RepositorySnapshot;
   }
 
-  async listBranches(owner: string, repository: string, limit = 500): Promise<RepositoryBranches> {
-    const repositoryMetadata = await this.fetchRepositoryMetadata(owner, repository);
+  async listBranches(
+    owner: string,
+    repository: string,
+    limit = 500,
+    context: GithubReaderContext = {},
+  ): Promise<RepositoryBranches> {
+    const repositoryMetadata = await this.fetchRepositoryMetadata(owner, repository, context);
     const branchNames: string[] = [];
     let page = 1;
     let isTruncated = false;
@@ -163,6 +185,7 @@ export class GithubRepositoryReader {
     while (branchNames.length < limit) {
       const body = await this.client.requestJson(
         `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/branches?per_page=100&page=${page}`,
+        context,
       );
 
       if (!Array.isArray(body) || body.length === 0) {
@@ -203,9 +226,14 @@ export class GithubRepositoryReader {
     };
   }
 
-  async fetchRepositoryMetadata(owner: string, repository: string) {
+  async fetchRepositoryMetadata(
+    owner: string,
+    repository: string,
+    context: GithubReaderContext = {},
+  ) {
     const body = await this.client.requestJson(
       `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}`,
+      context,
     );
     const ownerBody = getObjectField(body, 'owner');
     const licenseBody = getObjectField(body, 'license');
@@ -228,10 +256,12 @@ export class GithubRepositoryReader {
     repository: string,
     branch: string,
     options: { throwOnNotFound?: boolean } = {},
+    context: GithubReaderContext = {},
   ) {
     try {
       const body = await this.client.requestJson(
         `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/commits/${encodeURIComponent(branch)}`,
+        context,
       );
       const commit = getObjectField(body, 'commit');
       const author = getObjectField(commit, 'author');
@@ -261,12 +291,19 @@ export class GithubRepositoryReader {
     }
   }
 
-  async readPackageJson(owner: string, repository: string, branch: string, basePath = '') {
+  async readPackageJson(
+    owner: string,
+    repository: string,
+    branch: string,
+    basePath = '',
+    context: GithubReaderContext = {},
+  ) {
     const content = await this.readFile(
       owner,
       repository,
       branch,
       joinRepositoryPath(basePath, 'package.json'),
+      context,
     );
 
     if (!content) {
@@ -280,9 +317,15 @@ export class GithubRepositoryReader {
     }
   }
 
-  async findFirstPath(owner: string, repository: string, branch: string, paths: readonly string[]) {
+  async findFirstPath(
+    owner: string,
+    repository: string,
+    branch: string,
+    paths: readonly string[],
+    context: GithubReaderContext = {},
+  ) {
     for (const path of paths) {
-      if (await this.hasPath(owner, repository, branch, path)) {
+      if (await this.hasPath(owner, repository, branch, path, context)) {
         return path;
       }
     }
@@ -295,11 +338,12 @@ export class GithubRepositoryReader {
     repository: string,
     branch: string,
     paths: readonly string[],
+    context: GithubReaderContext = {},
   ) {
     const existingPaths: string[] = [];
 
     for (const path of paths) {
-      if (await this.hasPath(owner, repository, branch, path)) {
+      if (await this.hasPath(owner, repository, branch, path, context)) {
         existingPaths.push(path);
       }
     }
@@ -307,8 +351,14 @@ export class GithubRepositoryReader {
     return existingPaths;
   }
 
-  async readTextFile(owner: string, repository: string, branch: string, path: string) {
-    return this.readFile(owner, repository, branch, path);
+  async readTextFile(
+    owner: string,
+    repository: string,
+    branch: string,
+    path: string,
+    context: GithubReaderContext = {},
+  ) {
+    return this.readFile(owner, repository, branch, path, context);
   }
 
   async readFirstTextFile(
@@ -316,9 +366,10 @@ export class GithubRepositoryReader {
     repository: string,
     branch: string,
     paths: readonly string[],
+    context: GithubReaderContext = {},
   ): Promise<TextFileMatch | null> {
     for (const path of paths) {
-      const content = await this.readFile(owner, repository, branch, path);
+      const content = await this.readFile(owner, repository, branch, path, context);
 
       if (content !== null) {
         return {
@@ -331,8 +382,14 @@ export class GithubRepositoryReader {
     return null;
   }
 
-  async listDirectoryFiles(owner: string, repository: string, branch: string, path: string) {
-    return (await this.listDirectoryEntries(owner, repository, branch, path))
+  async listDirectoryFiles(
+    owner: string,
+    repository: string,
+    branch: string,
+    path: string,
+    context: GithubReaderContext = {},
+  ) {
+    return (await this.listDirectoryEntries(owner, repository, branch, path, context))
       .filter((entry) => entry.type === 'file')
       .map((entry) => entry.name);
   }
@@ -342,8 +399,9 @@ export class GithubRepositoryReader {
     repository: string,
     branch: string,
     path: string,
+    context: GithubReaderContext = {},
   ): Promise<RepositoryDirectoryEntry[]> {
-    const body = await this.requestContents(owner, repository, branch, path);
+    const body = await this.requestContents(owner, repository, branch, path, context);
 
     if (!Array.isArray(body)) {
       return [];
@@ -372,20 +430,44 @@ export class GithubRepositoryReader {
       .filter((entry): entry is RepositoryDirectoryEntry => entry !== null);
   }
 
-  async hasAnyPath(owner: string, repository: string, branch: string, paths: readonly string[]) {
-    return (await this.findFirstPath(owner, repository, branch, paths)) !== null;
+  async hasAnyPath(
+    owner: string,
+    repository: string,
+    branch: string,
+    paths: readonly string[],
+    context: GithubReaderContext = {},
+  ) {
+    return (await this.findFirstPath(owner, repository, branch, paths, context)) !== null;
   }
 
-  async hasDirectory(owner: string, repository: string, branch: string, path: string) {
-    return (await this.listDirectoryFiles(owner, repository, branch, path)).length > 0;
+  async hasDirectory(
+    owner: string,
+    repository: string,
+    branch: string,
+    path: string,
+    context: GithubReaderContext = {},
+  ) {
+    return (await this.listDirectoryFiles(owner, repository, branch, path, context)).length > 0;
   }
 
-  private async hasPath(owner: string, repository: string, branch: string, path: string) {
-    return (await this.requestContents(owner, repository, branch, path)) !== null;
+  private async hasPath(
+    owner: string,
+    repository: string,
+    branch: string,
+    path: string,
+    context: GithubReaderContext = {},
+  ) {
+    return (await this.requestContents(owner, repository, branch, path, context)) !== null;
   }
 
-  private async readFile(owner: string, repository: string, branch: string, path: string) {
-    const body = await this.requestContents(owner, repository, branch, path);
+  private async readFile(
+    owner: string,
+    repository: string,
+    branch: string,
+    path: string,
+    context: GithubReaderContext = {},
+  ) {
+    const body = await this.requestContents(owner, repository, branch, path, context);
 
     if (!isRecord(body)) {
       return null;
@@ -401,13 +483,20 @@ export class GithubRepositoryReader {
     return Buffer.from(content, 'base64').toString('utf8');
   }
 
-  private async requestContents(owner: string, repository: string, branch: string, path: string) {
+  private async requestContents(
+    owner: string,
+    repository: string,
+    branch: string,
+    path: string,
+    context: GithubReaderContext = {},
+  ) {
     const encodedPath = path.split('/').map(encodeURIComponent).join('/');
 
     return this.client.requestJson(
       `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/contents/${encodedPath}?ref=${encodeURIComponent(branch)}`,
       {
         allowNotFound: true,
+        ...context,
       },
     );
   }

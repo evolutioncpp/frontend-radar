@@ -3,6 +3,7 @@ import { joinRepositoryPath } from '../../infrastructure/github/githubRepository
 import { ReportProjectPathNotFoundError } from '../../application/ports/reportAnalyzer.js';
 
 import type {
+  GithubReaderContext,
   GithubRepositoryReader,
   PackageJson,
 } from '../../infrastructure/github/githubRepositoryReader.js';
@@ -330,8 +331,10 @@ const expandWorkspacePattern = async ({
   pattern,
   reader,
   repository,
+  context = {},
 }: {
   branch: string;
+  context?: GithubReaderContext;
   owner: string;
   pattern: string;
   reader: GithubRepositoryReader;
@@ -348,7 +351,7 @@ const expandWorkspacePattern = async ({
   }
 
   const basePath = normalizedPattern.slice(0, -2);
-  const entries = await reader.listDirectoryEntries(owner, repository, branch, basePath);
+  const entries = await reader.listDirectoryEntries(owner, repository, branch, basePath, context);
 
   return entries
     .filter((entry) => entry.type === 'dir')
@@ -361,8 +364,10 @@ const getCandidateProjectPaths = async ({
   reader,
   repository,
   rootPackageJson,
+  context = {},
 }: {
   branch: string;
+  context?: GithubReaderContext;
   owner: string;
   reader: GithubRepositoryReader;
   repository: string;
@@ -373,6 +378,7 @@ const getCandidateProjectPaths = async ({
       getWorkspacePatterns(rootPackageJson).map((pattern) =>
         expandWorkspacePattern({
           branch,
+          context,
           owner,
           pattern,
           reader,
@@ -402,15 +408,18 @@ export const detectReportProject = async ({
   owner,
   reader,
   repository,
+  context = {},
 }: {
   branch: string;
+  context?: GithubReaderContext;
   owner: string;
   reader: GithubRepositoryReader;
   repository: string;
 }): Promise<ReportProjectContext> => {
-  const rootPackageJson = await reader.readPackageJson(owner, repository, branch);
+  const rootPackageJson = await reader.readPackageJson(owner, repository, branch, '', context);
   const candidateProjectPaths = await getCandidateProjectPaths({
     branch,
+    context,
     owner,
     reader,
     repository,
@@ -422,7 +431,7 @@ export const detectReportProject = async ({
       packageJson:
         projectPath === ''
           ? rootPackageJson
-          : await reader.readPackageJson(owner, repository, branch, projectPath),
+          : await reader.readPackageJson(owner, repository, branch, projectPath, context),
       projectPath,
     })),
   );
@@ -461,8 +470,10 @@ export const resolveReportProject = async ({
   projectPathSource,
   reader,
   repository,
+  context = {},
 }: {
   branch: string;
+  context?: GithubReaderContext;
   owner: string;
   projectPath?: string | null;
   projectPathSource?: ReportProjectPathSource | null;
@@ -472,13 +483,14 @@ export const resolveReportProject = async ({
   if (projectPath === null || projectPath === undefined) {
     return detectReportProject({
       branch,
+      context,
       owner,
       reader,
       repository,
     });
   }
 
-  const packageJson = await reader.readPackageJson(owner, repository, branch, projectPath);
+  const packageJson = await reader.readPackageJson(owner, repository, branch, projectPath, context);
 
   if (projectPath && !packageJson) {
     throw new ReportProjectPathNotFoundError(projectPath);
@@ -486,7 +498,7 @@ export const resolveReportProject = async ({
 
   const packageJsonPath = getPackageJsonPath(projectPath, packageJson);
   const rootPackageJson = projectPath
-    ? await reader.readPackageJson(owner, repository, branch)
+    ? await reader.readPackageJson(owner, repository, branch, '', context)
     : packageJson;
 
   return {

@@ -1,0 +1,71 @@
+{
+  "page": {
+    "label": "Настройки",
+    "title": "Настройки приложения",
+    "description": "Настройте локальный доступ для анализа репозиториев."
+  },
+  "githubAccess": {
+    "title": "Доступ к GitHub",
+    "description": "Добавьте personal access token, чтобы анализировать приватные репозитории и реже упираться в лимиты GitHub API.",
+    "saved": {
+      "title": "GitHub token сохранён",
+      "description": "Frontend Radar будет отправлять {{token}} с запросами анализа из этого браузера."
+    },
+    "empty": {
+      "title": "GitHub token не сохранён",
+      "description": "Публичные репозитории продолжат работать, но для приватных нужен token с доступом к репозиторию."
+    },
+    "token": {
+      "label": "GitHub token",
+      "placeholder": "github_pat_...",
+      "hint": "Токен хранится только в этом браузере и не сохраняется на backend."
+    },
+    "actions": {
+      "save": "Сохранить token",
+      "check": "Проверить token",
+      "validateAndSave": "Проверить и сохранить token",
+      "checking": "Проверяем...",
+      "remove": "Удалить",
+      "help": "Как создать token?"
+    },
+    "help": {
+      "title": "Создание GitHub token",
+      "description": "Используйте fine-grained personal access token с минимальными правами к репозиторию, которые нужны для анализа.",
+      "close": "Закрыть",
+      "openGithub": "Открыть настройки token в GitHub",
+      "steps": {
+        "title": "Шаги",
+        "openSettings": "Откройте GitHub developer settings и выберите Personal access tokens → Fine-grained tokens.",
+        "createFineGrained": "Создайте новый fine-grained token и задайте комфортный срок действия.",
+        "selectRepositories": "Выберите только те репозитории, которые Frontend Radar должен анализировать.",
+        "copyToken": "Скопируйте token, вставьте его здесь и нажмите «Проверить token» перед сохранением."
+      },
+      "permissions": {
+        "title": "Нужные права",
+        "contents": {
+          "title": "Contents: Read-only",
+          "description": "Позволяет Frontend Radar читать package.json, README, workflow-файлы и конфигурацию проекта."
+        },
+        "metadata": {
+          "title": "Metadata: Read-only",
+          "description": "Обычно включается GitHub по умолчанию; нужно для чтения базовой информации о репозитории."
+        }
+      },
+      "storage": {
+        "title": "Где хранится token",
+        "description": "Token хранится только в этом браузере. Backend получает его в x-github-token для текущих запросов и не сохраняет в БД, отчётах или логах."
+      }
+    },
+    "validation": {
+      "missing": "Сначала введите GitHub token.",
+      "success": "GitHub принял этот token.",
+      "errors": {
+        "forbidden": "GitHub отклонил этот token. Проверьте, что он активен; доступ к конкретному репозиторию проверяется при запуске анализа.",
+        "missing": "Сначала введите GitHub token.",
+        "rateLimited": "Во время проверки достигнут лимит GitHub API. Попробуйте позже.",
+        "unavailable": "GitHub или локальный API сейчас недоступны. Попробуйте позже.",
+        "unknown": "Не удалось проверить token. Попробуйте позже."
+      }
+    }
+  }
+}
