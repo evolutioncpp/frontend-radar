@@ -1,0 +1,202 @@
+@use 'app/styles/helpers' as *;
+
+.status {
+  @include visually-hidden;
+}
+
+.repositoryPanel {
+  display: grid;
+  min-width: 0;
+  gap: $space-6;
+}
+
+.repositoryHeader {
+  display: grid;
+  gap: $space-3;
+  min-width: 0;
+}
+
+.repositoryTitleLine {
+  width: min(100%, 42rem);
+  height: calc($font-size-4xl * $line-height-sm);
+}
+
+.repositoryDescriptionLines,
+.analysisInfoDescriptionLines,
+.stepDescriptionLines {
+  display: grid;
+  min-width: 0;
+}
+
+.repositoryDescriptionLines {
+  gap: $space-2;
+  max-width: 48rem;
+}
+
+.repositoryDescriptionLine {
+  width: min(100%, 48rem);
+  height: 1rem;
+}
+
+.formPreview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  min-width: 0;
+  gap: $space-4;
+}
+
+.fieldsPreview {
+  display: grid;
+  min-width: 0;
+  gap: $space-3;
+}
+
+.inputPreview {
+  display: grid;
+  min-width: 0;
+  gap: $space-2;
+}
+
+.labelPreviewLine,
+.hintPreviewLine,
+.toggleHintPreviewLine {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.labelPreviewLine {
+  min-height: calc($font-size-sm * $line-height-sm);
+}
+
+.hintPreviewLine {
+  min-height: calc($font-size-sm * $line-height-md);
+}
+
+.toggleHintPreviewLine {
+  min-height: calc($font-size-sm * $line-height-sm);
+}
+
+.inputControlPreview {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 3.125rem;
+  gap: $space-3;
+  border: 1px solid var(--color-border-primary);
+  border-radius: $radius-md;
+  background: var(--color-bg-subtle);
+  padding-inline: $space-4;
+}
+
+.inputIconPreview {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}
+
+.togglePreview {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  min-width: 0;
+  gap: $space-3;
+}
+
+.checkboxPreview {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.125rem;
+}
+
+.toggleTextPreview {
+  display: grid;
+  min-width: 0;
+  gap: $space-1;
+}
+
+.submitPreview {
+  width: 11.375rem;
+  height: 3.125rem;
+  margin-top: calc($font-size-sm * $line-height-sm + $space-2);
+}
+
+.analysisInfoTitleLine {
+  width: min(100%, 18rem);
+  height: calc($font-size-2xl * $line-height-sm);
+}
+
+.analysisInfoDescriptionLines {
+  gap: $space-2;
+}
+
+.analysisInfoDescriptionLine {
+  width: min(100%, 46rem);
+  height: 1rem;
+}
+
+.stepNumberLine {
+  width: 1.75rem;
+  height: calc($font-size-xl * $line-height-sm);
+}
+
+.stepTitleLineBox,
+.stepDetailsTitleLineBox,
+.detailLineBox {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.stepTitleLineBox {
+  min-height: calc($font-size-md * $line-height-sm);
+}
+
+.stepDescriptionLines {
+  gap: $space-2;
+  max-width: 56rem;
+  padding-block: 0.3rem;
+}
+
+.stepDetailsTitleLineBox {
+  min-height: calc($font-size-sm * $line-height-md);
+}
+
+.detailLineBox {
+  min-height: calc($font-size-sm * $line-height-md);
+}
+
+@include media-max($breakpoint-lg) {
+  .repositoryTitleLine {
+    height: calc($font-size-3xl * $line-height-sm);
+  }
+}
+
+@include media-max($breakpoint-sm) {
+  .repositoryTitleLine {
+    height: calc($font-size-2xl * $line-height-sm);
+  }
+
+  .repositoryDescriptionLine,
+  .analysisInfoDescriptionLine {
+    height: 0.875rem;
+  }
+
+  .formPreview {
+    grid-template-columns: 1fr;
+  }
+
+  .submitPreview {
+    width: 100%;
+    margin-top: 0;
+  }
+
+  .analysisInfoTitleLine {
+    height: calc($font-size-xl * $line-height-sm);
+  }
+
+  .stepDescriptionLines {
+    padding-block: 0;
+  }
+}

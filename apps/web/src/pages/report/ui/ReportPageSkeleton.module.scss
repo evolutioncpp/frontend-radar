@@ -1,0 +1,401 @@
+@use 'app/styles/helpers' as *;
+
+.status {
+  @include visually-hidden;
+}
+
+.visualRoot {
+  pointer-events: none;
+}
+
+.repositoryAnalysisPanel,
+.repositoryAnalysisHeader,
+.repositoryFields,
+.inputPreview,
+.checkboxText,
+.reportContent,
+.repositorySummaryCard,
+.analysisDetailsCard,
+.healthScoreCard,
+.metricsCard,
+.compactDetailsCard,
+.toolingSection,
+.toolingItemBody,
+.metricMain,
+.compactRowText,
+.recommendationGroups {
+  display: grid;
+  min-width: 0;
+}
+
+.repositoryAnalysisPanel {
+  gap: $space-6;
+}
+
+.repositoryAnalysisHeader {
+  gap: $space-3;
+}
+
+.repositoryAnalysisTitleLine {
+  width: 42rem;
+  max-width: 100%;
+  height: calc($font-size-4xl * $line-height-sm);
+}
+
+.repositoryAnalysisDescriptionLines {
+  display: grid;
+  width: 100%;
+  max-width: 48rem;
+  min-width: 0;
+  gap: $space-2;
+}
+
+.repositoryAnalysisDescriptionLine {
+  width: 48rem;
+  max-width: 100%;
+  height: 1rem;
+}
+
+.repositoryAnalysisForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  min-width: 0;
+  gap: $space-4;
+}
+
+.repositoryFields {
+  gap: $space-3;
+}
+
+.inputPreview {
+  gap: $space-2;
+}
+
+.inputLabelLine {
+  width: 5.75rem;
+  max-width: 100%;
+  height: calc($font-size-sm * $line-height-sm);
+}
+
+.inputControlLine {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 3.125rem;
+  gap: $space-3;
+  border: 1px solid var(--color-border-primary);
+  border-radius: $radius-md;
+  background: var(--color-bg-subtle);
+  padding-inline: $space-4;
+}
+
+.inputIconLine {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}
+
+.inputHintLine {
+  width: 29rem;
+  max-width: 100%;
+  height: calc($font-size-sm * $line-height-md);
+}
+
+.checkboxPreview {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  min-width: 0;
+  gap: $space-3;
+}
+
+.checkboxLine {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.125rem;
+}
+
+.checkboxText {
+  gap: $space-1;
+}
+
+.submitButtonLine {
+  width: 11.375rem;
+  height: 3.125rem;
+  margin-top: calc($font-size-sm * $line-height-sm + $space-2);
+}
+
+.reportContent {
+  gap: $space-5;
+}
+
+.repositorySummaryCard,
+.analysisDetailsCard,
+.healthScoreCard,
+.metricsCard,
+.compactDetailsCard {
+  gap: $space-5;
+}
+
+.sectionHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  min-width: 0;
+  gap: $space-4;
+}
+
+.sectionHeaderMain {
+  display: grid;
+  min-width: 0;
+  gap: $space-2;
+}
+
+.sectionLabelRow {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  gap: $space-2;
+}
+
+.copyActionLine {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: 0 0 auto;
+}
+
+.sectionTitleLine {
+  max-width: 100%;
+  height: calc($font-size-xl * $line-height-sm);
+}
+
+.sectionAsideLine {
+  max-width: 100%;
+  height: 2rem;
+  flex: 0 0 auto;
+}
+
+.repositoryDescriptionLine,
+.scoreDescriptionLine {
+  width: 52rem;
+  max-width: 100%;
+  height: 0.875rem;
+}
+
+.repositoryMetaList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3 $space-5;
+  min-width: 0;
+}
+
+.repositoryMetaItem {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: $space-2;
+}
+
+.metaIconLine,
+.subHeaderIconLine,
+.disclosureIconLine {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}
+
+.disclosureSummaryLine,
+.sourcesSummaryLine,
+.subHeaderLine {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: $space-2;
+}
+
+.toolingSection {
+  gap: $space-4;
+}
+
+.toolingGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: $space-3;
+}
+
+.toolingItem {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: $space-3;
+  border: 1px solid var(--color-border-secondary);
+  border-radius: $radius-sm;
+  background: var(--color-bg-subtle);
+  padding: $space-3;
+}
+
+.toolingItemBody {
+  gap: $space-3;
+}
+
+.toolingTitleRow {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: $space-2;
+}
+
+.badgeLine {
+  width: 4.5rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}
+
+.scoreBlock {
+  display: grid;
+  min-width: 0;
+  gap: $space-3;
+}
+
+.scoreLine {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+  gap: $space-2;
+}
+
+.progressLine,
+.metricProgressLine {
+  width: 100%;
+  height: 0.375rem;
+}
+
+.metricsList,
+.compactList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-border-secondary);
+}
+
+.metricRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(10rem, 0.35fr);
+  align-items: center;
+  min-width: 0;
+  column-gap: $space-5;
+  row-gap: $space-3;
+  padding: $space-4 0 $space-3;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--color-border-secondary);
+  }
+}
+
+.metricMain,
+.compactRowText {
+  gap: $space-2;
+}
+
+.metricMeta {
+  display: grid;
+  grid-template-columns: 8.75rem 4.5rem;
+  align-items: center;
+  gap: $space-4;
+}
+
+.checkRow {
+  display: grid;
+  grid-template-columns: 6.75rem minmax(0, 1fr);
+  min-width: 0;
+  gap: $space-4;
+  padding: $space-4 0;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--color-border-secondary);
+  }
+}
+
+.statusBadgeLine {
+  width: 6.75rem;
+  height: 1rem;
+}
+
+.recommendationGroups {
+  gap: $space-5;
+  border-top: 1px solid var(--color-border-secondary);
+}
+
+.recommendationRow {
+  display: grid;
+  min-width: 0;
+  gap: $space-3;
+  padding: $space-4 0;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--color-border-secondary);
+  }
+}
+
+.badgeGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+}
+
+.smallBadgeLine {
+  width: 5rem;
+  height: 1rem;
+}
+
+@include media-max($breakpoint-lg) {
+  .repositoryAnalysisTitleLine {
+    height: calc($font-size-3xl * $line-height-sm);
+  }
+}
+
+@include media-max($breakpoint-md) {
+  .toolingGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metricRow {
+    grid-template-columns: 1fr;
+  }
+
+  .metricMeta {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: $space-3;
+  }
+}
+
+@include media-max($breakpoint-sm) {
+  .repositoryAnalysisTitleLine {
+    height: calc($font-size-2xl * $line-height-sm);
+  }
+
+  .repositoryAnalysisDescriptionLine {
+    height: 0.875rem;
+  }
+
+  .repositoryAnalysisForm,
+  .toolingGrid,
+  .checkRow {
+    grid-template-columns: 1fr;
+  }
+
+  .submitButtonLine {
+    width: 100%;
+    margin-top: 0;
+  }
+
+  .sectionHeader {
+    gap: $space-3;
+  }
+
+  .sectionAsideLine {
+    justify-self: end;
+  }
+}

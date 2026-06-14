@@ -1,0 +1,81 @@
+@use 'app/styles/helpers' as *;
+
+.status {
+  @include visually-hidden;
+}
+
+.visualRoot {
+  pointer-events: none;
+}
+
+.titleLine {
+  width: min(100%, 9rem);
+  height: calc($font-size-3xl * $line-height-sm);
+}
+
+.descriptionLines {
+  display: grid;
+  gap: $space-2;
+  min-width: 0;
+  max-width: 48rem;
+}
+
+.descriptionLine {
+  width: min(100%, 48rem);
+  height: 1rem;
+}
+
+.compactDateLine {
+  display: none;
+  width: 8rem;
+  height: 0.75rem;
+}
+
+.repositoryNameLine {
+  height: calc($font-size-xl * $line-height-sm);
+}
+
+.commitIconLine,
+.metaIconLine {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: 0 0 auto;
+}
+
+.scoreValueLine {
+  height: $font-size-4xl;
+}
+
+.disclosurePreview {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-width: 0;
+  gap: $space-2;
+  padding: $space-2 0;
+}
+
+.disclosureIconLine {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}
+
+@include media-max($breakpoint-sm) {
+  .titleLine {
+    height: calc($font-size-2xl * $line-height-sm);
+  }
+
+  .descriptionLine {
+    height: 0.875rem;
+  }
+
+  .compactDateLine {
+    display: block;
+    margin-left: auto;
+  }
+
+  .scoreValueLine {
+    height: $font-size-3xl;
+  }
+}

@@ -1,0 +1,241 @@
+@use 'app/styles/helpers' as *;
+
+.status {
+  @include visually-hidden;
+}
+
+.visualRoot {
+  pointer-events: none;
+}
+
+.headerEyebrowLine {
+  width: 5.5rem;
+  height: calc($font-size-xs * $line-height-sm);
+}
+
+.headerTitleLine {
+  width: min(100%, 31rem);
+  height: calc(2.75rem * 1.1);
+}
+
+.headerDescriptionLine {
+  width: min(100%, 37rem);
+  height: calc($font-size-md * $line-height-lg);
+}
+
+.sectionHeaderMainPreview,
+.sectionHeaderText,
+.blockText,
+.checkboxText {
+  min-width: 0;
+}
+
+.sectionHeaderMainPreview {
+  flex: 1 1 auto;
+}
+
+.sectionHeaderText {
+  display: grid;
+  flex: 1 1 auto;
+  width: 100%;
+  gap: $space-2;
+}
+
+.blockText,
+.checkboxText {
+  display: grid;
+  width: 100%;
+  gap: $space-1;
+}
+
+.blockText {
+  flex: 1 1 auto;
+}
+
+.sectionDescriptionLines,
+.tokenStatusDescriptionLines,
+.blockDescriptionLines {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: $space-2;
+}
+
+.sectionDescriptionLines {
+  max-width: 52rem;
+}
+
+.tokenStatusDescriptionLines,
+.blockDescriptionLines {
+  max-width: 46rem;
+}
+
+.sectionIconLine {
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+}
+
+.blockIconLine,
+.tokenStatusIconLine {
+  flex: 0 0 auto;
+}
+
+.blockIconLine {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.tokenStatusIconLine {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: 0.05rem;
+}
+
+.githubTitleLine,
+.preferencesTitleLine {
+  height: calc($font-size-xl * $line-height-md);
+}
+
+.githubTitleLine {
+  width: 10rem;
+  max-width: 100%;
+}
+
+.preferencesTitleLine {
+  width: 14rem;
+  max-width: 100%;
+}
+
+.githubDescriptionLine {
+  width: 50rem;
+  max-width: 100%;
+  height: 1rem;
+}
+
+.preferencesDescriptionLine {
+  width: 42rem;
+  max-width: 100%;
+  height: 1rem;
+}
+
+.helpButtonLine {
+  width: 11.75rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+}
+
+.tokenStatusTitleLine {
+  width: 14rem;
+  max-width: 100%;
+  height: calc($font-size-md * $line-height-md);
+}
+
+.tokenStatusDescriptionLine {
+  width: 45rem;
+  max-width: 100%;
+  height: 0.875rem;
+}
+
+.textInputPreview {
+  display: grid;
+  min-width: 0;
+  gap: $space-2;
+}
+
+.inputLabelLine {
+  width: 7rem;
+  height: calc($font-size-sm * $line-height-sm);
+}
+
+.inputControlLine {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 3.125rem;
+  gap: $space-3;
+  border: 1px solid var(--color-border-primary);
+  border-radius: $radius-md;
+  background: var(--color-bg-subtle);
+  padding-inline: $space-4;
+}
+
+.inputIconLine {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}
+
+.inputHintLine {
+  width: 42rem;
+  max-width: 100%;
+  height: calc($font-size-sm * $line-height-md);
+}
+
+.primaryActionLine,
+.ghostActionLine {
+  height: 3.125rem;
+}
+
+.primaryActionLine {
+  width: 14.5rem;
+}
+
+.ghostActionLine {
+  width: 8.25rem;
+}
+
+.checkboxPreview,
+.metricRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  min-width: 0;
+  gap: $space-3;
+}
+
+.checkboxLine {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.125rem;
+}
+
+.historyLabelLine {
+  width: 18rem;
+  max-width: 100%;
+  height: calc($font-size-sm * $line-height-sm);
+}
+
+.historyHintLine {
+  width: 45rem;
+  max-width: 100%;
+  height: calc($font-size-sm * $line-height-sm);
+}
+
+.metricsTitleLine {
+  width: 11rem;
+  max-width: 100%;
+  height: calc($font-size-md * $line-height-md);
+}
+
+.metricsDescriptionLine {
+  width: 45rem;
+  max-width: 100%;
+  height: 1rem;
+}
+
+@include media-max($breakpoint-md) {
+  .headerTitleLine {
+    width: min(100%, 24rem);
+    height: calc($font-size-3xl * 1.1);
+  }
+
+  .helpButtonLine {
+    width: 11.75rem;
+  }
+
+  .primaryActionLine,
+  .ghostActionLine {
+    width: 100%;
+  }
+}
