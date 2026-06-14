@@ -84,6 +84,7 @@
         "testing": "Testing",
         "ci": "CI/CD",
         "dependencies": "Dependencies",
+        "security": "Security",
         "maintainability": "Maintainability",
         "performance": "Performance",
         "accessibility": "Accessibility"
@@ -93,6 +94,7 @@
         "testing": "Test scripts, test files, tooling and coverage signals.",
         "ci": "GitHub Actions workflow quality and project targeting.",
         "dependencies": "Package metadata, lockfiles and dependency hygiene.",
+        "security": "Secret hygiene, env files and gitignore coverage.",
         "maintainability": "TypeScript, linting, formatting and source health.",
         "performance": "Build readiness, bundler and source-level loading signals.",
         "accessibility": "Accessibility tooling and UI review signals."

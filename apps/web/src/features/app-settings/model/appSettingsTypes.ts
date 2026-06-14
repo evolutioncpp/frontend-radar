@@ -10,6 +10,7 @@ export const reportScoreCategoryOptions = [
   'testing',
   'ci',
   'dependencies',
+  'security',
   'maintainability',
   'performance',
   'accessibility',

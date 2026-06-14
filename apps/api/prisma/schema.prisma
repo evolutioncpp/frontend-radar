@@ -27,6 +27,7 @@ enum ReportAnalysisProgressStage {
   project_detection
   repository_signals
   source_scan
+  security_scan
   workflow_analysis
   scoring
   report_building
@@ -53,7 +54,7 @@ model ReportAnalysis {
   progressStage     ReportAnalysisProgressStage @default(queued)
   progressUpdatedAt DateTime             @default(now())
   isHistoryVisible  Boolean              @default(true)
-  scoreCategoriesKey String              @default("documentation,testing,ci,dependencies,maintainability,performance,accessibility")
+  scoreCategoriesKey String              @default("documentation,testing,ci,dependencies,security,maintainability,performance,accessibility")
   leaseOwner        String?
   leaseExpiresAt    DateTime?
   startedAt         DateTime?

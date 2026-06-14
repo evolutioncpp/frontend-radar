@@ -136,6 +136,33 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
       test: createScriptSignal('test'),
     },
   },
+  security: {
+    envUsage: {
+      found: false,
+      sources: [],
+      withoutExample: false,
+    },
+    gitignore: {
+      coversEnvFiles: true,
+      coversNpmrc: true,
+      coversPrivateKeys: true,
+      exists: true,
+      path: '.gitignore',
+      scope: 'project',
+    },
+    hardcodedSecrets: {
+      count: 0,
+      found: false,
+      isTruncated: false,
+      matches: [],
+      sources: [],
+    },
+    sensitiveFiles: {
+      files: [],
+      found: false,
+      sources: [],
+    },
+  },
   sourceCode: {
     codeHealth: {
       anyCount: 0,
@@ -224,6 +251,94 @@ describe('buildScoreBreakdown', () => {
     const scoreBreakdown = buildScoreBreakdown(createSignals(), ['testing', 'dependencies']);
 
     expect(scoreBreakdown.map((metric) => metric.category)).toEqual(['testing', 'dependencies']);
+  });
+
+  it('caps security when sensitive files are detected', () => {
+    const metric = getMetric(
+      createSignals({
+        security: {
+          ...createSignals().security,
+          sensitiveFiles: {
+            files: [
+              {
+                kind: 'env',
+                path: '.env',
+                scope: 'project',
+              },
+            ],
+            found: true,
+            sources: ['.env'],
+          },
+        },
+      }),
+      'security',
+    );
+
+    expect(metric).toMatchObject({
+      status: 'critical',
+      value: 49,
+    });
+    expect(metric.scoreDetails.cap).toMatchObject({
+      value: 49,
+    });
+  });
+
+  it('marks security as excellent when repository hygiene is clean', () => {
+    const metric = getMetric(
+      createSignals({
+        sourceCode: {
+          ...createSignals().sourceCode,
+          files: {
+            count: 2,
+            isTruncated: false,
+            sources: ['src/main.tsx'],
+          },
+        },
+      }),
+      'security',
+    );
+
+    expect(metric).toMatchObject({
+      status: 'excellent',
+      value: 100,
+    });
+  });
+
+  it('keeps security below excellent when gitignore does not cover npmrc files', () => {
+    const metric = getMetric(
+      createSignals({
+        security: {
+          ...createSignals().security,
+          gitignore: {
+            coversEnvFiles: true,
+            coversNpmrc: false,
+            coversPrivateKeys: true,
+            exists: true,
+            path: '.gitignore',
+            scope: 'project',
+          },
+        },
+        sourceCode: {
+          ...createSignals().sourceCode,
+          files: {
+            count: 2,
+            isTruncated: false,
+            sources: ['src/main.tsx'],
+          },
+        },
+      }),
+      'security',
+    );
+
+    expect(metric.value).toBeLessThan(90);
+    expect(metric.scoreDetails.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'security-gitignore',
+          status: 'partial',
+        }),
+      ]),
+    );
   });
 
   it('does not give high CI score when a workflow exists without quality steps', () => {

@@ -25,7 +25,7 @@ const recommendationCategories = {
   'add-ci-pr-checks': ['ci'],
   'add-ci-test-step': ['ci'],
   'add-coverage-signal': ['testing'],
-  'add-env-example': ['documentation'],
+  'add-env-example': ['documentation', 'security'],
   'add-github-actions': ['ci'],
   'add-lint-script': ['maintainability'],
   'add-package-metadata': ['dependencies'],
@@ -42,7 +42,10 @@ const recommendationCategories = {
   'improve-readme': ['documentation'],
   'move-tooling-to-dev-dependencies': ['dependencies'],
   'reduce-source-health-warnings': ['maintainability'],
+  'remove-sensitive-files': ['security'],
   'remove-mixed-lockfiles': ['dependencies'],
+  'replace-hardcoded-secret': ['security'],
+  'ignore-secret-files': ['security'],
   'scope-ci-to-frontend-path': ['ci'],
 } as const satisfies Record<string, readonly ScoreCategory[]>;
 const recommendationCategoryMap: Readonly<Record<string, readonly ScoreCategory[]>> =
@@ -77,6 +80,7 @@ export const buildRecommendations = (
   enabledCategories: readonly ScoreCategory[] = defaultEnabledScoreCategories,
 ) => {
   const recommendations: ProjectReport['recommendations'] = [];
+  const enabledCategorySet = new Set(normalizeEnabledScoreCategories(enabledCategories));
 
   if (!signals.packageJson.exists) {
     recommendations.push({
@@ -334,6 +338,41 @@ export const buildRecommendations = (
     });
   }
 
+  if (signals.security.sensitiveFiles.found) {
+    recommendations.push({
+      id: 'remove-sensitive-files',
+      severity: 'high',
+      title: 'Remove sensitive files from the repository',
+      description:
+        'Remove committed env, npmrc or private key files and rotate any exposed credentials before using the repository again.',
+    });
+  }
+
+  if (signals.security.hardcodedSecrets.found) {
+    recommendations.push({
+      id: 'replace-hardcoded-secret',
+      severity: 'high',
+      title: 'Move hardcoded secrets out of source code',
+      description:
+        'Replace hardcoded secret-looking values with environment variables or a secret manager. The report intentionally does not expose the values.',
+    });
+  }
+
+  if (
+    !signals.security.gitignore.exists ||
+    !signals.security.gitignore.coversEnvFiles ||
+    !signals.security.gitignore.coversNpmrc ||
+    !signals.security.gitignore.coversPrivateKeys
+  ) {
+    recommendations.push({
+      id: 'ignore-secret-files',
+      severity: 'medium',
+      title: 'Ignore local secret files',
+      description:
+        'Add .env*, .npmrc and private key patterns to .gitignore so local credentials are harder to commit accidentally.',
+    });
+  }
+
   if (!signals.storybook.found) {
     recommendations.push({
       id: 'add-storybook',
@@ -343,7 +382,10 @@ export const buildRecommendations = (
     });
   }
 
-  if (!signals.envExample.exists) {
+  if (
+    !signals.envExample.exists &&
+    (enabledCategorySet.has('documentation') || signals.security.envUsage.found)
+  ) {
     recommendations.push({
       id: 'add-env-example',
       severity: 'low',

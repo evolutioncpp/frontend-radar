@@ -27,6 +27,10 @@ export const reportLocalizationMetrics = {
       label: 'Performance',
       description: 'Build tooling and frontend bundler readiness.',
     },
+    security: {
+      label: 'Security',
+      description: 'Secrets, environment configuration and repository hygiene signals.',
+    },
     testing: {
       label: 'Testing',
       description: 'Test scripts and common frontend testing dependencies.',
@@ -56,6 +60,10 @@ export const reportLocalizationMetrics = {
     performance: {
       label: 'Производительность',
       description: 'Готовность build tooling и frontend bundler.',
+    },
+    security: {
+      label: 'Безопасность',
+      description: 'Сигналы секретов, окружения и гигиены репозитория.',
     },
     testing: {
       label: 'Тестирование',

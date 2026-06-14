@@ -47,6 +47,7 @@ const createTestStoreWithGithubToken = (githubToken: string) => {
           'testing',
           'ci',
           'dependencies',
+          'security',
           'maintainability',
           'performance',
           'accessibility',

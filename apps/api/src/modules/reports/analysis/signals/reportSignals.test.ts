@@ -612,7 +612,7 @@ describe('collectRepositorySignals', () => {
       isWorkflowAnalysisTruncated: true,
     });
     expect(signals.ciAnalysis.analyzedWorkflowPaths).toHaveLength(10);
-    expect(readPaths).toHaveLength(10);
+    expect(readPaths.filter((path) => path.startsWith('.github/workflows/'))).toHaveLength(10);
   });
 
   it('ignores disabled and non-YAML files in GitHub Actions workflows directory', async () => {

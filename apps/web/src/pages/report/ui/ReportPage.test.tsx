@@ -121,6 +121,7 @@ vi.mock('react-i18next', () => ({
         'page.reportProcessing.steps.repository_signals': 'Reading project signals',
         'page.reportProcessing.steps.source_scan': 'Scanning source code',
         'page.reportProcessing.steps.workflow_analysis': 'Analyzing workflows',
+        'page.reportProcessing.steps.security_scan': 'Checking secrets',
         'page.reportProcessing.steps.scoring': 'Calculating score',
         'page.reportProcessing.steps.report_building': 'Preparing report',
         'page.reportProcessing.stepDescriptions.queued':
@@ -137,6 +138,8 @@ vi.mock('react-i18next', () => ({
           'Frontend Radar is scanning bounded source, test and TypeScript config files.',
         'page.reportProcessing.stepDescriptions.workflow_analysis':
           'Frontend Radar is reading GitHub Actions workflows and checking CI coverage.',
+        'page.reportProcessing.stepDescriptions.security_scan':
+          'Frontend Radar is checking secret hygiene, env files and gitignore coverage.',
         'page.reportProcessing.stepDescriptions.scoring':
           'Frontend Radar is converting collected signals into category scores.',
         'page.reportProcessing.stepDescriptions.report_building':
@@ -549,6 +552,7 @@ const createTestStore = () => {
       'testing',
       'ci',
       'dependencies',
+      'security',
       'maintainability',
       'performance',
       'accessibility',

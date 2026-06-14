@@ -69,6 +69,36 @@ const en = {
       warning: 'Dev-only tooling dependencies were found in production dependencies.',
     },
   },
+  'security-env-documentation': {
+    label: 'Environment documentation',
+    descriptions: {
+      found: 'Environment variable usage is documented with an example file.',
+      missing: 'Environment variables are used, but no example file was found.',
+      warning: 'Environment variables are documented only at the repository root.',
+    },
+  },
+  'security-gitignore': {
+    label: 'Secret file gitignore coverage',
+    descriptions: {
+      found: '.gitignore includes env, npmrc and private key patterns.',
+      missing: '.gitignore was not found.',
+      warning: '.gitignore does not fully cover env, npmrc or private key files.',
+    },
+  },
+  'security-secret-patterns': {
+    label: 'Hardcoded secret patterns',
+    descriptions: {
+      found: 'No high-confidence hardcoded secret patterns were detected.',
+      warning: 'High-confidence hardcoded secret patterns were detected.',
+    },
+  },
+  'security-sensitive-files': {
+    label: 'Sensitive files',
+    descriptions: {
+      found: 'No sensitive env, npmrc or private key files were detected.',
+      warning: 'Sensitive env, npmrc or private key files were detected.',
+    },
+  },
   'github-actions': {
     label: 'GitHub Actions workflows',
     descriptions: {
@@ -317,6 +347,36 @@ const ru = {
     descriptions: {
       found: 'Dev-only tooling не найден в production dependencies.',
       warning: 'Dev-only tooling найден в production dependencies.',
+    },
+  },
+  'security-env-documentation': {
+    label: 'Документация окружения',
+    descriptions: {
+      found: 'Использование переменных окружения описано в файле-примере.',
+      missing: 'Переменные окружения используются, но файл-пример не найден.',
+      warning: 'Переменные окружения описаны только в корне репозитория.',
+    },
+  },
+  'security-gitignore': {
+    label: 'Защита secret-файлов в gitignore',
+    descriptions: {
+      found: '.gitignore содержит правила для env-файлов, npmrc и приватных ключей.',
+      missing: '.gitignore не найден.',
+      warning: '.gitignore не полностью покрывает env-файлы, npmrc или приватные ключи.',
+    },
+  },
+  'security-secret-patterns': {
+    label: 'Хардкод секретов',
+    descriptions: {
+      found: 'Высокодостоверные паттерны секретов не найдены.',
+      warning: 'Найдены высокодостоверные паттерны захардкоженных секретов.',
+    },
+  },
+  'security-sensitive-files': {
+    label: 'Чувствительные файлы',
+    descriptions: {
+      found: 'Env-файлы, npmrc и приватные ключи не найдены.',
+      warning: 'Найдены env-файлы, npmrc или приватные ключи.',
     },
   },
   'github-actions': {

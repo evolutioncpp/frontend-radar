@@ -25,6 +25,7 @@ const processingStageIds = [
   'project_detection',
   'repository_signals',
   'source_scan',
+  'security_scan',
   'workflow_analysis',
   'scoring',
   'report_building',

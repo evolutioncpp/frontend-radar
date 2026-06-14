@@ -41,6 +41,7 @@ const createTestStore = (language: AppLanguage = 'en') => {
         'testing',
         'ci',
         'dependencies',
+        'security',
         'maintainability',
         'performance',
         'accessibility',

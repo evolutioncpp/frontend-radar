@@ -111,6 +111,47 @@ export type SourceCodeSignals = {
   };
 };
 
+export type SecuritySensitiveFile = {
+  kind: 'env' | 'npmrc' | 'private_key';
+  path: string;
+  scope: Exclude<SignalScope, 'github' | null>;
+};
+
+export type SecuritySecretPatternKind =
+  | 'aws_access_key'
+  | 'generic_secret'
+  | 'github_token'
+  | 'jwt'
+  | 'private_key';
+
+export type SecuritySecretPatternMatch = {
+  kind: SecuritySecretPatternKind;
+  path: string;
+};
+
+export type SecuritySignals = {
+  envUsage: SourceCodeSignalCheck & {
+    withoutExample: boolean;
+  };
+  gitignore: PathSignal & {
+    coversEnvFiles: boolean;
+    coversNpmrc: boolean;
+    coversPrivateKeys: boolean;
+  };
+  hardcodedSecrets: {
+    count: number;
+    found: boolean;
+    isTruncated: boolean;
+    matches: SecuritySecretPatternMatch[];
+    sources: string[];
+  };
+  sensitiveFiles: {
+    files: SecuritySensitiveFile[];
+    found: boolean;
+    sources: string[];
+  };
+};
+
 export type TestQualitySignals = {
   coverage: SourceCodeSignalCheck;
   e2e: SourceCodeSignalCheck;
@@ -189,6 +230,7 @@ export interface RepositorySignals {
     length: number;
   };
   rootPackageJson: PackageJsonSignal;
+  security: SecuritySignals;
   sourceCode: SourceCodeSignals;
   storybook: ToolSignal;
   testQuality: TestQualitySignals;
@@ -234,6 +276,10 @@ export const reportAnalysisSourceIds = [
   'typecheck-script',
   'code-health',
   'code-splitting',
+  'security-sensitive-files',
+  'security-secret-patterns',
+  'security-env-documentation',
+  'security-gitignore',
 ] as const;
 
 export type ReportAnalysisSourceId = (typeof reportAnalysisSourceIds)[number];

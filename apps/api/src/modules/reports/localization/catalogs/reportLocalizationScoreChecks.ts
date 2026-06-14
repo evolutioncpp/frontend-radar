@@ -89,6 +89,39 @@ export const reportLocalizationScoreChecks = {
         missing: 'No lazy loading or dynamic import signal was detected.',
       },
     },
+    'security-env-documentation': {
+      label: 'Environment documentation',
+      descriptions: {
+        found: 'Environment variables are documented with an example file.',
+        missing: 'Environment variables are used, but no example file was found.',
+        warning:
+          'Environment variables are used, but the example file is incomplete or root-level only.',
+      },
+    },
+    'security-gitignore': {
+      label: 'Secret file gitignore coverage',
+      descriptions: {
+        found: '.gitignore includes patterns for env, npmrc and private key files.',
+        missing: '.gitignore was not found.',
+        warning: '.gitignore does not fully cover env, npmrc or private key files.',
+      },
+    },
+    'security-secret-patterns': {
+      label: 'Hardcoded secret patterns',
+      descriptions: {
+        found: 'No high-confidence hardcoded secret patterns were detected.',
+        missing: 'High-confidence hardcoded secret patterns were detected.',
+        warning: 'Source files were not found, so secret patterns could not be evaluated.',
+      },
+    },
+    'security-sensitive-files': {
+      label: 'Sensitive files',
+      descriptions: {
+        found: 'No sensitive env, npmrc or private key files were detected.',
+        missing: 'Sensitive env, npmrc or private key files were detected.',
+        warning: 'Sensitive env, npmrc or private key files were detected.',
+      },
+    },
     'dependency-hygiene': {
       label: 'Dependency hygiene',
       descriptions: {
@@ -339,6 +372,38 @@ export const reportLocalizationScoreChecks = {
       descriptions: {
         found: 'В исходниках найдены lazy loading или dynamic import.',
         missing: 'Сигналы lazy loading или dynamic import не найдены.',
+      },
+    },
+    'security-env-documentation': {
+      label: 'Документация окружения',
+      descriptions: {
+        found: 'Переменные окружения описаны в файле-примере.',
+        missing: 'Переменные окружения используются, но файл-пример не найден.',
+        warning: 'Переменные окружения используются, но найден только корневой файл-пример.',
+      },
+    },
+    'security-gitignore': {
+      label: 'Защита secret-файлов в gitignore',
+      descriptions: {
+        found: '.gitignore содержит правила для env-файлов, npmrc и приватных ключей.',
+        missing: '.gitignore не найден.',
+        warning: '.gitignore не полностью покрывает env-файлы, npmrc или приватные ключи.',
+      },
+    },
+    'security-secret-patterns': {
+      label: 'Хардкод секретов',
+      descriptions: {
+        found: 'Высокодостоверные паттерны секретов в коде не найдены.',
+        missing: 'Найдены высокодостоверные паттерны захардкоженных секретов.',
+        warning: 'Исходники не найдены, поэтому секреты нельзя проверить.',
+      },
+    },
+    'security-sensitive-files': {
+      label: 'Чувствительные файлы',
+      descriptions: {
+        found: 'Env-файлы, npmrc и приватные ключи не найдены.',
+        missing: 'Найдены env-файлы, npmrc или приватные ключи.',
+        warning: 'Найдены env-файлы, npmrc или приватные ключи.',
       },
     },
     'dependency-hygiene': {

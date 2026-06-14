@@ -122,6 +122,33 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
       test: createScriptSignal('test', 'vitest run'),
     },
   },
+  security: {
+    envUsage: {
+      found: false,
+      sources: [],
+      withoutExample: false,
+    },
+    gitignore: {
+      coversEnvFiles: true,
+      coversNpmrc: true,
+      coversPrivateKeys: true,
+      exists: true,
+      path: '.gitignore',
+      scope: 'project',
+    },
+    hardcodedSecrets: {
+      count: 0,
+      found: false,
+      isTruncated: false,
+      matches: [],
+      sources: [],
+    },
+    sensitiveFiles: {
+      files: [],
+      found: false,
+      sources: [],
+    },
+  },
   sourceCode: {
     codeHealth: {
       anyCount: 0,
@@ -402,6 +429,105 @@ describe('buildRecommendations', () => {
         expect.objectContaining({ id: 'align-package-manager' }),
         expect.objectContaining({ id: 'move-tooling-to-dev-dependencies' }),
       ]),
+    );
+  });
+
+  it('adds security recommendations for secret hygiene issues', () => {
+    const recommendations = buildRecommendations(
+      createSignals({
+        envExample: {
+          exists: false,
+          path: null,
+        },
+        security: {
+          ...createSignals().security,
+          envUsage: {
+            found: true,
+            sources: ['src/config.ts'],
+            withoutExample: true,
+          },
+          gitignore: {
+            coversEnvFiles: false,
+            coversNpmrc: false,
+            coversPrivateKeys: false,
+            exists: true,
+            path: '.gitignore',
+            scope: 'project',
+          },
+          hardcodedSecrets: {
+            count: 1,
+            found: true,
+            isTruncated: false,
+            matches: [
+              {
+                kind: 'github_token',
+                path: 'src/config.ts',
+              },
+            ],
+            sources: ['src/config.ts'],
+          },
+          sensitiveFiles: {
+            files: [
+              {
+                kind: 'env',
+                path: '.env',
+                scope: 'project',
+              },
+            ],
+            found: true,
+            sources: ['.env'],
+          },
+        },
+      }),
+      ['security'],
+    );
+
+    expect(recommendations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'remove-sensitive-files', severity: 'high' }),
+        expect.objectContaining({ id: 'replace-hardcoded-secret', severity: 'high' }),
+        expect.objectContaining({ id: 'ignore-secret-files', severity: 'medium' }),
+        expect.objectContaining({ id: 'add-env-example', severity: 'low' }),
+      ]),
+    );
+  });
+
+  it('recommends gitignore hardening when npmrc is not covered', () => {
+    const recommendations = buildRecommendations(
+      createSignals({
+        security: {
+          ...createSignals().security,
+          gitignore: {
+            coversEnvFiles: true,
+            coversNpmrc: false,
+            coversPrivateKeys: true,
+            exists: true,
+            path: '.gitignore',
+            scope: 'project',
+          },
+        },
+      }),
+      ['security'],
+    );
+
+    expect(recommendations).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: 'ignore-secret-files' })]),
+    );
+  });
+
+  it('does not recommend an env example for security-only reports without env usage', () => {
+    const recommendations = buildRecommendations(
+      createSignals({
+        envExample: {
+          exists: false,
+          path: null,
+        },
+      }),
+      ['security'],
+    );
+
+    expect(recommendations.map((recommendation) => recommendation.id)).not.toContain(
+      'add-env-example',
     );
   });
 });

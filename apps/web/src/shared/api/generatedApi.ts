@@ -100,6 +100,7 @@ export type CreateReportAnalysisApiArg = {
       | 'testing'
       | 'ci'
       | 'dependencies'
+      | 'security'
       | 'maintainability'
       | 'performance'
       | 'accessibility'
@@ -174,6 +175,7 @@ export type GetReportComparisonApiResponse =
           | 'testing'
           | 'ci'
           | 'dependencies'
+          | 'security'
           | 'maintainability'
           | 'performance'
           | 'accessibility';
@@ -232,6 +234,7 @@ export type GetReportAnalysisApiResponse =
             | 'project_detection'
             | 'repository_signals'
             | 'source_scan'
+            | 'security_scan'
             | 'workflow_analysis'
             | 'scoring'
             | 'report_building';
@@ -262,6 +265,7 @@ export type GetReportAnalysisApiResponse =
             | 'project_detection'
             | 'repository_signals'
             | 'source_scan'
+            | 'security_scan'
             | 'workflow_analysis'
             | 'scoring'
             | 'report_building';
@@ -564,6 +568,7 @@ export type GetReportAnalysisApiResponse =
             | 'testing'
             | 'ci'
             | 'dependencies'
+            | 'security'
             | 'maintainability'
             | 'performance'
             | 'accessibility';
@@ -604,6 +609,10 @@ export type GetReportAnalysisApiResponse =
                 | 'lockfile-consistency'
                 | 'package-manager'
                 | 'dependency-hygiene'
+                | 'security-sensitive-files'
+                | 'security-secret-patterns'
+                | 'security-env-documentation'
+                | 'security-gitignore'
                 | 'typescript'
                 | 'typescript-config'
                 | 'typescript-strict'

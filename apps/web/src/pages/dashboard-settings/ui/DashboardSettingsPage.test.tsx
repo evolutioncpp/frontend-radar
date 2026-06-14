@@ -63,6 +63,7 @@ const translations: Record<string, string> = {
   'reportPreferences.metrics.categories.testing': 'Testing',
   'reportPreferences.metrics.categories.ci': 'CI/CD',
   'reportPreferences.metrics.categories.dependencies': 'Dependencies',
+  'reportPreferences.metrics.categories.security': 'Security',
   'reportPreferences.metrics.categories.maintainability': 'Maintainability',
   'reportPreferences.metrics.categories.performance': 'Performance',
   'reportPreferences.metrics.categories.accessibility': 'Accessibility',
@@ -70,6 +71,7 @@ const translations: Record<string, string> = {
   'reportPreferences.metrics.categoryHints.testing': 'Tests.',
   'reportPreferences.metrics.categoryHints.ci': 'CI.',
   'reportPreferences.metrics.categoryHints.dependencies': 'Dependencies.',
+  'reportPreferences.metrics.categoryHints.security': 'Security.',
   'reportPreferences.metrics.categoryHints.maintainability': 'Maintainability.',
   'reportPreferences.metrics.categoryHints.performance': 'Performance.',
   'reportPreferences.metrics.categoryHints.accessibility': 'Accessibility.',
@@ -232,7 +234,14 @@ describe('DashboardSettingsPage', () => {
 
     expect(store.getState().appSettings.enabledScoreCategories).not.toContain('documentation');
 
-    for (const label of ['Testing', 'CI/CD', 'Dependencies', 'Maintainability', 'Performance']) {
+    for (const label of [
+      'Testing',
+      'CI/CD',
+      'Dependencies',
+      'Security',
+      'Maintainability',
+      'Performance',
+    ]) {
       await user.click(screen.getByRole('checkbox', { name: new RegExp(`^${label}`) }));
     }
 

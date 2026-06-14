@@ -40,6 +40,7 @@ describe('appSettingsStorage', () => {
         'testing',
         'ci',
         'dependencies',
+        'security',
         'maintainability',
         'performance',
         'accessibility',
@@ -63,10 +64,25 @@ describe('appSettingsStorage', () => {
       'testing',
       'ci',
       'dependencies',
+      'security',
       'maintainability',
       'performance',
       'accessibility',
     ]);
+  });
+
+  test('preserves custom metric category set', () => {
+    localStorage.setItem(
+      StorageKeys.APP_SETTINGS,
+      JSON.stringify({
+        enabledScoreCategories: ['documentation', 'testing'],
+        isDashboardSidebarCollapsed: false,
+        language: 'en',
+        theme: 'dark',
+      }),
+    );
+
+    expect(loadAppSettingsState().enabledScoreCategories).toEqual(['documentation', 'testing']);
   });
 
   test('does not persist blank GitHub token', () => {
@@ -79,6 +95,7 @@ describe('appSettingsStorage', () => {
         'testing',
         'ci',
         'dependencies',
+        'security',
         'maintainability',
         'performance',
         'accessibility',

@@ -116,6 +116,7 @@
         "project_detection": "Выбираем frontend-папку",
         "repository_signals": "Читаем сигналы проекта",
         "source_scan": "Сканируем исходники",
+        "security_scan": "Проверяем секреты",
         "workflow_analysis": "Анализируем workflow",
         "scoring": "Считаем оценку",
         "report_building": "Готовим отчёт"
@@ -127,6 +128,7 @@
         "project_detection": "Frontend Radar проверяет, какую папку анализировать как frontend-проект.",
         "repository_signals": "Frontend Radar читает package metadata, конфиги, workflow и файлы репозитория.",
         "source_scan": "Frontend Radar сканирует ограниченный набор исходников, тестов и TypeScript-конфигов.",
+        "security_scan": "Frontend Radar проверяет гигиену секретов, env-файлы и покрытие gitignore.",
         "workflow_analysis": "Frontend Radar читает GitHub Actions workflow и проверяет покрытие CI.",
         "scoring": "Frontend Radar переводит найденные сигналы в оценки категорий.",
         "report_building": "Frontend Radar собирает итоговый отчёт."

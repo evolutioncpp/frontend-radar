@@ -61,6 +61,7 @@ const parseReportAnalysisProgressStage = (value: string | null): ReportAnalysisP
     value === 'project_detection' ||
     value === 'repository_signals' ||
     value === 'source_scan' ||
+    value === 'security_scan' ||
     value === 'workflow_analysis' ||
     value === 'scoring' ||
     value === 'report_building'

@@ -144,6 +144,33 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     },
     scope: 'root',
   },
+  security: {
+    envUsage: {
+      found: false,
+      sources: [],
+      withoutExample: false,
+    },
+    gitignore: {
+      coversEnvFiles: true,
+      coversNpmrc: true,
+      coversPrivateKeys: true,
+      exists: true,
+      path: '.gitignore',
+      scope: 'project',
+    },
+    hardcodedSecrets: {
+      count: 0,
+      found: false,
+      isTruncated: false,
+      matches: [],
+      sources: [],
+    },
+    sensitiveFiles: {
+      files: [],
+      found: false,
+      sources: [],
+    },
+  },
   sourceCode: {
     codeHealth: {
       anyCount: 0,

@@ -210,6 +210,40 @@ export const sourceCodeAnalysisConfig = {
   tsconfigMaxRelatedPaths: 8,
 } as const;
 
+export const securityAnalysisConfig = {
+  gitignoreEnvPatterns: [/^\.env(?:\*|$|\.)/im, /^\*?\.env(?:\*|$|\.)/im],
+  gitignoreNpmrcPatterns: [/^\.npmrc$/im, /^\*?\.npmrc$/im],
+  gitignorePrivateKeyPatterns: [
+    /^\*\.key$/im,
+    /^\*\.pem$/im,
+    /^\*\.p12$/im,
+    /^\*\.pfx$/im,
+    /^id_rsa$/im,
+  ],
+  highConfidenceSecretPatterns: {
+    awsAccessKey: /\bAKIA[0-9A-Z]{16}\b/u,
+    genericAssignment:
+      /\b(?:api[_-]?key|token|secret|password|private[_-]?key|client[_-]?secret)\w*\s*[:=]\s*["']([^"']{16,})["']/iu,
+    githubToken: /\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{20,}\b|\bgithub_pat_[A-Za-z0-9_]{20,}\b/u,
+    jwt: /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/u,
+    privateKey: /-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----/u,
+  },
+  maxSecretMatches: 12,
+  placeholderValuePatterns: [
+    /example/i,
+    /placeholder/i,
+    /changeme/i,
+    /dummy/i,
+    /mock/i,
+    /test/i,
+    /^x+$/i,
+    /^your[_-]/i,
+  ],
+  privateKeyFilePatterns: [/\.key$/iu, /\.pem$/iu, /\.p12$/iu, /\.pfx$/iu, /(?:^|\/)id_rsa$/iu],
+  sensitiveFileNames: ['.env', '.env.local', '.env.development', '.env.production', '.npmrc'],
+  sourcePreviewLimit: 4,
+} as const;
+
 export const scoreThresholds = {
   critical: 0,
   warning: 50,
@@ -218,13 +252,14 @@ export const scoreThresholds = {
 } as const;
 
 export const scoreCategoryWeights = {
-  accessibility: 12,
-  ci: 18,
-  dependencies: 14,
-  documentation: 10,
-  maintainability: 16,
-  performance: 12,
-  testing: 18,
+  accessibility: 8,
+  ci: 16,
+  dependencies: 13,
+  documentation: 6,
+  maintainability: 15,
+  performance: 10,
+  security: 16,
+  testing: 16,
 } as const;
 
 export const scoreCaps = {
@@ -233,6 +268,6 @@ export const scoreCaps = {
 } as const;
 
 export const scoreImpactWeightThresholds = {
-  important: 14,
-  key: 18,
+  important: 10,
+  key: 16,
 } as const;

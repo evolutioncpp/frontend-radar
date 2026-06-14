@@ -116,6 +116,7 @@
         "project_detection": "Selecting frontend folder",
         "repository_signals": "Reading project signals",
         "source_scan": "Scanning source code",
+        "security_scan": "Checking secrets",
         "workflow_analysis": "Analyzing workflows",
         "scoring": "Calculating score",
         "report_building": "Preparing report"
@@ -127,6 +128,7 @@
         "project_detection": "Frontend Radar is checking which folder should be analyzed as the frontend project.",
         "repository_signals": "Frontend Radar is reading package metadata, configs, workflows and repository files.",
         "source_scan": "Frontend Radar is scanning bounded source, test and TypeScript config files.",
+        "security_scan": "Frontend Radar is checking secret hygiene, env files and gitignore coverage.",
         "workflow_analysis": "Frontend Radar is reading GitHub Actions workflows and checking CI coverage.",
         "scoring": "Frontend Radar is converting collected signals into category scores.",
         "report_building": "Frontend Radar is assembling the final report."

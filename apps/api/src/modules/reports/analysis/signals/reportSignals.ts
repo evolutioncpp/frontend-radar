@@ -6,6 +6,7 @@ import {
 
 import { buildCiAnalysis } from '../ci/reportCiAnalyzer.js';
 import { buildDependencyHealth } from '../dependencies/reportDependencyAnalyzer.js';
+import { analyzeSecurity } from '../security/reportSecurityAnalyzer.js';
 import { analyzeSourceCode } from '../source-code/reportSourceCodeAnalyzer.js';
 import { scanProjectSourceFiles } from '../source-code/reportSourceScanner.js';
 import { analyzeTestQuality } from '../source-code/reportTestQualityAnalyzer.js';
@@ -165,7 +166,9 @@ export const collectRepositorySignals = async ({
 }: {
   branch: string;
   context?: GithubReaderContext;
-  onProgress?: (stage: 'source_scan' | 'workflow_analysis') => Promise<void> | void;
+  onProgress?: (
+    stage: 'source_scan' | 'security_scan' | 'workflow_analysis',
+  ) => Promise<void> | void;
   owner: string;
   packageJson: PackageJson | null;
   packageJsonPath: string | null;
@@ -311,6 +314,17 @@ export const collectRepositorySignals = async ({
     reader,
     repository,
     context,
+  });
+  await onProgress?.('security_scan');
+  const security = await analyzeSecurity({
+    branch,
+    context,
+    envExample,
+    files: sourceScan.files,
+    owner,
+    projectPath,
+    reader,
+    repository,
   });
   const validWorkflowNames = getValidWorkflowNames(workflowNames);
   await onProgress?.('workflow_analysis');
@@ -522,6 +536,7 @@ export const collectRepositorySignals = async ({
       },
       scope: isNestedProject ? 'root' : 'project',
     }),
+    security,
     sourceCode,
     storybook: buildScopedToolSignal({
       expectedDependencyNames: repositorySignalConfig.storybookDependencies,

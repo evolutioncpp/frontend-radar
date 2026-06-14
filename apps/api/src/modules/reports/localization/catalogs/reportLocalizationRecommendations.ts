@@ -127,6 +127,21 @@ export const reportLocalizationRecommendations = {
       description:
         'Keep one package manager lockfile so local and CI installs resolve dependencies consistently.',
     },
+    'remove-sensitive-files': {
+      title: 'Remove sensitive files from the repository',
+      description:
+        'Remove committed env, npmrc or private key files and rotate any exposed credentials before using the repository again.',
+    },
+    'replace-hardcoded-secret': {
+      title: 'Move hardcoded secrets out of source code',
+      description:
+        'Replace hardcoded secret-looking values with environment variables or a secret manager. The report intentionally does not expose the values.',
+    },
+    'ignore-secret-files': {
+      title: 'Ignore local secret files',
+      description:
+        'Add .env*, .npmrc and private key patterns to .gitignore so local credentials are harder to commit accidentally.',
+    },
     'scope-ci-to-frontend-path': {
       title: 'Scope CI to the selected frontend path',
       description:
@@ -193,6 +208,21 @@ export const reportLocalizationRecommendations = {
       title: 'Оставить один package manager lockfile',
       description:
         'Оставьте один lockfile, чтобы локальная и CI-установка использовали один набор зависимостей.',
+    },
+    'remove-sensitive-files': {
+      title: 'Удалить чувствительные файлы из репозитория',
+      description:
+        'Удалите закоммиченные env-файлы, npmrc или приватные ключи и перевыпустите раскрытые секреты перед дальнейшим использованием репозитория.',
+    },
+    'replace-hardcoded-secret': {
+      title: 'Убрать захардкоженные секреты из исходников',
+      description:
+        'Замените похожие на секреты значения переменными окружения или secret manager. Отчёт намеренно не показывает сами значения.',
+    },
+    'ignore-secret-files': {
+      title: 'Игнорировать локальные secret-файлы',
+      description:
+        'Добавьте .env*, .npmrc и паттерны приватных ключей в .gitignore, чтобы локальные секреты было сложнее случайно закоммитить.',
     },
     'scope-ci-to-frontend-path': {
       title: 'Ограничить CI выбранной frontend-папкой',
