@@ -3,9 +3,19 @@ import { spawn } from 'node:child_process';
 const isWindows = process.platform === 'win32';
 const npmCommand = isWindows ? 'npm.cmd' : 'npm';
 const playwrightCliPath = 'node_modules/@playwright/test/cli.js';
+const appendNodeOption = (value, option) => {
+  const options = value?.trim();
+
+  if (!options) {
+    return option;
+  }
+
+  return options.includes(option) ? options : `${options} ${option}`;
+};
 const e2eEnv = {
   ...process.env,
   FORCE_COLOR: process.env.FORCE_COLOR ?? '1',
+  NODE_OPTIONS: appendNodeOption(process.env.NODE_OPTIONS, '--disable-warning=DEP0205'),
   VITE_API_BASE_URL: process.env.VITE_API_BASE_URL ?? 'http://localhost:3001',
 };
 const previewUrl = 'http://127.0.0.1:5173';

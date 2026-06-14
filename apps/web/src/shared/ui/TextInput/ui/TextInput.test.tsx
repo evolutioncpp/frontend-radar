@@ -67,6 +67,7 @@ describe('TextInput', () => {
         clearButtonLabel="Clear repository"
         label="Repository"
         onClear={onClear}
+        onChange={vi.fn()}
         value="owner/repo"
       />,
     );
@@ -82,6 +83,7 @@ describe('TextInput', () => {
         clearButtonLabel="Clear repository"
         label="Repository"
         onClear={vi.fn()}
+        onChange={vi.fn()}
         value=""
       />,
     );

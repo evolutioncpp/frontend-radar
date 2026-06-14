@@ -1,12 +1,12 @@
 import { sourceCodeAnalysisConfig } from '../../domain/reportAnalysisConfig.js';
-import { joinRepositoryPath } from '../../infrastructure/github/githubRepositoryReader.js';
+import { joinRepositoryPath } from '../../domain/reportPathUtils.js';
 
 import type { SourceFileSignal } from '../../domain/reportSignalContracts.js';
 import type {
-  GithubReaderContext,
-  GithubRepositoryReader,
+  ReportRepositoryReaderContext,
+  ReportRepositoryReader,
   RepositoryDirectoryEntry,
-} from '../../infrastructure/github/githubRepositoryReader.js';
+} from '../../application/ports/reportRepositoryReader.js';
 
 type ScanDirectory = {
   depth: number;
@@ -65,10 +65,10 @@ export const scanProjectSourceFiles = async ({
   repository,
 }: {
   branch: string;
-  context?: GithubReaderContext;
+  context?: ReportRepositoryReaderContext;
   owner: string;
   projectPath: string;
-  reader: GithubRepositoryReader;
+  reader: ReportRepositoryReader;
   repository: string;
 }): Promise<{
   files: SourceFileSignal[];

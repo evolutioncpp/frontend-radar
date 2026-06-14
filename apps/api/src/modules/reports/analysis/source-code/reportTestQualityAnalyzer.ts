@@ -5,7 +5,7 @@ import type {
   SourceFileSignal,
   TestQualitySignals,
 } from '../../domain/reportSignalContracts.js';
-import type { PackageJson } from '../../infrastructure/github/githubRepositoryReader.js';
+import type { PackageJson } from '../../application/ports/reportRepositoryReader.js';
 
 const uniqueSources = (sources: readonly string[]) => [...new Set(sources)];
 

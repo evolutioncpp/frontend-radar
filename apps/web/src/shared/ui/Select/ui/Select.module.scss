@@ -189,7 +189,7 @@
     color: var(--color-text-primary);
   }
 
-  &:disabled {
+  &[aria-disabled='true'] {
     cursor: default;
   }
 }

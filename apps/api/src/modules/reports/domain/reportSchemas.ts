@@ -8,7 +8,7 @@ import {
   normalizeGithubProjectPath,
 } from '@frontend-radar/github-repository';
 
-import { reportScoreCheckIds } from '../scoring/reportScoreCheckIds.js';
+import { reportScoreCheckIds } from './reportScoreCheckContracts.js';
 
 export const reportAnalysisStatuses = ['queued', 'running', 'completed', 'failed'] as const;
 export const reportAnalysisProgressStages = [

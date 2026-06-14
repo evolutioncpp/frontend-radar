@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import react from '@vitejs/plugin-react-swc';
+import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import { configDefaults, defineConfig } from 'vitest/config';
 

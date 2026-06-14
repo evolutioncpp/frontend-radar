@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { analyzeSecurity } from './reportSecurityAnalyzer.js';
 
-import type { GithubRepositoryReader } from '../../infrastructure/github/githubRepositoryReader.js';
+import type { ReportRepositoryReader } from '../../application/ports/reportRepositoryReader.js';
 import type { SourceFileSignal } from '../../domain/reportSignalContracts.js';
 
 const createReader = () =>
@@ -34,7 +34,7 @@ const createReader = () =>
 
       return null;
     },
-  }) as unknown as GithubRepositoryReader;
+  }) as unknown as ReportRepositoryReader;
 
 describe('analyzeSecurity', () => {
   it('detects sensitive files without exposing values', async () => {
@@ -102,7 +102,7 @@ describe('analyzeSecurity', () => {
       reader: {
         listDirectoryEntries: async () => [],
         readTextFile: async () => null,
-      } as unknown as GithubRepositoryReader,
+      } as unknown as ReportRepositoryReader,
       repository: 'repo',
     });
 
@@ -147,7 +147,7 @@ describe('analyzeSecurity', () => {
       reader: {
         listDirectoryEntries: async () => [],
         readTextFile: async () => null,
-      } as unknown as GithubRepositoryReader,
+      } as unknown as ReportRepositoryReader,
       repository: 'repo',
     });
 
@@ -201,7 +201,7 @@ describe('analyzeSecurity', () => {
         listDirectoryEntries: async () => [],
         readTextFile: async (_owner: string, _repository: string, _branch: string, path: string) =>
           path === 'apps/web/.gitignore' ? '' : null,
-      } as unknown as GithubRepositoryReader,
+      } as unknown as ReportRepositoryReader,
       repository: 'repo',
     });
 

@@ -5,7 +5,7 @@ import {
   getPackageManagerFromLockfile,
 } from './reportDependencyAnalyzer.js';
 
-import type { PackageJson } from '../../infrastructure/github/githubRepositoryReader.js';
+import type { PackageJson } from '../../application/ports/reportRepositoryReader.js';
 
 describe('reportDependencyAnalyzer', () => {
   it('detects package manager from supported lockfiles', () => {

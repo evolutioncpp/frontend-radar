@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  analyzeTypeScriptQuality,
-  getRelatedTsconfigPaths,
-} from './reportTypeScriptQualityAnalyzer.js';
+import { getRelatedTsconfigPaths } from './reportTypeScriptConfigParser.js';
+import { analyzeTypeScriptQuality } from './reportTypeScriptQualityAnalyzer.js';
 
 describe('analyzeTypeScriptQuality', () => {
   it('reads strict compiler options and project typecheck script', () => {

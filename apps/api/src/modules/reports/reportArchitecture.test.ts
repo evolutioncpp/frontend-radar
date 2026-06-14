@@ -101,8 +101,9 @@ describe('reports module architecture', () => {
   it('keeps report layer dependencies from leaking backwards', () => {
     const sourceFiles = productionFileNames(reportsRoot);
     const forbiddenImports = findForbiddenLayerImports(sourceFiles, {
+      analysis: ['infrastructure'],
       application: ['analysis', 'infrastructure', 'scoring'],
-      domain: ['application', 'infrastructure', 'localization'],
+      domain: ['application', 'infrastructure', 'localization', 'scoring'],
       infrastructure: ['analysis', 'localization', 'scoring'],
       localization: ['application', 'infrastructure'],
       scoring: ['application', 'infrastructure', 'localization'],

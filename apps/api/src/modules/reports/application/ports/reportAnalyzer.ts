@@ -8,24 +8,10 @@ import type {
   ReportProjectPathSource,
   ScoreCategory,
 } from '../../domain/reportSchemas.js';
+import type { RepositoryBranches, RepositorySnapshot } from './reportRepositoryReader.js';
 import type { ReportAnalysisFailure } from './reportAnalysisRepository.js';
 
-export interface RepositorySnapshot {
-  branch: string;
-  defaultBranch?: string;
-  latestCommitDate: string | null;
-  latestCommitSha: string | null;
-  latestCommitTitle: string | null;
-}
-
-export interface RepositoryBranches {
-  branches: Array<{
-    isDefault: boolean;
-    name: string;
-  }>;
-  defaultBranch: string;
-  isTruncated: boolean;
-}
+export type { RepositoryBranches, RepositorySnapshot };
 
 export interface ReportAnalyzerRequestContext {
   githubToken?: string;

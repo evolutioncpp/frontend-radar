@@ -7,7 +7,7 @@ import {
   reportProjectDetectionSignalIds,
 } from '../domain/reportSignalContracts.js';
 import { reportRecommendationIds } from '../domain/reportRecommendations.js';
-import { reportScoreCheckIds } from '../scoring/reportScoreCheckIds.js';
+import { reportScoreCheckIds } from '../domain/reportScoreCheckContracts.js';
 
 import type { ProjectReport } from '../domain/reportSchemas.js';
 

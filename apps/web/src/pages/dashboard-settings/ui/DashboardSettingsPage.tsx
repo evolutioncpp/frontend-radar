@@ -3,9 +3,11 @@ import { useTranslation } from 'react-i18next';
 import s from './DashboardSettingsPage.module.scss';
 import { GithubTokenSettingsSection } from './github-token-settings-section/GithubTokenSettingsSection';
 import { ReportPreferencesSettingsSection } from './report-preferences-settings-section/ReportPreferencesSettingsSection';
+import { useReportPreferencesSettings } from '../model/useReportPreferencesSettings';
 
 export const DashboardSettingsPage = () => {
   const { t } = useTranslation('settings');
+  const reportPreferencesSettings = useReportPreferencesSettings();
 
   return (
     <div className={s.page}>
@@ -16,7 +18,12 @@ export const DashboardSettingsPage = () => {
       </div>
 
       <GithubTokenSettingsSection />
-      <ReportPreferencesSettingsSection />
+      <ReportPreferencesSettingsSection
+        isReportHistoryEnabled={reportPreferencesSettings.isReportHistoryEnabled}
+        metricOptions={reportPreferencesSettings.metricOptions}
+        onReportHistoryEnabledChange={reportPreferencesSettings.setReportHistoryEnabled}
+        onToggleMetricCategory={reportPreferencesSettings.toggleMetricCategory}
+      />
     </div>
   );
 };

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { scanProjectSourceFiles } from './reportSourceScanner.js';
 
-import type { GithubRepositoryReader } from '../../infrastructure/github/githubRepositoryReader.js';
+import type { ReportRepositoryReader } from '../../application/ports/reportRepositoryReader.js';
 
 describe('scanProjectSourceFiles', () => {
   it('scans bounded source files and ignores generated/build paths', async () => {
@@ -34,7 +34,7 @@ describe('scanProjectSourceFiles', () => {
       readTextFile: async (_owner: string, _repository: string, _branch: string, path: string) => {
         return `// ${path}`;
       },
-    } as unknown as GithubRepositoryReader;
+    } as unknown as ReportRepositoryReader;
 
     const scan = await scanProjectSourceFiles({
       branch: 'main',

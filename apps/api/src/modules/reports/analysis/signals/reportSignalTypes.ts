@@ -28,9 +28,9 @@ export type {
 } from '../../domain/reportSignalContracts.js';
 
 import type {
-  GithubRepositoryReader,
+  ReportRepositoryReader,
   PackageJson,
-} from '../../infrastructure/github/githubRepositoryReader.js';
+} from '../../application/ports/reportRepositoryReader.js';
 
 export type CollectRepositorySignalsInput = {
   branch: string;
@@ -38,7 +38,7 @@ export type CollectRepositorySignalsInput = {
   packageJson: PackageJson | null;
   packageJsonPath: string | null;
   projectPath: string;
-  reader: GithubRepositoryReader;
+  reader: ReportRepositoryReader;
   repository: string;
   rootPackageJson?: PackageJson | null;
 };

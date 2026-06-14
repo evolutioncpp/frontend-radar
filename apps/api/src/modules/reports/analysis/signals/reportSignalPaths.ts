@@ -3,15 +3,15 @@ import {
   repositorySignalConfig,
   sourcePreviewConfig,
 } from '../../domain/reportAnalysisConfig.js';
-import { joinRepositoryPath } from '../../infrastructure/github/githubRepositoryReader.js';
+import { joinRepositoryPath } from '../../domain/reportPathUtils.js';
 import { sortWorkflowNamesByAnalysisPriority } from '../ci/reportCiAnalyzer.js';
 import { getPackageManagerFromLockfile } from '../dependencies/reportDependencyAnalyzer.js';
 
 import type {
-  GithubReaderContext,
-  GithubRepositoryReader,
+  ReportRepositoryReaderContext,
+  ReportRepositoryReader,
   TextFileMatch,
-} from '../../infrastructure/github/githubRepositoryReader.js';
+} from '../../application/ports/reportRepositoryReader.js';
 import type { LockfileSignal, WorkflowFile } from '../../domain/reportSignalContracts.js';
 import type { PathSignal, SignalScope } from './reportSignalTypes.js';
 
@@ -67,11 +67,11 @@ export const findScopedPath = async ({
   context = {},
 }: {
   branch: string;
-  context?: GithubReaderContext;
+  context?: ReportRepositoryReaderContext;
   owner: string;
   paths: readonly string[];
   projectPath: string;
-  reader: GithubRepositoryReader;
+  reader: ReportRepositoryReader;
   repository: string;
 }): Promise<PathSignal> => {
   if (!projectPath) {
@@ -109,11 +109,11 @@ export const findScopedPaths = async ({
   context = {},
 }: {
   branch: string;
-  context?: GithubReaderContext;
+  context?: ReportRepositoryReaderContext;
   owner: string;
   paths: readonly string[];
   projectPath: string;
-  reader: GithubRepositoryReader;
+  reader: ReportRepositoryReader;
   repository: string;
 }): Promise<LockfileSignal[]> => {
   if (!projectPath) {
@@ -158,9 +158,9 @@ export const readWorkflowFiles = async ({
   context = {},
 }: {
   branch: string;
-  context?: GithubReaderContext;
+  context?: ReportRepositoryReaderContext;
   owner: string;
-  reader: GithubRepositoryReader;
+  reader: ReportRepositoryReader;
   repository: string;
   workflowNames: readonly string[];
 }): Promise<{ files: WorkflowFile[]; isTruncated: boolean }> => {
@@ -199,11 +199,11 @@ export const readScopedTextFile = async ({
   context = {},
 }: {
   branch: string;
-  context?: GithubReaderContext;
+  context?: ReportRepositoryReaderContext;
   owner: string;
   paths: readonly string[];
   projectPath: string;
-  reader: GithubRepositoryReader;
+  reader: ReportRepositoryReader;
   repository: string;
 }): Promise<(TextFileMatch & { scope: SignalScope }) | null> => {
   if (!projectPath) {

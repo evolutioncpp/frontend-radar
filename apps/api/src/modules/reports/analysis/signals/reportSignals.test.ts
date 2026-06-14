@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { collectRepositorySignals } from './reportSignals.js';
 
 import type {
-  GithubRepositoryReader,
+  ReportRepositoryReader,
   PackageJson,
-} from '../../infrastructure/github/githubRepositoryReader.js';
+} from '../../application/ports/reportRepositoryReader.js';
 
 const createSubstantialReadme = () => {
   return [
@@ -69,7 +69,7 @@ describe('collectRepositorySignals', () => {
         path: 'README.md',
       }),
       readTextFile: async () => null,
-    } as unknown as GithubRepositoryReader;
+    } as unknown as ReportRepositoryReader;
 
     const signals = await collectRepositorySignals({
       branch: 'abc123',
@@ -181,7 +181,7 @@ describe('collectRepositorySignals', () => {
         content: createSubstantialReadme(),
         path: paths[0],
       }),
-    } as unknown as GithubRepositoryReader;
+    } as unknown as ReportRepositoryReader;
 
     const signals = await collectRepositorySignals({
       branch: 'abc123',
@@ -308,7 +308,7 @@ describe('collectRepositorySignals', () => {
 
         return files[path] ?? null;
       },
-    } as unknown as GithubRepositoryReader;
+    } as unknown as ReportRepositoryReader;
 
     const signals = await collectRepositorySignals({
       branch: 'abc123',
@@ -380,7 +380,7 @@ describe('collectRepositorySignals', () => {
       listDirectoryFiles: async () => [],
       readTextFile: async () => null,
       readFirstTextFile: async () => null,
-    } as unknown as GithubRepositoryReader;
+    } as unknown as ReportRepositoryReader;
 
     const signals = await collectRepositorySignals({
       branch: 'abc123',
@@ -484,7 +484,7 @@ describe('collectRepositorySignals', () => {
       listDirectoryFiles: async () => [],
       readTextFile: async () => null,
       readFirstTextFile: async () => null,
-    } as unknown as GithubRepositoryReader;
+    } as unknown as ReportRepositoryReader;
 
     const signals = await collectRepositorySignals({
       branch: 'main',
@@ -518,7 +518,7 @@ describe('collectRepositorySignals', () => {
       listDirectoryFiles: async () => [],
       readTextFile: async () => null,
       readFirstTextFile: async () => null,
-    } as unknown as GithubRepositoryReader;
+    } as unknown as ReportRepositoryReader;
 
     const signals = await collectRepositorySignals({
       branch: 'main',
@@ -563,7 +563,7 @@ describe('collectRepositorySignals', () => {
       listDirectoryFiles: async () => ['ci.yml', 'deploy.yml', 'lint.yml', 'release.yml'],
       readTextFile: async () => null,
       readFirstTextFile: async () => null,
-    } as unknown as GithubRepositoryReader;
+    } as unknown as ReportRepositoryReader;
 
     const signals = await collectRepositorySignals({
       branch: 'main',
@@ -596,7 +596,7 @@ describe('collectRepositorySignals', () => {
         return 'on: push';
       },
       readFirstTextFile: async () => null,
-    } as unknown as GithubRepositoryReader;
+    } as unknown as ReportRepositoryReader;
 
     const signals = await collectRepositorySignals({
       branch: 'main',
@@ -622,7 +622,7 @@ describe('collectRepositorySignals', () => {
       listDirectoryFiles: async () => ['ci.yml.disabled', 'README.md', 'deploy.yaml', 'lint.yml'],
       readTextFile: async () => null,
       readFirstTextFile: async () => null,
-    } as unknown as GithubRepositoryReader;
+    } as unknown as ReportRepositoryReader;
 
     const signals = await collectRepositorySignals({
       branch: 'main',
@@ -648,7 +648,7 @@ describe('collectRepositorySignals', () => {
       listDirectoryFiles: async () => ['ci.yml.disabled', 'README.md'],
       readTextFile: async () => null,
       readFirstTextFile: async () => null,
-    } as unknown as GithubRepositoryReader;
+    } as unknown as ReportRepositoryReader;
 
     const signals = await collectRepositorySignals({
       branch: 'main',

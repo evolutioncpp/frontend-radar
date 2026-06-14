@@ -1,6 +1,6 @@
 import { dependencyAnalysisConfig } from '../../domain/reportAnalysisConfig.js';
 
-import type { PackageJson } from '../../infrastructure/github/githubRepositoryReader.js';
+import type { PackageJson } from '../../application/ports/reportRepositoryReader.js';
 import type {
   DependencyHealth,
   DependencySection,

@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { GithubReportAnalyzer } from './githubReportAnalyzer.js';
+import { GithubClient } from '../infrastructure/github/githubClient.js';
+import { GithubRepositoryReader } from '../infrastructure/github/githubRepositoryReader.js';
 
 const createGithubJsonResponse = (body: unknown, init?: ResponseInit) => {
   return new Response(JSON.stringify(body), {
@@ -13,6 +15,9 @@ const createGithubJsonResponse = (body: unknown, init?: ResponseInit) => {
 };
 
 const encodeContent = (content: string) => Buffer.from(content, 'utf8').toString('base64');
+
+const createAnalyzer = () =>
+  new GithubReportAnalyzer(new GithubRepositoryReader(new GithubClient()));
 
 describe('GithubReportAnalyzer', () => {
   afterEach(() => {
@@ -218,7 +223,7 @@ describe('GithubReportAnalyzer', () => {
       );
     });
 
-    const analyzer = new GithubReportAnalyzer();
+    const analyzer = createAnalyzer();
     const progressStages: string[] = [];
     const report = await analyzer.analyze(
       {
@@ -417,7 +422,7 @@ describe('GithubReportAnalyzer', () => {
       );
     });
 
-    const analyzer = new GithubReportAnalyzer();
+    const analyzer = createAnalyzer();
     const report = await analyzer.analyze({
       id: 'analysis-id',
       owner: 'owner',
@@ -571,7 +576,7 @@ describe('GithubReportAnalyzer', () => {
       );
     });
 
-    const analyzer = new GithubReportAnalyzer();
+    const analyzer = createAnalyzer();
     const report = await analyzer.analyze({
       id: 'analysis-id',
       owner: 'owner',

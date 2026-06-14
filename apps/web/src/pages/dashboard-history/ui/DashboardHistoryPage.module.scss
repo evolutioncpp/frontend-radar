@@ -308,6 +308,7 @@
   font-weight: $font-weight-semibold;
   gap: $space-2;
   line-height: $line-height-sm;
+  min-height: 0;
   padding: $space-2 0;
   transition: color $transition-base;
   user-select: none;

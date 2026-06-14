@@ -24,6 +24,8 @@ import type {
   ReportAnalysisEntity,
   ReportAnalysisRepository,
 } from './modules/reports/application/ports/reportAnalysisRepository.js';
+import { GithubClient } from './modules/reports/infrastructure/github/githubClient.js';
+import { GithubRepositoryReader } from './modules/reports/infrastructure/github/githubRepositoryReader.js';
 import { PrismaReportAnalysisRepository } from './modules/reports/infrastructure/persistence/prismaReportAnalysisRepository.js';
 import { healthRoutes } from './routes/health.js';
 import { createReportRoutes } from './routes/reports.js';
@@ -46,7 +48,9 @@ export const buildApp = (
   const typedApp = app.withTypeProvider<ZodTypeProvider>();
   const reportAnalysisRepository =
     dependencies.reportAnalysisRepository ?? new PrismaReportAnalysisRepository(prisma);
-  const reportAnalyzer = dependencies.reportAnalyzer ?? new GithubReportAnalyzer();
+  const reportAnalyzer =
+    dependencies.reportAnalyzer ??
+    new GithubReportAnalyzer(new GithubRepositoryReader(new GithubClient()));
   const recoverOnStart = dependencies.recoverOnStart ?? env.NODE_ENV !== 'test';
   const runReportAnalysis =
     dependencies.startReportAnalysis ??

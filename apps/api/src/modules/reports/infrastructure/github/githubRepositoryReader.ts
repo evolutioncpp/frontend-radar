@@ -1,67 +1,19 @@
 import { GithubBranchNotFoundError, isGithubRepositoryNotFoundError } from './githubErrors.js';
+import { joinRepositoryPath } from '../../domain/reportPathUtils.js';
 
-import type { GithubClient, GithubRequestOptions } from './githubClient.js';
+import type { GithubClient } from './githubClient.js';
+import type {
+  PackageJson,
+  ReportRepositoryMetadata,
+  ReportRepositoryReaderContext,
+  RepositoryBranches,
+  RepositoryDirectoryEntry,
+  RepositorySnapshot,
+  TextFileMatch,
+} from '../../application/ports/reportRepositoryReader.js';
 
-export type GithubReaderContext = Pick<GithubRequestOptions, 'githubToken'>;
-
-export interface GithubRepositoryMetadata {
-  defaultBranch: string;
-  description: string | null;
-  forks: number;
-  htmlUrl: string;
-  license: string | null;
-  name: string;
-  owner: string;
-  pushedAt: string | null;
-  stars: number;
-}
-
-export interface RepositorySnapshot {
-  branch: string;
-  defaultBranch?: string;
-  latestCommitDate: string | null;
-  latestCommitSha: string | null;
-  latestCommitTitle: string | null;
-}
-
-export interface RepositoryBranches {
-  branches: Array<{
-    isDefault: boolean;
-    name: string;
-  }>;
-  defaultBranch: string;
-  isTruncated: boolean;
-}
-
-export type PackageJson = {
-  dependencies?: Record<string, unknown>;
-  devDependencies?: Record<string, unknown>;
-  name?: string;
-  optionalDependencies?: Record<string, unknown>;
-  packageManager?: string;
-  peerDependencies?: Record<string, unknown>;
-  scripts?: Record<string, unknown>;
-  workspaces?: string[];
-};
-
-export type TextFileMatch = {
-  content: string;
-  path: string;
-};
-
-export type RepositoryDirectoryEntry = {
-  name: string;
-  path: string;
-  type: 'dir' | 'file';
-};
-
-export const joinRepositoryPath = (...segments: Array<string | null | undefined>) => {
-  return segments
-    .flatMap((segment) => segment?.split('/') ?? [])
-    .map((segment) => segment.trim())
-    .filter(Boolean)
-    .join('/');
-};
+export type GithubReaderContext = ReportRepositoryReaderContext;
+export type GithubRepositoryMetadata = ReportRepositoryMetadata;
 
 const getObjectField = (value: unknown, field: string) => {
   if (typeof value !== 'object' || value === null) {

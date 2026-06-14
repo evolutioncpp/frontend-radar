@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { useLazyListRepositoryBranchesQuery } from '../../model/reportAnalysisApi';
-import { getRepositoryAnalysisSubmitError } from '../../model/repositoryAnalysisErrors';
+import { useLazyListRepositoryBranchesQuery } from './reportAnalysisApi';
+import { getRepositoryAnalysisSubmitError } from './repositoryAnalysisErrors';
 
-import type { ListRepositoryBranchesApiResponse } from '../../model/reportAnalysisApi';
-import type { RepositoryAnalysisFormValues } from '../../model/repositoryAnalysisSchema';
-import type { ParsedRepositoryInput } from '../../model/repositoryAnalysisTypes';
+import type { ListRepositoryBranchesApiResponse } from './reportAnalysisApi';
+import type { RepositoryAnalysisFormValues } from './repositoryAnalysisSchema';
+import type { ParsedRepositoryInput } from './repositoryAnalysisTypes';
 import type { TFunction } from 'i18next';
 import type { UseFormClearErrors, UseFormSetError, UseFormSetValue } from 'react-hook-form';
 

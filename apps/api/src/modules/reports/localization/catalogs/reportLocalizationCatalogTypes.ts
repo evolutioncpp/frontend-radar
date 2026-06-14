@@ -4,7 +4,7 @@ import {
 } from '../../domain/reportSignalContracts.js';
 
 import type { ProjectReport, ReportAnalysisErrorCode } from '../../domain/reportSchemas.js';
-import type { ReportScoreCheckId } from '../../scoring/reportScoreCheckIds.js';
+import type { ReportScoreCheckId } from '../../domain/reportScoreCheckContracts.js';
 
 type ScoreCategory = ProjectReport['scoreBreakdown'][number]['category'];
 export type SignalStatus = 'found' | 'missing' | 'warning';

@@ -1,33 +1,28 @@
 import { BarChart3, History } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import {
-  selectEnabledScoreCategories,
-  selectIsReportHistoryEnabled,
-} from '@/features/app-settings/model/appSettingsSelectors';
-import {
-  setReportHistoryEnabled,
-  toggleEnabledScoreCategory,
-} from '@/features/app-settings/model/appSettingsSlice';
-import { reportScoreCategoryOptions } from '@/features/app-settings/model/appSettingsTypes';
-import { useAppDispatch, useAppSelector } from '@/shared/lib/redux/hooks';
 import { Card } from '@/shared/ui/Card';
 import { Checkbox } from '@/shared/ui/Checkbox';
 
 import s from './ReportPreferencesSettingsSection.module.scss';
 
+import type { ReportMetricPreferenceOption } from '../../model/reportPreferencesTypes';
 import type { ScoreCategory } from '@/entities/report';
 
-export const ReportPreferencesSettingsSection = () => {
-  const { t } = useTranslation('settings');
-  const dispatch = useAppDispatch();
-  const isReportHistoryEnabled = useAppSelector(selectIsReportHistoryEnabled);
-  const enabledScoreCategories = useAppSelector(selectEnabledScoreCategories);
-  const enabledCategoryCount = enabledScoreCategories.length;
+interface ReportPreferencesSettingsSectionProps {
+  isReportHistoryEnabled: boolean;
+  metricOptions: ReportMetricPreferenceOption[];
+  onReportHistoryEnabledChange: (isEnabled: boolean) => void;
+  onToggleMetricCategory: (category: ScoreCategory) => void;
+}
 
-  const isCategoryEnabled = (category: ScoreCategory) => {
-    return enabledScoreCategories.includes(category);
-  };
+export const ReportPreferencesSettingsSection = ({
+  isReportHistoryEnabled,
+  metricOptions,
+  onReportHistoryEnabledChange,
+  onToggleMetricCategory,
+}: ReportPreferencesSettingsSectionProps) => {
+  const { t } = useTranslation('settings');
 
   return (
     <Card className={s.section} variant="flat">
@@ -46,7 +41,7 @@ export const ReportPreferencesSettingsSection = () => {
           checked={isReportHistoryEnabled}
           hint={t('reportPreferences.history.hint')}
           label={t('reportPreferences.history.label')}
-          onChange={(event) => dispatch(setReportHistoryEnabled(event.target.checked))}
+          onChange={(event) => onReportHistoryEnabledChange(event.target.checked)}
         />
       </div>
 
@@ -62,22 +57,15 @@ export const ReportPreferencesSettingsSection = () => {
         </div>
 
         <div className={s.metricsList}>
-          {reportScoreCategoryOptions.map((category) => {
-            const isEnabled = isCategoryEnabled(category);
-            const isLastEnabled = isEnabled && enabledCategoryCount <= 1;
-
+          {metricOptions.map(({ category, hintKey, isDisabled, isEnabled, labelKey }) => {
             return (
               <Checkbox
                 checked={isEnabled}
-                disabled={isLastEnabled}
-                hint={
-                  isLastEnabled
-                    ? t('reportPreferences.metrics.lastEnabledHint')
-                    : t(`reportPreferences.metrics.categoryHints.${category}`)
-                }
+                disabled={isDisabled}
+                hint={t(hintKey)}
                 key={category}
-                label={t(`reportPreferences.metrics.categories.${category}`)}
-                onChange={() => dispatch(toggleEnabledScoreCategory(category))}
+                label={t(labelKey)}
+                onChange={() => onToggleMetricCategory(category)}
                 wrapperClassName={s.metricCheckbox}
               />
             );

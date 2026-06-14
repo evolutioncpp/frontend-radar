@@ -1,11 +1,11 @@
 import { securityAnalysisConfig } from '../../domain/reportAnalysisConfig.js';
-import { joinRepositoryPath } from '../../infrastructure/github/githubRepositoryReader.js';
+import { joinRepositoryPath } from '../../domain/reportPathUtils.js';
 
 import type {
-  GithubReaderContext,
-  GithubRepositoryReader,
+  ReportRepositoryReaderContext,
+  ReportRepositoryReader,
   RepositoryDirectoryEntry,
-} from '../../infrastructure/github/githubRepositoryReader.js';
+} from '../../application/ports/reportRepositoryReader.js';
 import type {
   PathSignal,
   SecuritySecretPatternKind,
@@ -74,10 +74,10 @@ const listSensitiveFiles = async ({
   repository,
 }: {
   branch: string;
-  context: GithubReaderContext;
+  context: ReportRepositoryReaderContext;
   owner: string;
   projectPath: string;
-  reader: GithubRepositoryReader;
+  reader: ReportRepositoryReader;
   repository: string;
 }) => {
   if (typeof reader.listDirectoryEntries !== 'function') {
@@ -120,10 +120,10 @@ const readGitignore = async ({
   repository,
 }: {
   branch: string;
-  context: GithubReaderContext;
+  context: ReportRepositoryReaderContext;
   owner: string;
   projectPath: string;
-  reader: GithubRepositoryReader;
+  reader: ReportRepositoryReader;
   repository: string;
 }): Promise<(PathSignal & { content: string | null }) | null> => {
   const projectGitignorePath = joinRepositoryPath(projectPath, '.gitignore');
@@ -166,10 +166,10 @@ const hasGitignorePattern = (content: string, patterns: readonly RegExp[]) => {
 
 const getGitignoreSignal = async (input: {
   branch: string;
-  context: GithubReaderContext;
+  context: ReportRepositoryReaderContext;
   owner: string;
   projectPath: string;
-  reader: GithubRepositoryReader;
+  reader: ReportRepositoryReader;
   repository: string;
 }): Promise<SecuritySignals['gitignore']> => {
   const gitignore = await readGitignore(input);
@@ -333,12 +333,12 @@ export const analyzeSecurity = async ({
   repository,
 }: {
   branch: string;
-  context?: GithubReaderContext;
+  context?: ReportRepositoryReaderContext;
   envExample: PathSignal;
   files: readonly SourceFileSignal[];
   owner: string;
   projectPath: string;
-  reader: GithubRepositoryReader;
+  reader: ReportRepositoryReader;
   repository: string;
 }): Promise<SecuritySignals> => {
   const [sensitiveFiles, gitignore] = await Promise.all([

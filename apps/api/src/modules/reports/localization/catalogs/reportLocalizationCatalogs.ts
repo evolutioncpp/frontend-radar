@@ -13,7 +13,7 @@ import {
   reportAnalysisSourceIds,
   reportProjectDetectionSignalIds,
 } from '../../domain/reportSignalContracts.js';
-import { reportScoreCheckIds } from '../../scoring/reportScoreCheckIds.js';
+import { reportScoreCheckIds } from '../../domain/reportScoreCheckContracts.js';
 
 import type {
   AnalysisSourceId,
@@ -21,7 +21,7 @@ import type {
   ReportLocalizationCatalog,
   SignalStatus,
 } from './reportLocalizationCatalogTypes.js';
-import type { ReportScoreCheckId } from '../../scoring/reportScoreCheckIds.js';
+import type { ReportScoreCheckId } from '../../domain/reportScoreCheckContracts.js';
 import type { SupportedLanguage } from '@frontend-radar/localization';
 
 export type { ReportLocalizationCatalog, SignalStatus };

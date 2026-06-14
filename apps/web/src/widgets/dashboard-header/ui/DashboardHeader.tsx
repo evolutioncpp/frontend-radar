@@ -6,6 +6,7 @@ import { ThemeToggle } from '@/features/app-settings';
 import GithubIcon from '@/shared/assets/icons/GitHub_Invertocat_Black.svg?react';
 import { projectConfig } from '@/shared/config/project';
 import { AppRoutes } from '@/shared/config/routes/appRoutes';
+import { Button } from '@/shared/ui/Button';
 
 import s from './DashboardHeader.module.scss';
 
@@ -37,28 +38,28 @@ export const DashboardHeader = ({
 
   return (
     <header className={s.dashboardHeader}>
-      <button
+      <Button
         aria-expanded={!isSidebarCollapsed}
         aria-label={sidebarToggleLabel}
         className={s.sidebarToggle}
         onClick={onToggleSidebar}
         title={sidebarToggleLabel}
-        type="button"
+        variant="secondary"
       >
         <SidebarToggleIcon aria-hidden="true" className={s.toggleIcon} strokeWidth={2} />
-      </button>
+      </Button>
 
       <div className={s.start}>
-        <button
+        <Button
           aria-expanded={isMobileSidebarOpen}
           aria-label={mobileSidebarToggleLabel}
           className={s.mobileSidebarToggle}
           onClick={onToggleMobileSidebar}
           title={mobileSidebarToggleLabel}
-          type="button"
+          variant="secondary"
         >
           <MobileToggleIcon aria-hidden="true" className={s.toggleIcon} strokeWidth={2} />
-        </button>
+        </Button>
 
         <Link className={s.logo} to={AppRoutes.HOME}>
           {projectConfig.name}

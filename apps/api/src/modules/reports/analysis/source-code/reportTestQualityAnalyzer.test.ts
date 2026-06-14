@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { analyzeTestQuality } from './reportTestQualityAnalyzer.js';
 
-import type { PackageJson } from '../../infrastructure/github/githubRepositoryReader.js';
+import type { PackageJson } from '../../application/ports/reportRepositoryReader.js';
 
 const packageJson = {
   scripts: {

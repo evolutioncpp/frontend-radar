@@ -1,2 +1,2 @@
 ALTER TABLE "ReportAnalysis"
-ADD COLUMN "latestCommitTitle" TEXT;
+ADD COLUMN IF NOT EXISTS "latestCommitTitle" TEXT;

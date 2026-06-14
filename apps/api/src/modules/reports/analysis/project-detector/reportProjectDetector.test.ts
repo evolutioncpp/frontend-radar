@@ -7,9 +7,9 @@ import {
 } from './reportProjectDetector.js';
 
 import type {
-  GithubRepositoryReader,
+  ReportRepositoryReader,
   PackageJson,
-} from '../../infrastructure/github/githubRepositoryReader.js';
+} from '../../application/ports/reportRepositoryReader.js';
 
 describe('detectReportProject', () => {
   it('selects a frontend workspace over a root workspace orchestrator package', async () => {
@@ -69,7 +69,7 @@ describe('detectReportProject', () => {
         _branch: string,
         basePath = '',
       ) => packageJsonByPath.get(basePath) ?? null,
-    } as unknown as GithubRepositoryReader;
+    } as unknown as ReportRepositoryReader;
 
     await expect(
       detectReportProject({
@@ -127,7 +127,7 @@ describe('detectReportProject', () => {
         _branch: string,
         basePath = '',
       ) => (basePath === '' ? rootPackageJson : null),
-    } as unknown as GithubRepositoryReader;
+    } as unknown as ReportRepositoryReader;
 
     await expect(
       detectReportProject({
@@ -154,7 +154,7 @@ describe('detectReportProject', () => {
         _branch: string,
         basePath = '',
       ) => (basePath === 'apps/web' ? packageJson : null),
-    } as unknown as GithubRepositoryReader;
+    } as unknown as ReportRepositoryReader;
 
     await expect(
       resolveReportProject({
@@ -190,7 +190,7 @@ describe('detectReportProject', () => {
         _branch: string,
         basePath = '',
       ) => (basePath === 'apps/web' ? packageJson : null),
-    } as unknown as GithubRepositoryReader;
+    } as unknown as ReportRepositoryReader;
 
     await expect(
       resolveReportProject({
@@ -215,7 +215,7 @@ describe('detectReportProject', () => {
   it('rejects an explicit project path without package.json', async () => {
     const reader = {
       readPackageJson: async () => null,
-    } as unknown as GithubRepositoryReader;
+    } as unknown as ReportRepositoryReader;
 
     await expect(
       resolveReportProject({

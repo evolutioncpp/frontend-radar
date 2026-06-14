@@ -9,7 +9,7 @@ import type {
   SignalScope,
   ToolSignal,
 } from '../domain/reportSignalContracts.js';
-import type { ReportScoreCheckId } from './reportScoreCheckIds.js';
+import type { ReportScoreCheckId } from '../domain/reportScoreCheckContracts.js';
 import type { ScoringCheck } from './reportScoringEngine.js';
 
 export type ScoreCategory = ProjectReport['scoreBreakdown'][number]['category'];

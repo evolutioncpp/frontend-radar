@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 
-import type { RepositoryAnalysisFormValues } from '../../model/repositoryAnalysisSchema';
-import type { ParsedRepositoryInput } from '../../model/repositoryAnalysisTypes';
+import type { RepositoryAnalysisFormValues } from './repositoryAnalysisSchema';
+import type { ParsedRepositoryInput } from './repositoryAnalysisTypes';
 import type { ChangeEventHandler } from 'react';
 import type { UseFormClearErrors, UseFormSetValue } from 'react-hook-form';
 

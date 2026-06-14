@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 
 import { getReportPath } from '@/shared/config/routes/appRoutes';
 import { normalizeScore } from '@/shared/lib/format-score';
+import { Button } from '@/shared/ui/Button';
 
 import s from '../DashboardHistoryPage.module.scss';
 import { HistoryReportCard } from '../history-report-card/HistoryReportCard';
@@ -100,12 +101,12 @@ export const HistoryReportGroup = ({ group }: HistoryReportGroupProps) => {
       >
         {hasPreviousRuns ? (
           <div className={s.previousRunsPanel}>
-            <button
+            <Button
               aria-controls={previousRunsId}
               aria-expanded={isOpen}
               className={s.disclosureButton}
               onClick={() => setIsOpen((currentValue) => !currentValue)}
-              type="button"
+              variant="ghost"
             >
               <ChevronDown
                 aria-hidden="true"
@@ -119,7 +120,7 @@ export const HistoryReportGroup = ({ group }: HistoryReportGroupProps) => {
                       count: group.previousRuns.length,
                     })}
               </span>
-            </button>
+            </Button>
 
             <span className={s.groupRunCount}>
               {t('group.runCount', { count: group.runCount })}

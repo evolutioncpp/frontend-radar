@@ -1,5 +1,3 @@
-import { GithubClient } from '../infrastructure/github/githubClient.js';
-import { GithubRepositoryReader } from '../infrastructure/github/githubRepositoryReader.js';
 import { buildChecks } from '../domain/reportChecks.js';
 import { buildRecommendations } from '../domain/reportRecommendations.js';
 import { buildScoreBreakdown } from '../scoring/reportScoreCalculator.js';
@@ -15,20 +13,11 @@ import type {
   ReportAnalyzer,
   ReportAnalyzerRequestContext,
 } from '../application/ports/reportAnalyzer.js';
+import type { ReportRepositoryReader } from '../application/ports/reportRepositoryReader.js';
 import type { ProjectReport, ReportProjectPathSource } from '../domain/reportSchemas.js';
 
-export {
-  GithubApiError,
-  GithubBranchNotFoundError,
-  GithubRepositoryNotFoundError,
-  getReportAnalysisFailure,
-  isGithubApiError,
-  isGithubBranchNotFoundError,
-  isGithubRepositoryNotFoundError,
-} from '../infrastructure/github/githubErrors.js';
-
 export class GithubReportAnalyzer implements ReportAnalyzer {
-  constructor(private readonly reader = new GithubRepositoryReader(new GithubClient())) {}
+  constructor(private readonly reader: ReportRepositoryReader) {}
 
   async getRepositorySnapshot(
     owner: string,

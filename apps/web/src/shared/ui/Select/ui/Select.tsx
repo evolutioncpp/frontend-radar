@@ -1,16 +1,15 @@
 import clsx from 'clsx';
 import { Check, ChevronDown, Search } from 'lucide-react';
-import { forwardRef, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { forwardRef, useEffect, useId, useRef } from 'react';
 
 import s from './Select.module.scss';
+import { useActiveOptionScroll } from '../model/useActiveOptionScroll';
+import { useSelectDropdown } from '../model/useSelectDropdown';
 
-import type { FocusEventHandler, KeyboardEvent, ReactNode } from 'react';
+import type { SelectOption } from '../model/selectTypes';
+import type { FocusEvent, FocusEventHandler, KeyboardEvent, ReactNode } from 'react';
 
-export interface SelectOption {
-  disabled?: boolean;
-  label: string;
-  value: string;
-}
+export type { SelectOption };
 
 interface SelectProps {
   label: string;
@@ -35,16 +34,6 @@ interface SelectProps {
   value?: string | readonly string[] | number;
   wrapperClassName?: string;
 }
-
-const getEnabledOptionIndex = (options: SelectOption[], value: string) => {
-  const selectedIndex = options.findIndex((option) => option.value === value && !option.disabled);
-
-  if (selectedIndex >= 0) {
-    return selectedIndex;
-  }
-
-  return options.findIndex((option) => !option.disabled);
-};
 
 export const Select = forwardRef<HTMLInputElement, SelectProps>(
   (
@@ -82,26 +71,31 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
     const errorId = `${selectId}-error`;
     const wrapperRef = useRef<HTMLDivElement | null>(null);
     const searchInputRef = useRef<HTMLInputElement | null>(null);
-    const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
-    const [isOpen, setIsOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
+    const optionRefs = useRef<Array<HTMLElement | null>>([]);
     const normalizedValue = typeof value === 'string' ? value : '';
     const selectedOption = options.find((option) => option.value === normalizedValue);
-    const normalizedSearchQuery = searchQuery.trim().toLowerCase();
-    const filteredOptions = useMemo(
-      () =>
-        normalizedSearchQuery
-          ? options.filter(
-              (option) =>
-                option.label.toLowerCase().includes(normalizedSearchQuery) ||
-                option.value.toLowerCase().includes(normalizedSearchQuery),
-            )
-          : options,
-      [normalizedSearchQuery, options],
-    );
-    const [activeIndex, setActiveIndex] = useState(() =>
-      getEnabledOptionIndex(filteredOptions, normalizedValue),
-    );
+    const {
+      activeIndex,
+      closeList,
+      filteredOptions,
+      isOpen,
+      listboxOptions,
+      moveActiveOption,
+      openList,
+      searchQuery,
+      selectOption,
+      setIsOpen,
+      setSearchQuery,
+    } = useSelectDropdown({
+      disabled,
+      emptyMessage,
+      emptySearchMessage,
+      onOpen,
+      onValueChange,
+      options,
+      placeholder,
+      value: normalizedValue,
+    });
     const descriptionIds = [ariaDescribedBy, hint ? hintId : null, error ? errorId : null]
       .filter(Boolean)
       .join(' ');
@@ -110,33 +104,6 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
     const visibleValue = selectedOption?.label ?? placeholder ?? '';
     const isPlaceholderShown = !selectedOption;
     const resolvedSearchPlaceholder = searchPlaceholder ?? label;
-    const hasOptions = filteredOptions.length > 0;
-    const listboxOptions = useMemo(
-      () =>
-        hasOptions
-          ? filteredOptions
-          : [
-              {
-                disabled: true,
-                label: normalizedSearchQuery
-                  ? (emptySearchMessage ?? '')
-                  : (emptyMessage ?? placeholder ?? ''),
-                value: '__empty',
-              },
-            ],
-      [
-        emptyMessage,
-        emptySearchMessage,
-        filteredOptions,
-        hasOptions,
-        normalizedSearchQuery,
-        placeholder,
-      ],
-    );
-
-    useEffect(() => {
-      setActiveIndex(getEnabledOptionIndex(filteredOptions, normalizedValue));
-    }, [filteredOptions, normalizedValue]);
 
     useEffect(() => {
       if (!isOpen) {
@@ -154,7 +121,7 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
       return () => {
         document.removeEventListener('pointerdown', handlePointerDown);
       };
-    }, [isOpen]);
+    }, [isOpen, setIsOpen]);
 
     useEffect(() => {
       if (isOpen && searchable) {
@@ -162,60 +129,14 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
       }
     }, [isOpen, searchable]);
 
-    useEffect(() => {
-      if (!isOpen || activeIndex < 0) {
-        return;
-      }
-
-      optionRefs.current[activeIndex]?.scrollIntoView?.({
-        block: 'nearest',
-      });
-    }, [activeIndex, isOpen]);
-
-    const openList = () => {
-      if (disabled) {
-        return;
-      }
-
-      onOpen?.();
-      setIsOpen(true);
-    };
-
-    const closeList = () => {
-      setIsOpen(false);
-      setSearchQuery('');
-    };
-
-    const handleOptionSelect = (option: SelectOption) => {
-      if (option.disabled) {
-        return;
-      }
-
-      onValueChange?.(option.value);
-      closeList();
-    };
-
-    const moveActiveOption = (direction: 1 | -1) => {
-      if (!filteredOptions.some((option) => !option.disabled)) {
-        return;
-      }
-
-      setActiveIndex((currentIndex) => {
-        let nextIndex = currentIndex;
-
-        for (let step = 0; step < filteredOptions.length; step += 1) {
-          nextIndex = (nextIndex + direction + filteredOptions.length) % filteredOptions.length;
-
-          if (!filteredOptions[nextIndex]?.disabled) {
-            return nextIndex;
-          }
-        }
-
-        return currentIndex;
-      });
-    };
+    useActiveOptionScroll({ activeIndex, isOpen, optionRefs });
 
     const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+      if (event.key === 'Tab') {
+        closeList();
+        return;
+      }
+
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
 
@@ -236,11 +157,7 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
           return;
         }
 
-        const activeOption = activeIndex >= 0 ? filteredOptions[activeIndex] : null;
-
-        if (activeOption) {
-          handleOptionSelect(activeOption);
-        }
+        selectOption(activeIndex >= 0 ? filteredOptions[activeIndex] : null);
 
         return;
       }
@@ -252,6 +169,11 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
     };
 
     const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'Tab') {
+        closeList();
+        return;
+      }
+
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
         moveActiveOption(event.key === 'ArrowDown' ? 1 : -1);
@@ -260,11 +182,7 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
 
       if (event.key === 'Enter') {
         event.preventDefault();
-        const activeOption = activeIndex >= 0 ? filteredOptions[activeIndex] : null;
-
-        if (activeOption) {
-          handleOptionSelect(activeOption);
-        }
+        selectOption(activeIndex >= 0 ? filteredOptions[activeIndex] : null);
 
         return;
       }
@@ -275,8 +193,18 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
       }
     };
 
+    const handleFieldBlur = (event: FocusEvent<HTMLDivElement>) => {
+      if (!event.currentTarget.contains(event.relatedTarget)) {
+        closeList();
+      }
+    };
+
     return (
-      <div className={clsx(s.selectField, wrapperClassName)} ref={wrapperRef}>
+      <div
+        className={clsx(s.selectField, wrapperClassName)}
+        onBlur={handleFieldBlur}
+        ref={wrapperRef}
+      >
         <span className={s.label} id={labelId}>
           {label}
         </span>
@@ -351,7 +279,7 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
                   const isActive = index === activeIndex;
 
                   return (
-                    <button
+                    <div
                       aria-disabled={option.disabled || undefined}
                       aria-selected={isSelected}
                       className={clsx(
@@ -360,21 +288,35 @@ export const Select = forwardRef<HTMLInputElement, SelectProps>(
                         isActive && s.optionActive,
                         option.disabled && s.optionDisabled,
                       )}
-                      disabled={option.disabled}
                       id={`${selectId}-option-${index}`}
                       key={option.value}
-                      onClick={() => handleOptionSelect(option)}
+                      onClick={() => {
+                        if (!option.disabled) {
+                          selectOption(option);
+                        }
+                      }}
+                      onKeyDown={(event) => {
+                        if (option.disabled || (event.key !== 'Enter' && event.key !== ' ')) {
+                          return;
+                        }
+
+                        event.preventDefault();
+                        selectOption(option);
+                      }}
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                      }}
                       ref={(element) => {
                         optionRefs.current[index] = element;
                       }}
                       role="option"
-                      type="button"
+                      tabIndex={-1}
                     >
                       <span className={s.optionLabel}>{option.label}</span>
                       {isSelected ? (
                         <Check aria-hidden="true" className={s.optionIcon} strokeWidth={2.5} />
                       ) : null}
-                    </button>
+                    </div>
                   );
                 })}
               </div>

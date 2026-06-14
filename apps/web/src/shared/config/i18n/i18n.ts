@@ -26,7 +26,7 @@ void i18n
     defaultNS: 'common',
     ns: ['common'],
 
-    debug: import.meta.env.DEV,
+    debug: import.meta.env.DEV && import.meta.env.MODE !== 'test',
     returnNull: false,
 
     interpolation: {

@@ -22,11 +22,11 @@ import {
   getLocalizedReportRefreshUnavailableMessage,
 } from '../modules/reports/localization/reportLocalization.js';
 
+import type { ReportApplicationService } from '../modules/reports/application/reportApplicationService.js';
 import type {
   ReportApplicationError,
   ReportApplicationResult,
-  ReportApplicationService,
-} from '../modules/reports/application/reportApplicationService.js';
+} from '../modules/reports/application/reportApplicationResponses.js';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 

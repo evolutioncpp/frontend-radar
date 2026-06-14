@@ -140,4 +140,27 @@ describe('Dropdown', () => {
       expect(trigger).toHaveFocus();
     });
   });
+
+  test('closes dropdown naturally on tab', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Dropdown ariaLabel="Open menu" trigger={<span>Menu</span>}>
+        <button role="menuitem" type="button">
+          First item
+        </button>
+      </Dropdown>,
+    );
+
+    const trigger = screen.getByRole('button', { name: 'Open menu' });
+
+    trigger.focus();
+    await user.keyboard('{ArrowDown}');
+    await screen.findByRole('menu');
+    await user.keyboard('{Tab}');
+
+    await waitFor(() => {
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    });
+  });
 });

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { isRouteErrorResponse, Link, useNavigate, useRouteError } from 'react-router-dom';
 
 import { AppRoutes } from '@/shared/config/routes/appRoutes';
+import { Button } from '@/shared/ui/Button';
 
 import s from './RouteErrorPage.module.scss';
 
@@ -72,10 +73,10 @@ export const RouteErrorPage = () => {
         </div>
 
         <div className={s.actions}>
-          <button className={s.primaryAction} onClick={handleGoBack} type="button">
+          <Button className={s.primaryAction} onClick={handleGoBack}>
             <ArrowLeft aria-hidden="true" className={s.actionIcon} strokeWidth={2} />
             {t('goBack')}
-          </button>
+          </Button>
 
           <Link className={s.secondaryAction} to={AppRoutes.HOME}>
             <Home aria-hidden="true" className={s.actionIcon} strokeWidth={2} />

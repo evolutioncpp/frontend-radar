@@ -154,7 +154,10 @@ describe('Select', () => {
       },
     });
 
-    expect(screen.getByRole('option', { name: 'No branches found' })).toBeDisabled();
+    expect(screen.getByRole('option', { name: 'No branches found' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
   });
 
   test('does not select empty state option', () => {
@@ -183,6 +186,67 @@ describe('Select', () => {
     });
 
     expect(handleValueChange).not.toHaveBeenCalled();
+  });
+
+  test('does not select disabled options', () => {
+    const handleValueChange = vi.fn();
+
+    render(
+      <Select
+        label="Branch"
+        onValueChange={handleValueChange}
+        options={[
+          ...options,
+          {
+            disabled: true,
+            label: 'release',
+            value: 'release',
+          },
+        ]}
+        value="main"
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('combobox', { name: 'Branch' }));
+    fireEvent.click(screen.getByRole('option', { name: 'release' }));
+
+    expect(handleValueChange).not.toHaveBeenCalled();
+  });
+
+  test('closes listbox on tab without selecting an option', () => {
+    const handleValueChange = vi.fn();
+
+    render(
+      <Select label="Branch" onValueChange={handleValueChange} options={options} value="main" />,
+    );
+
+    const select = screen.getByRole('combobox', { name: 'Branch' });
+
+    fireEvent.keyDown(select, {
+      key: 'ArrowDown',
+    });
+
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+
+    fireEvent.keyDown(select, {
+      key: 'Tab',
+    });
+
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(handleValueChange).not.toHaveBeenCalled();
+  });
+
+  test('links combobox to listbox only while open', () => {
+    render(<Select id="branch-select" label="Branch" options={options} value="main" />);
+
+    const select = screen.getByRole('combobox', { name: 'Branch' });
+
+    expect(select).not.toHaveAttribute('aria-controls');
+
+    fireEvent.click(select);
+
+    expect(select).toHaveAttribute('aria-controls', 'branch-select-listbox');
+    expect(screen.getByRole('listbox')).toHaveAttribute('id', 'branch-select-listbox');
   });
 
   test('supports disabled state and error text', () => {
