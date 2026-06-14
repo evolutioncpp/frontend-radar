@@ -219,21 +219,7 @@ export const ReportComparisonPanel = ({
 
   return (
     <Card aria-label={t('comparison.label')} className={s.comparisonPanel}>
-      <SectionHeader
-        action={headerAction}
-        aside={
-          <span
-            aria-label={t('comparison.totalScoreDeltaAria', {
-              delta: totalDeltaLabel,
-            })}
-            className={clsx(s.totalDelta, getDeltaClassName(comparison.totalScore.delta))}
-          >
-            {totalDeltaLabel}
-          </span>
-        }
-        label={t('comparison.label')}
-        title={t(titleKey)}
-      />
+      <SectionHeader action={headerAction} label={t('comparison.label')} title={t(titleKey)} />
 
       <p className={s.description}>{t(descriptionKey)}</p>
 

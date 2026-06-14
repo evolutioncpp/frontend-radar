@@ -1,6 +1,36 @@
+import {
+  defaultEnabledScoreCategories,
+  normalizeEnabledScoreCategories,
+} from './reportScoreCategories.js';
+
+import type { ScoreCategory } from './reportSchemas.js';
 import type { RepositorySignals } from './reportSignalContracts.js';
 
-const createCheck = (id: string, label: string, passed: boolean, failedDescription: string) => ({
+const checkCategories = {
+  'readme-exists': ['documentation'],
+  'package-json-exists': [
+    'dependencies',
+    'testing',
+    'maintainability',
+    'performance',
+    'accessibility',
+  ],
+  'typescript-detected': ['maintainability'],
+  'lint-script-exists': ['maintainability'],
+  'test-script-exists': ['testing'],
+  'build-script-exists': ['performance'],
+  'github-actions-exists': ['ci'],
+  'env-example-exists': ['documentation', 'security'],
+} as const satisfies Record<string, readonly ScoreCategory[]>;
+
+type ReportCheckId = keyof typeof checkCategories;
+
+const createCheck = (
+  id: ReportCheckId,
+  label: string,
+  passed: boolean,
+  failedDescription: string,
+) => ({
   id,
   label,
   status: passed ? ('passed' as const) : ('failed' as const),
@@ -11,7 +41,20 @@ const createCheck = (id: string, label: string, passed: boolean, failedDescripti
       }),
 });
 
-export const buildChecks = (signals: RepositorySignals) => {
+type ReportCheck = ReturnType<typeof createCheck>;
+
+const isCheckEnabled = (check: ReportCheck, enabledCategories: readonly ScoreCategory[]) => {
+  const categories = checkCategories[check.id];
+
+  return categories.some((category) => enabledCategories.includes(category));
+};
+
+export const buildChecks = (
+  signals: RepositorySignals,
+  enabledScoreCategories: readonly ScoreCategory[] = defaultEnabledScoreCategories,
+) => {
+  const enabledCategories = normalizeEnabledScoreCategories(enabledScoreCategories);
+
   return [
     createCheck(
       'readme-exists',
@@ -61,5 +104,5 @@ export const buildChecks = (signals: RepositorySignals) => {
       signals.envExample.exists,
       'No environment example file was found.',
     ),
-  ];
+  ].filter((check) => isCheckEnabled(check, enabledCategories));
 };

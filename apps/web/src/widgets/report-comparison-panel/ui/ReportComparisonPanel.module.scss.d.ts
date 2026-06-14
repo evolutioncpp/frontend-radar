@@ -31,7 +31,6 @@ export type Styles = {
   toneNegative: string;
   toneNeutral: string;
   tonePositive: string;
-  totalDelta: string;
   unavailableCopy: string;
   unavailableDescription: string;
   unavailableIcon: string;

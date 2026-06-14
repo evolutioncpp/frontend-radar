@@ -142,7 +142,7 @@ export class GithubReportAnalyzer implements ReportAnalyzer {
         license: repositoryMetadata.license,
       },
       scoreBreakdown,
-      checks: buildChecks(signals),
+      checks: buildChecks(signals, input.enabledScoreCategories),
       recommendations: buildRecommendations(signals, input.enabledScoreCategories),
     };
   }

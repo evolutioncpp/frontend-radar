@@ -49,10 +49,6 @@ vi.mock('react-i18next', () => ({
         'statuses.low': 'Low',
       };
 
-      if (key === 'comparison.totalScoreDeltaAria') {
-        return `Total score delta ${options?.delta}`;
-      }
-
       if (key === 'comparison.addedRecommendations') {
         return `${options?.count} added`;
       }
@@ -166,7 +162,7 @@ describe('ReportComparisonPanel', () => {
     expect(
       screen.getByRole('heading', { name: 'Changes since previous report' }),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText('Total score delta +12')).toHaveTextContent('+12');
+    expect(screen.getAllByText('+12').length).toBeGreaterThan(0);
     expect(screen.getByText('Branch: main')).toBeInTheDocument();
     expect(screen.getByText('1 improved')).toBeInTheDocument();
     expect(screen.getByText('1 regressed')).toBeInTheDocument();
@@ -207,7 +203,7 @@ describe('ReportComparisonPanel', () => {
       />,
     );
 
-    expect(screen.getByLabelText('Total score delta No change')).toHaveTextContent('No change');
+    expect(screen.getByText('No change')).toBeInTheDocument();
     expect(screen.getByText('No metric changes')).toBeInTheDocument();
     expect(screen.getByText('3 unchanged metrics')).toBeInTheDocument();
     expect(

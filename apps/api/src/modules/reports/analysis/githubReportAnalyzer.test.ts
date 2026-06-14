@@ -362,6 +362,23 @@ describe('GithubReportAnalyzer', () => {
       'scoring',
       'report_building',
     ]);
+
+    const securityOnlyReport = await analyzer.analyze({
+      id: 'security-analysis-id',
+      owner: 'owner',
+      repository: 'repo',
+      normalizedUrl: 'https://github.com/owner/repo',
+      branch: 'main',
+      projectPath: '',
+      projectPathSource: 'autodetect',
+      enabledScoreCategories: ['security'],
+      createdAt: new Date('2026-06-09T00:00:00.000Z'),
+      latestCommitDate: '2026-06-09T00:00:00.000Z',
+      latestCommitSha: 'abc123',
+      latestCommitTitle: 'Add frontend dashboard',
+    });
+
+    expect(securityOnlyReport.checks.map((check) => check.id)).toEqual(['env-example-exists']);
   });
 
   it('falls back to default branch ref when snapshot does not have commit sha', async () => {

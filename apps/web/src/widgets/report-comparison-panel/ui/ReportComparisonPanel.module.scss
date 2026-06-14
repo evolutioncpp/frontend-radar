@@ -32,7 +32,6 @@
   color: var(--color-text-muted);
 }
 
-.totalDelta,
 .delta,
 .summaryMeta,
 .groupCount {
@@ -40,10 +39,6 @@
   font-size: $font-size-sm;
   font-weight: $font-weight-bold;
   line-height: $line-height-sm;
-}
-
-.totalDelta {
-  white-space: nowrap;
 }
 
 .deltaPositive {
