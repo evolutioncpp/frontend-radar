@@ -20,6 +20,17 @@ enum ReportProjectPathSource {
   manual
 }
 
+enum ReportAnalysisProgressStage {
+  queued
+  starting
+  repository_metadata
+  project_detection
+  repository_signals
+  source_scan
+  scoring
+  report_building
+}
+
 model ReportAnalysis {
   id                String               @id @default(cuid())
   owner             String
@@ -38,6 +49,8 @@ model ReportAnalysis {
   report            Json?
   errorCode         String?
   errorMessage      String?
+  progressStage     ReportAnalysisProgressStage @default(queued)
+  progressUpdatedAt DateTime             @default(now())
   leaseOwner        String?
   leaseExpiresAt    DateTime?
   startedAt         DateTime?

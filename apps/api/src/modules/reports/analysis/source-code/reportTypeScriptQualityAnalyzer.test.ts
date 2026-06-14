@@ -45,6 +45,41 @@ describe('analyzeTypeScriptQuality', () => {
     });
   });
 
+  it('parses JSONC comments without corrupting path aliases', () => {
+    const signals = analyzeTypeScriptQuality({
+      isNestedProject: false,
+      projectPackageJson: null,
+      projectPackageJsonPath: null,
+      rootPackageJson: null,
+      tsconfigFiles: [
+        {
+          path: 'apps/web/tsconfig.app.json',
+          scope: 'project',
+          content: `{
+            "compilerOptions": {
+              "strict": true,
+
+              /* Bundler mode */
+              "moduleResolution": "bundler",
+              "paths": {
+                "@/*": ["./src/*"],
+                "@locales/*": ["./public/locales/*"],
+                "literalComment": ["/* not a comment */", "// not a comment"]
+              }
+            },
+            "include": ["src"]
+          }`,
+        },
+      ],
+    });
+
+    expect(signals.config).toMatchObject({
+      hasParseError: false,
+      path: 'apps/web/tsconfig.app.json',
+      strict: true,
+    });
+  });
+
   it('inherits strict compiler options from local extends', () => {
     const signals = analyzeTypeScriptQuality({
       isNestedProject: false,

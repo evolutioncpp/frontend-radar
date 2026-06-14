@@ -11,6 +11,7 @@ import { collectRepositorySignals } from './signals/reportSignals.js';
 
 import type {
   ReportAnalysisInput,
+  ReportAnalysisProgressReporter,
   ReportAnalyzer,
   ReportAnalyzerRequestContext,
 } from '../application/ports/reportAnalyzer.js';
@@ -74,7 +75,9 @@ export class GithubReportAnalyzer implements ReportAnalyzer {
   async analyze(
     input: ReportAnalysisInput,
     context: ReportAnalyzerRequestContext = {},
+    reportProgress?: ReportAnalysisProgressReporter,
   ): Promise<ProjectReport> {
+    await reportProgress?.('repository_metadata');
     const repositoryMetadata = await this.reader.fetchRepositoryMetadata(
       input.owner,
       input.repository,
@@ -83,6 +86,7 @@ export class GithubReportAnalyzer implements ReportAnalyzer {
     const defaultBranch = repositoryMetadata.defaultBranch;
     const reportBranch = input.branch || defaultBranch;
     const analysisRef = input.latestCommitSha ?? reportBranch;
+    await reportProgress?.('project_detection');
     const project = await resolveReportProject({
       branch: analysisRef,
       context,
@@ -92,10 +96,12 @@ export class GithubReportAnalyzer implements ReportAnalyzer {
       reader: this.reader,
       repository: input.repository,
     });
+    await reportProgress?.('repository_signals');
     const signals = await collectRepositorySignals({
       branch: analysisRef,
       context,
       owner: input.owner,
+      onProgress: reportProgress,
       packageJson: project.packageJson,
       packageJsonPath: project.packageJsonPath,
       projectPath: project.projectPath,
@@ -103,13 +109,15 @@ export class GithubReportAnalyzer implements ReportAnalyzer {
       repository: input.repository,
       rootPackageJson: project.rootPackageJson,
     });
+    await reportProgress?.('scoring');
+    const scoreBreakdown = buildScoreBreakdown(signals);
+    const totalScore = calculateWeightedTotalScore(scoreBreakdown);
+    await reportProgress?.('report_building');
     const analysisSources = buildReportAnalysisSources(signals, {
       name: repositoryMetadata.name,
       owner: repositoryMetadata.owner,
     });
-    const scoreBreakdown = buildScoreBreakdown(signals);
     const tooling = buildReportTooling(signals);
-    const totalScore = calculateWeightedTotalScore(scoreBreakdown);
 
     return {
       id: input.id,

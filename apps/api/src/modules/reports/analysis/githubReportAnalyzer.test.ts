@@ -219,19 +219,26 @@ describe('GithubReportAnalyzer', () => {
     });
 
     const analyzer = new GithubReportAnalyzer();
-    const report = await analyzer.analyze({
-      id: 'analysis-id',
-      owner: 'owner',
-      repository: 'repo',
-      normalizedUrl: 'https://github.com/owner/repo',
-      branch: 'main',
-      projectPath: '',
-      projectPathSource: 'autodetect',
-      createdAt: new Date('2026-06-09T00:00:00.000Z'),
-      latestCommitDate: '2026-06-09T00:00:00.000Z',
-      latestCommitSha: 'abc123',
-      latestCommitTitle: 'Add frontend dashboard',
-    });
+    const progressStages: string[] = [];
+    const report = await analyzer.analyze(
+      {
+        id: 'analysis-id',
+        owner: 'owner',
+        repository: 'repo',
+        normalizedUrl: 'https://github.com/owner/repo',
+        branch: 'main',
+        projectPath: '',
+        projectPathSource: 'autodetect',
+        createdAt: new Date('2026-06-09T00:00:00.000Z'),
+        latestCommitDate: '2026-06-09T00:00:00.000Z',
+        latestCommitSha: 'abc123',
+        latestCommitTitle: 'Add frontend dashboard',
+      },
+      undefined,
+      (stage) => {
+        progressStages.push(stage);
+      },
+    );
 
     expect(report).toMatchObject({
       id: 'analysis-id',
@@ -345,6 +352,14 @@ describe('GithubReportAnalyzer', () => {
     );
     expect(contentRefs.length).toBeGreaterThan(0);
     expect(contentRefs.every((ref) => ref === 'abc123')).toBe(true);
+    expect(progressStages).toEqual([
+      'repository_metadata',
+      'project_detection',
+      'repository_signals',
+      'source_scan',
+      'scoring',
+      'report_building',
+    ]);
   });
 
   it('falls back to default branch ref when snapshot does not have commit sha', async () => {

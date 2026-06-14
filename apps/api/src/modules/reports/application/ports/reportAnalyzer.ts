@@ -4,6 +4,7 @@ import type {
   CreateReportAnalysisRequest,
   ProjectReport,
   ReportAnalysisErrorCode,
+  ReportAnalysisProgressStage,
   ReportProjectPathSource,
 } from '../../domain/reportSchemas.js';
 import type { ReportAnalysisFailure } from './reportAnalysisRepository.js';
@@ -29,6 +30,10 @@ export interface ReportAnalyzerRequestContext {
   githubToken?: string;
 }
 
+export type ReportAnalysisProgressReporter = (
+  stage: ReportAnalysisProgressStage,
+) => Promise<void> | void;
+
 export type ReportAnalysisInput = Omit<
   CreateReportAnalysisRequest,
   'branch' | 'projectPath' | 'projectPathSource'
@@ -47,6 +52,7 @@ export interface ReportAnalyzer {
   analyze(
     input: ReportAnalysisInput,
     context?: ReportAnalyzerRequestContext,
+    reportProgress?: ReportAnalysisProgressReporter,
   ): Promise<ProjectReport>;
   getRepositorySnapshot(
     owner: string,

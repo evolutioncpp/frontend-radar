@@ -11,6 +11,16 @@ import {
 import { reportScoreCheckIds } from '../scoring/reportScoreCheckIds.js';
 
 export const reportAnalysisStatuses = ['queued', 'running', 'completed', 'failed'] as const;
+export const reportAnalysisProgressStages = [
+  'queued',
+  'starting',
+  'repository_metadata',
+  'project_detection',
+  'repository_signals',
+  'source_scan',
+  'scoring',
+  'report_building',
+] as const;
 export const reportProjectPathSources = ['autodetect', 'url', 'manual'] as const;
 export const projectDetectionConfidences = ['high', 'medium', 'low'] as const;
 export const reportAnalysisErrorCodes = [
@@ -87,6 +97,7 @@ export const toolingSourceSections = [
 ] as const;
 
 export const reportAnalysisStatusSchema = z.enum(reportAnalysisStatuses);
+export const reportAnalysisProgressStageSchema = z.enum(reportAnalysisProgressStages);
 export const reportProjectPathSourceSchema = z.enum(reportProjectPathSources);
 export const reportAnalysisErrorCodeSchema = z.enum(reportAnalysisErrorCodes);
 
@@ -270,6 +281,11 @@ export const projectReportSchema = z.object({
   createdAt: z.string(),
 });
 
+export const reportAnalysisProgressSchema = z.object({
+  stage: reportAnalysisProgressStageSchema,
+  updatedAt: z.string(),
+});
+
 export const reportAnalysisProcessingSummarySchema = z.object({
   owner: z.string(),
   repository: z.string(),
@@ -279,6 +295,8 @@ export const reportAnalysisProcessingSummarySchema = z.object({
   latestCommitDate: z.string().nullable(),
   latestCommitSha: z.string().nullable(),
   latestCommitTitle: z.string().nullable(),
+  progress: reportAnalysisProgressSchema,
+  startedAt: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -422,6 +440,7 @@ export type GetReportAnalysisResponse = z.infer<typeof getReportAnalysisResponse
 export type ListReportAnalysesResponse = z.infer<typeof listReportAnalysesResponseSchema>;
 export type ListRepositoryBranchesResponse = z.infer<typeof listRepositoryBranchesResponseSchema>;
 export type ReportAnalysisErrorCode = z.infer<typeof reportAnalysisErrorCodeSchema>;
+export type ReportAnalysisProgressStage = z.infer<typeof reportAnalysisProgressStageSchema>;
 export type ProjectReport = z.infer<typeof projectReportSchema>;
 export type ReportAnalysisStatus = z.infer<typeof reportAnalysisStatusSchema>;
 export type ReportProjectPathSource = z.infer<typeof reportProjectPathSourceSchema>;

@@ -4,6 +4,7 @@ import { env } from '../../../config/env.js';
 import {
   getReportAnalysisFailure,
   type ReportAnalyzer,
+  type ReportAnalysisProgressReporter,
   type ReportAnalyzerRequestContext,
 } from './ports/reportAnalyzer.js';
 import { isReportAnalysisLeaseConflictError } from './ports/reportAnalysisRepository.js';
@@ -64,6 +65,44 @@ export const startReportAnalysis = async ({
 
   let isFinished = false;
   let isLeaseLost = false;
+  const reportProgress: ReportAnalysisProgressReporter = async (stage) => {
+    if (isLeaseLost || isFinished) {
+      return;
+    }
+
+    try {
+      const updatedAnalysis = await repository.updateProgress({
+        id: claimedAnalysis.id,
+        leaseOwner: lease.owner,
+        progressStage: stage,
+        progressUpdatedAt: new Date(),
+      });
+
+      if (updatedAnalysis) {
+        return;
+      }
+
+      isLeaseLost = true;
+      logger.warn(
+        {
+          analysisId: claimedAnalysis.id,
+          leaseOwner: lease.owner,
+          progressStage: stage,
+        },
+        'Report analysis lease was lost while updating progress',
+      );
+    } catch (error: unknown) {
+      logger.warn(
+        {
+          analysisId: claimedAnalysis.id,
+          error,
+          leaseOwner: lease.owner,
+          progressStage: stage,
+        },
+        'Report analysis progress update failed',
+      );
+    }
+  };
   const heartbeat = setInterval(() => {
     void repository
       .refreshLease({
@@ -104,7 +143,7 @@ export const startReportAnalysis = async ({
   heartbeat.unref?.();
 
   try {
-    const report = await analyzer.analyze(claimedAnalysis, context);
+    const report = await analyzer.analyze(claimedAnalysis, context, reportProgress);
 
     if (isLeaseLost) {
       return;
@@ -112,6 +151,10 @@ export const startReportAnalysis = async ({
 
     await repository.complete(claimedAnalysis.id, report, { leaseOwner: lease.owner });
   } catch (error) {
+    if (isLeaseLost) {
+      return;
+    }
+
     if (isReportAnalysisLeaseConflictError(error)) {
       return;
     }

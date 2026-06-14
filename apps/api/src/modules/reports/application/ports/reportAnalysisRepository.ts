@@ -2,6 +2,7 @@ import type {
   CreateReportAnalysisRequest,
   ProjectReport,
   ReportAnalysisErrorCode,
+  ReportAnalysisProgressStage,
   ReportAnalysisStatus,
   ReportProjectPathSource,
 } from '../../domain/reportSchemas.js';
@@ -58,6 +59,13 @@ export interface RefreshReportAnalysisLeaseInput {
   leaseOwner: string;
 }
 
+export interface UpdateReportAnalysisProgressInput {
+  id: string;
+  leaseOwner: string;
+  progressStage: ReportAnalysisProgressStage;
+  progressUpdatedAt: Date;
+}
+
 export interface ReportAnalysisEntity {
   id: string;
   owner: string;
@@ -76,6 +84,8 @@ export interface ReportAnalysisEntity {
   report: ProjectReport | null;
   errorCode: ReportAnalysisErrorCode | null;
   errorMessage: string | null;
+  progressStage: ReportAnalysisProgressStage;
+  progressUpdatedAt: Date;
   leaseOwner: string | null;
   leaseExpiresAt: Date | null;
   startedAt: Date | null;
@@ -109,6 +119,7 @@ export interface ReportAnalysisRepository {
   refreshLease(input: RefreshReportAnalysisLeaseInput): Promise<ReportAnalysisEntity | null>;
   resetForRetry(id: string): Promise<ReportAnalysisEntity>;
   touch(id: string): Promise<ReportAnalysisEntity>;
+  updateProgress(input: UpdateReportAnalysisProgressInput): Promise<ReportAnalysisEntity | null>;
 }
 
 export class ReportAnalysisAlreadyExistsError extends Error {

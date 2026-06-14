@@ -121,6 +121,11 @@ const processingAnalysis = {
   latestCommitSha: 'abc123',
   latestCommitDate: '2026-06-09T00:00:00.000Z',
   latestCommitTitle: 'Add frontend dashboard',
+  progress: {
+    stage: 'repository_signals',
+    updatedAt: '2026-06-09T00:01:00.000Z',
+  },
+  startedAt: '2026-06-09T00:00:30.000Z',
   createdAt: '2026-06-09T00:00:00.000Z',
   updatedAt: '2026-06-09T00:01:00.000Z',
 };

@@ -104,13 +104,30 @@
         "branch": "Branch",
         "projectPath": "Frontend path",
         "commit": "Commit",
-        "updatedAt": "Last update"
+        "startedAt": "Started",
+        "progressUpdatedAt": "Stage updated"
       },
+      "currentStage": "Current stage",
+      "staleHint": "This stage is taking longer than usual. GitHub may be responding slowly, and the page is still updating automatically.",
       "steps": {
-        "created": "Task created",
         "queued": "Waiting for processing",
-        "reading": "Reading GitHub sources",
-        "building": "Preparing report"
+        "starting": "Starting worker",
+        "repository_metadata": "Reading repository metadata",
+        "project_detection": "Selecting frontend folder",
+        "repository_signals": "Reading project signals",
+        "source_scan": "Scanning source code",
+        "scoring": "Calculating score",
+        "report_building": "Preparing report"
+      },
+      "stepDescriptions": {
+        "queued": "The analysis task has been created and is waiting for a worker.",
+        "starting": "A worker has claimed the task and is preparing the analysis.",
+        "repository_metadata": "Frontend Radar is loading repository metadata and commit information from GitHub.",
+        "project_detection": "Frontend Radar is checking which folder should be analyzed as the frontend project.",
+        "repository_signals": "Frontend Radar is reading package metadata, configs, workflows and repository files.",
+        "source_scan": "Frontend Radar is scanning bounded source, test and TypeScript config files.",
+        "scoring": "Frontend Radar is converting collected signals into category scores.",
+        "report_building": "Frontend Radar is assembling the final report."
       }
     },
     "reportError": {

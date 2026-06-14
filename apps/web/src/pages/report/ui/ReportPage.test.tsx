@@ -107,11 +107,35 @@ vi.mock('react-i18next', () => ({
         'page.reportProcessing.metadata.branch': 'Branch',
         'page.reportProcessing.metadata.projectPath': 'Frontend path',
         'page.reportProcessing.metadata.commit': 'Commit',
-        'page.reportProcessing.metadata.updatedAt': 'Last update',
-        'page.reportProcessing.steps.created': 'Task created',
+        'page.reportProcessing.metadata.startedAt': 'Started',
+        'page.reportProcessing.metadata.progressUpdatedAt': 'Stage updated',
+        'page.reportProcessing.currentStage': 'Current stage',
+        'page.reportProcessing.staleHint':
+          'This stage is taking longer than usual. GitHub may be responding slowly, and the page is still updating automatically.',
         'page.reportProcessing.steps.queued': 'Waiting for processing',
-        'page.reportProcessing.steps.reading': 'Reading GitHub sources',
-        'page.reportProcessing.steps.building': 'Preparing report',
+        'page.reportProcessing.steps.starting': 'Starting worker',
+        'page.reportProcessing.steps.repository_metadata': 'Reading repository metadata',
+        'page.reportProcessing.steps.project_detection': 'Selecting frontend folder',
+        'page.reportProcessing.steps.repository_signals': 'Reading project signals',
+        'page.reportProcessing.steps.source_scan': 'Scanning source code',
+        'page.reportProcessing.steps.scoring': 'Calculating score',
+        'page.reportProcessing.steps.report_building': 'Preparing report',
+        'page.reportProcessing.stepDescriptions.queued':
+          'The analysis task has been created and is waiting for a worker.',
+        'page.reportProcessing.stepDescriptions.starting':
+          'A worker has claimed the task and is preparing the analysis.',
+        'page.reportProcessing.stepDescriptions.repository_metadata':
+          'Frontend Radar is loading repository metadata and commit information from GitHub.',
+        'page.reportProcessing.stepDescriptions.project_detection':
+          'Frontend Radar is checking which folder should be analyzed as the frontend project.',
+        'page.reportProcessing.stepDescriptions.repository_signals':
+          'Frontend Radar is reading package metadata, configs, workflows and repository files.',
+        'page.reportProcessing.stepDescriptions.source_scan':
+          'Frontend Radar is scanning bounded source, test and TypeScript config files.',
+        'page.reportProcessing.stepDescriptions.scoring':
+          'Frontend Radar is converting collected signals into category scores.',
+        'page.reportProcessing.stepDescriptions.report_building':
+          'Frontend Radar is assembling the final report.',
         'page.reportError.title': 'Report could not be loaded',
         'page.reportError.description':
           'Frontend Radar could not load this report. You can start a new analysis from the form above.',
@@ -493,6 +517,11 @@ const processingAnalysis = {
   latestCommitSha: 'abc123',
   latestCommitDate: '2026-06-09T00:00:00.000Z',
   latestCommitTitle: 'Add frontend report page',
+  progress: {
+    stage: 'source_scan',
+    updatedAt: '2099-06-09T00:01:00.000Z',
+  },
+  startedAt: '2026-06-09T00:00:30.000Z',
   createdAt: '2026-06-09T00:00:00.000Z',
   updatedAt: '2026-06-09T00:01:00.000Z',
 };
@@ -762,7 +791,7 @@ describe('ReportPage', () => {
     expect(screen.getByText('evolutioncpp/frontend-radar')).toBeInTheDocument();
     expect(screen.getByText('apps/web')).toBeInTheDocument();
     expect(screen.getByText('Add frontend report page')).toBeInTheDocument();
-    expect(screen.getByText('Reading GitHub sources')).toBeInTheDocument();
+    expect(screen.getAllByText('Scanning source code')).not.toHaveLength(0);
     expect(screen.getByRole('status')).toHaveTextContent('Repository analysis is in progress');
   });
 
@@ -774,6 +803,11 @@ describe('ReportPage', () => {
           ...processingAnalysis,
           projectPath: null,
           latestCommitTitle: null,
+          progress: {
+            stage: 'queued',
+            updatedAt: '2099-06-09T00:00:00.000Z',
+          },
+          startedAt: null,
         },
         status: 'queued',
       },
@@ -785,8 +819,37 @@ describe('ReportPage', () => {
 
     expect(screen.getByRole('heading', { name: 'Analysis is queued' })).toBeInTheDocument();
     expect(screen.getByText('abc123')).toBeInTheDocument();
-    expect(screen.getByText('Waiting for processing')).toBeInTheDocument();
+    expect(screen.getAllByText('Waiting for processing').length).toBeGreaterThan(0);
     expect(screen.queryByText('apps/web')).not.toBeInTheDocument();
+  });
+
+  test('renders stale progress hint when current stage has not changed for a while', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-09T00:02:30.000Z'));
+
+    try {
+      apiMocks.getReportAnalysis.mockReturnValue({
+        data: {
+          id: 'analysis-id',
+          analysis: {
+            ...processingAnalysis,
+            progress: {
+              stage: 'source_scan',
+              updatedAt: '2026-06-09T00:01:00.000Z',
+            },
+          },
+          status: 'running',
+        },
+        isError: false,
+        isLoading: false,
+      });
+
+      renderReportPage('/dashboard/report/analysis-id');
+
+      expect(screen.getByText(/taking longer than usual/i)).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   test('renders fallback for unknown report id', () => {

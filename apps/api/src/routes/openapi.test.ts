@@ -469,7 +469,14 @@ describe('GET /openapi.json', () => {
         collectSchemasWithRequiredProperties(
           getJsonResponseSchema(body, '/reports/{id}', 'get'),
           body,
-          ['owner', 'repository', 'normalizedUrl', 'branch', 'updatedAt'],
+          ['owner', 'repository', 'normalizedUrl', 'branch', 'progress', 'startedAt', 'updatedAt'],
+        ).length,
+      ).toBeGreaterThan(0);
+      expect(
+        collectSchemasWithRequiredProperties(
+          getJsonResponseSchema(body, '/reports/{id}', 'get'),
+          body,
+          ['stage', 'updatedAt'],
         ).length,
       ).toBeGreaterThan(0);
       expect(

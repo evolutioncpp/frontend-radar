@@ -30,7 +30,79 @@ type ParsedConfigEntry = {
 };
 
 const stripJsonComments = (content: string) => {
-  return content.replace(/\/\*[\s\S]*?\*\//gu, '').replace(/(^|[^:])\/\/.*$/gmu, '$1');
+  let result = '';
+  let isInsideString = false;
+  let isEscaped = false;
+  let commentMode: 'block' | 'line' | null = null;
+
+  for (let index = 0; index < content.length; index += 1) {
+    const char = content[index];
+    const nextChar = content[index + 1];
+
+    if (commentMode === 'line') {
+      if (char === '\n' || char === '\r') {
+        commentMode = null;
+        result += char;
+      }
+
+      continue;
+    }
+
+    if (commentMode === 'block') {
+      if (char === '\n' || char === '\r') {
+        result += char;
+      }
+
+      if (char === '*' && nextChar === '/') {
+        commentMode = null;
+        index += 1;
+      }
+
+      continue;
+    }
+
+    if (isInsideString) {
+      result += char;
+
+      if (isEscaped) {
+        isEscaped = false;
+        continue;
+      }
+
+      if (char === '\\') {
+        isEscaped = true;
+        continue;
+      }
+
+      if (char === '"') {
+        isInsideString = false;
+      }
+
+      continue;
+    }
+
+    if (char === '"') {
+      isInsideString = true;
+      result += char;
+      continue;
+    }
+
+    if (char === '/' && nextChar === '/') {
+      commentMode = 'line';
+      index += 1;
+      continue;
+    }
+
+    if (char === '/' && nextChar === '*') {
+      commentMode = 'block';
+      index += 1;
+      continue;
+    }
+
+    result += char;
+  }
+
+  return result;
 };
 
 const getStringArray = (value: unknown) => {

@@ -6,6 +6,7 @@ import {
   projectReportSchema,
   type ProjectReport,
   type ReportAnalysisErrorCode,
+  type ReportAnalysisProgressStage,
   type ReportAnalysisStatus,
   type ReportProjectPathSource,
 } from '../../domain/reportSchemas.js';
@@ -21,6 +22,7 @@ import {
   type ReportAnalysisSnapshotLookup,
   type ReportAnalysisFailure,
   type ReportAnalysisLeaseOptions,
+  type UpdateReportAnalysisProgressInput,
 } from '../../application/ports/reportAnalysisRepository.js';
 
 type PrismaReportAnalysis = Awaited<ReturnType<PrismaClient['reportAnalysis']['findUnique']>>;
@@ -50,6 +52,23 @@ const parseReportProjectPathSource = (value: string | null): ReportProjectPathSo
   return 'autodetect';
 };
 
+const parseReportAnalysisProgressStage = (value: string | null): ReportAnalysisProgressStage => {
+  if (
+    value === 'queued' ||
+    value === 'starting' ||
+    value === 'repository_metadata' ||
+    value === 'project_detection' ||
+    value === 'repository_signals' ||
+    value === 'source_scan' ||
+    value === 'scoring' ||
+    value === 'report_building'
+  ) {
+    return value;
+  }
+
+  return 'queued';
+};
+
 const mapPrismaReportAnalysis = (
   analysis: NonNullable<PrismaReportAnalysis>,
 ): ReportAnalysisEntity => {
@@ -71,6 +90,8 @@ const mapPrismaReportAnalysis = (
     report: analysis.report ? projectReportSchema.parse(analysis.report) : null,
     errorCode: parseReportAnalysisErrorCode(analysis.errorCode),
     errorMessage: analysis.errorMessage,
+    progressStage: parseReportAnalysisProgressStage(analysis.progressStage),
+    progressUpdatedAt: analysis.progressUpdatedAt,
     leaseOwner: analysis.leaseOwner,
     leaseExpiresAt: analysis.leaseExpiresAt,
     startedAt: analysis.startedAt,
@@ -177,7 +198,9 @@ export class PrismaReportAnalysisRepository implements ReportAnalysisRepository 
       data: {
         leaseExpiresAt,
         leaseOwner,
-        startedAt: new Date(),
+        progressStage: 'starting',
+        progressUpdatedAt: now,
+        startedAt: now,
         status: 'running',
       },
       where: {
@@ -332,6 +355,8 @@ export class PrismaReportAnalysisRepository implements ReportAnalysisRepository 
         errorMessage: null,
         leaseExpiresAt: null,
         leaseOwner: null,
+        progressStage: 'report_building',
+        progressUpdatedAt: new Date(),
         report: report as unknown as Prisma.InputJsonValue,
         status: 'completed',
       },
@@ -412,6 +437,37 @@ export class PrismaReportAnalysisRepository implements ReportAnalysisRepository 
     return analysis ? mapPrismaReportAnalysis(analysis) : null;
   }
 
+  async updateProgress({
+    id,
+    leaseOwner,
+    progressStage,
+    progressUpdatedAt,
+  }: UpdateReportAnalysisProgressInput) {
+    const updateResult = await this.prisma.reportAnalysis.updateMany({
+      data: {
+        progressStage,
+        progressUpdatedAt,
+      },
+      where: {
+        id,
+        leaseOwner,
+        status: 'running',
+      },
+    });
+
+    if (updateResult.count === 0) {
+      return null;
+    }
+
+    const analysis = await this.prisma.reportAnalysis.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    return analysis ? mapPrismaReportAnalysis(analysis) : null;
+  }
+
   async resetForRetry(id: string) {
     const analysis = await this.prisma.reportAnalysis.update({
       where: {
@@ -423,6 +479,8 @@ export class PrismaReportAnalysisRepository implements ReportAnalysisRepository 
         errorMessage: null,
         leaseExpiresAt: null,
         leaseOwner: null,
+        progressStage: 'queued',
+        progressUpdatedAt: new Date(),
         report: Prisma.DbNull,
         startedAt: null,
         status: 'queued',

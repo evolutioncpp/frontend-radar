@@ -11,6 +11,7 @@ import type {
   ReportAnalysisLeaseOptions,
   ReportAnalysisRepository,
   ReportAnalysisSnapshotLookup,
+  UpdateReportAnalysisProgressInput,
 } from '../modules/reports/application/ports/reportAnalysisRepository.js';
 import type {
   ProjectReport,
@@ -65,6 +66,8 @@ export class InMemoryReportAnalysisRepository implements ReportAnalysisRepositor
       errorMessage: null,
       leaseExpiresAt: null,
       leaseOwner: null,
+      progressStage: 'queued',
+      progressUpdatedAt: now,
       startedAt: null,
       completedAt: null,
       createdAt: now,
@@ -111,6 +114,8 @@ export class InMemoryReportAnalysisRepository implements ReportAnalysisRepositor
     return this.update(id, {
       leaseExpiresAt,
       leaseOwner,
+      progressStage: 'starting',
+      progressUpdatedAt: now,
       startedAt: now,
       status: 'running',
     });
@@ -190,6 +195,8 @@ export class InMemoryReportAnalysisRepository implements ReportAnalysisRepositor
       errorMessage: null,
       leaseExpiresAt: null,
       leaseOwner: null,
+      progressStage: 'report_building',
+      progressUpdatedAt: new Date(),
       report,
       status: 'completed',
     });
@@ -215,6 +222,8 @@ export class InMemoryReportAnalysisRepository implements ReportAnalysisRepositor
       errorMessage: null,
       leaseExpiresAt: null,
       leaseOwner: null,
+      progressStage: 'queued',
+      progressUpdatedAt: new Date(),
       report: null,
       startedAt: null,
       status: 'queued',
@@ -245,6 +254,24 @@ export class InMemoryReportAnalysisRepository implements ReportAnalysisRepositor
     });
   }
 
+  async updateProgress({
+    id,
+    leaseOwner,
+    progressStage,
+    progressUpdatedAt,
+  }: UpdateReportAnalysisProgressInput) {
+    const analysis = this.analyses.get(id);
+
+    if (!analysis || analysis.status !== 'running' || analysis.leaseOwner !== leaseOwner) {
+      return null;
+    }
+
+    return this.update(id, {
+      progressStage,
+      progressUpdatedAt,
+    });
+  }
+
   private assertLeaseOwner(id: string, leaseOwner: string) {
     const analysis = this.analyses.get(id);
 
@@ -263,6 +290,8 @@ export class InMemoryReportAnalysisRepository implements ReportAnalysisRepositor
         | 'errorMessage'
         | 'leaseExpiresAt'
         | 'leaseOwner'
+        | 'progressStage'
+        | 'progressUpdatedAt'
         | 'report'
         | 'startedAt'
         | 'status'

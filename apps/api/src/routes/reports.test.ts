@@ -683,6 +683,11 @@ describe('reports routes', () => {
             latestCommitDate: DEFAULT_COMMIT_DATE,
             latestCommitSha: DEFAULT_COMMIT_SHA,
             latestCommitTitle: DEFAULT_COMMIT_TITLE,
+            progress: {
+              stage: status === 'queued' ? 'queued' : 'starting',
+              updatedAt: expect.any(String),
+            },
+            startedAt: status === 'queued' ? null : expect.any(String),
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
           },
@@ -2293,7 +2298,37 @@ describe('reports routes', () => {
       status: 'completed',
       leaseOwner: null,
       leaseExpiresAt: null,
+      progressStage: 'report_building',
     });
+  });
+
+  it('updates analysis progress from analyzer callbacks', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const queuedAnalysis = await repository.create(createTestRecordInput());
+    let observedProgressStage: string | null = null;
+
+    await startReportAnalysis({
+      analysis: queuedAnalysis,
+      analyzer: createAnalyzer({
+        analyze: async (analysis, _context, reportProgress) => {
+          await reportProgress?.('source_scan');
+          observedProgressStage = (await repository.findById(analysis.id))?.progressStage ?? null;
+
+          return createTestReport(analysis.id);
+        },
+      }),
+      logger: {
+        error: vi.fn(),
+        warn: vi.fn(),
+      },
+      lease: {
+        expiresAt: new Date('2026-06-09T00:05:00.000Z'),
+        owner: 'worker-a',
+      },
+      repository,
+    });
+
+    expect(observedProgressStage).toBe('source_scan');
   });
 
   it('refreshes worker lease while analysis is running', async () => {
@@ -2498,12 +2533,21 @@ describe('reports routes', () => {
         },
       ),
     ).rejects.toThrow(/lease/u);
+    await expect(
+      repository.updateProgress({
+        id: queuedAnalysis.id,
+        leaseOwner: 'worker-b',
+        progressStage: 'source_scan',
+        progressUpdatedAt: new Date('2026-06-09T00:02:00.000Z'),
+      }),
+    ).resolves.toBeNull();
 
     const stillRunningAnalysis = await repository.findById(queuedAnalysis.id);
 
     expect(stillRunningAnalysis).toMatchObject({
       status: 'running',
       leaseOwner: 'worker-a',
+      progressStage: 'starting',
     });
   });
 });

@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { formatDateTime } from '@/shared/lib/format-date';
@@ -17,36 +18,71 @@ interface ReportProcessingPanelProps {
   status: ProcessingStatus;
 }
 
-const processingStepIds = ['created', 'queued', 'reading', 'building'] as const;
+const processingStageIds = [
+  'queued',
+  'starting',
+  'repository_metadata',
+  'project_detection',
+  'repository_signals',
+  'source_scan',
+  'scoring',
+  'report_building',
+] as const;
 
-type ProcessingStepId = (typeof processingStepIds)[number];
+type ProcessingStageId = ProcessingAnalysis['progress']['stage'];
 type ProcessingStepState = 'complete' | 'active' | 'pending';
+
+const staleProgressThresholdMs = 60_000;
 
 const getShortCommitSha = (sha: string | null) => {
   return sha ? sha.slice(0, 7) : null;
 };
 
-const getStepState = (status: ProcessingStatus, stepId: ProcessingStepId): ProcessingStepState => {
-  if (stepId === 'created') {
+const getStepState = (
+  activeStage: ProcessingStageId,
+  stepId: ProcessingStageId,
+): ProcessingStepState => {
+  const activeIndex = processingStageIds.indexOf(activeStage);
+  const stepIndex = processingStageIds.indexOf(stepId);
+
+  if (stepIndex < activeIndex) {
     return 'complete';
   }
 
-  if (status === 'queued') {
-    return stepId === 'queued' ? 'active' : 'pending';
+  if (stepIndex === activeIndex) {
+    return 'active';
   }
 
-  if (stepId === 'queued') {
-    return 'complete';
-  }
-
-  return stepId === 'reading' ? 'active' : 'pending';
+  return 'pending';
 };
 
 export const ReportProcessingPanel = ({ analysis, status }: ReportProcessingPanelProps) => {
   const { i18n, t } = useTranslation('dashboard');
+  const [now, setNow] = useState<number | null>(null);
   const repositoryName = `${analysis.owner}/${analysis.repository}`;
   const commitLabel = analysis.latestCommitTitle ?? getShortCommitSha(analysis.latestCommitSha);
-  const updatedAtLabel = formatDateTime(analysis.updatedAt, i18n.language);
+  const progress = analysis.progress;
+  const startedAt = analysis.startedAt ?? analysis.createdAt;
+  const startedAtLabel = formatDateTime(startedAt, i18n.language);
+  const progressUpdatedAtLabel = formatDateTime(progress.updatedAt, i18n.language);
+  const progressUpdatedAtTime = Date.parse(progress.updatedAt);
+  const isProgressStale =
+    now !== null &&
+    Number.isFinite(progressUpdatedAtTime) &&
+    now - progressUpdatedAtTime > staleProgressThresholdMs;
+
+  useEffect(() => {
+    const updateNow = () => {
+      setNow(Date.now());
+    };
+    const intervalId = window.setInterval(updateNow, 10_000);
+
+    updateNow();
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [progress.updatedAt]);
 
   const metadata = [
     {
@@ -69,9 +105,14 @@ export const ReportProcessingPanel = ({ analysis, status }: ReportProcessingPane
         }
       : null,
     {
-      id: 'updatedAt',
-      label: t('page.reportProcessing.metadata.updatedAt'),
-      value: updatedAtLabel,
+      id: 'startedAt',
+      label: t('page.reportProcessing.metadata.startedAt'),
+      value: startedAtLabel,
+    },
+    {
+      id: 'progressUpdatedAt',
+      label: t('page.reportProcessing.metadata.progressUpdatedAt'),
+      value: progressUpdatedAtLabel,
     },
   ].filter((item): item is { id: string; label: string; value: string } => Boolean(item));
 
@@ -104,9 +145,18 @@ export const ReportProcessingPanel = ({ analysis, status }: ReportProcessingPane
         </dl>
       </div>
 
+      <div className={s.currentStage}>
+        <span className={s.summaryLabel}>{t('page.reportProcessing.currentStage')}</span>
+        <strong>{t(`page.reportProcessing.steps.${progress.stage}`)}</strong>
+        <p>{t(`page.reportProcessing.stepDescriptions.${progress.stage}`)}</p>
+        {isProgressStale ? (
+          <p className={s.staleHint}>{t('page.reportProcessing.staleHint')}</p>
+        ) : null}
+      </div>
+
       <ol className={s.steps} aria-label={t('page.reportProcessing.stepsLabel')}>
-        {processingStepIds.map((stepId) => {
-          const stepState = getStepState(status, stepId);
+        {processingStageIds.map((stepId) => {
+          const stepState = getStepState(progress.stage, stepId);
 
           return (
             <li

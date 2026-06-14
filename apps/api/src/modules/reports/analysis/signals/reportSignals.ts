@@ -160,10 +160,12 @@ export const collectRepositorySignals = async ({
   reader,
   repository,
   rootPackageJson,
+  onProgress,
   context = {},
 }: {
   branch: string;
   context?: GithubReaderContext;
+  onProgress?: (stage: 'source_scan') => Promise<void> | void;
   owner: string;
   packageJson: PackageJson | null;
   packageJsonPath: string | null;
@@ -193,7 +195,6 @@ export const collectRepositorySignals = async ({
     testingConfigPath,
     accessibilityConfigPath,
     frameworkConfigPath,
-    sourceScan,
   ] = await Promise.all([
     readScopedTextFile({
       branch,
@@ -301,15 +302,16 @@ export const collectRepositorySignals = async ({
       repository,
       context,
     }),
-    scanProjectSourceFiles({
-      branch,
-      owner,
-      projectPath,
-      reader,
-      repository,
-      context,
-    }),
   ]);
+  await onProgress?.('source_scan');
+  const sourceScan = await scanProjectSourceFiles({
+    branch,
+    owner,
+    projectPath,
+    reader,
+    repository,
+    context,
+  });
   const validWorkflowNames = getValidWorkflowNames(workflowNames);
   const workflowFilesResult = await readWorkflowFiles({
     branch,

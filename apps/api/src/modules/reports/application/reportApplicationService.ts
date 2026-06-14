@@ -146,6 +146,11 @@ export const createReportAnalysisProcessingSummary = (
   latestCommitDate: analysis.latestCommitDate,
   latestCommitSha: analysis.latestCommitSha,
   latestCommitTitle: analysis.latestCommitTitle,
+  progress: {
+    stage: analysis.progressStage,
+    updatedAt: analysis.progressUpdatedAt.toISOString(),
+  },
+  startedAt: analysis.startedAt?.toISOString() ?? null,
   createdAt: analysis.createdAt.toISOString(),
   updatedAt: analysis.updatedAt.toISOString(),
 });

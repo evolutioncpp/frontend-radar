@@ -206,6 +206,19 @@ export type GetReportAnalysisApiResponse =
         latestCommitDate: string | null;
         latestCommitSha: string | null;
         latestCommitTitle: string | null;
+        progress: {
+          stage:
+            | 'queued'
+            | 'starting'
+            | 'repository_metadata'
+            | 'project_detection'
+            | 'repository_signals'
+            | 'source_scan'
+            | 'scoring'
+            | 'report_building';
+          updatedAt: string;
+        };
+        startedAt: string | null;
         createdAt: string;
         updatedAt: string;
       };
@@ -222,6 +235,19 @@ export type GetReportAnalysisApiResponse =
         latestCommitDate: string | null;
         latestCommitSha: string | null;
         latestCommitTitle: string | null;
+        progress: {
+          stage:
+            | 'queued'
+            | 'starting'
+            | 'repository_metadata'
+            | 'project_detection'
+            | 'repository_signals'
+            | 'source_scan'
+            | 'scoring'
+            | 'report_building';
+          updatedAt: string;
+        };
+        startedAt: string | null;
         createdAt: string;
         updatedAt: string;
       };

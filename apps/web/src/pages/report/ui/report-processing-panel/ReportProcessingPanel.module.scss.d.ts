@@ -1,4 +1,5 @@
 export type Styles = {
+  currentStage: string;
   description: string;
   eyebrow: string;
   header: string;
@@ -6,8 +7,10 @@ export type Styles = {
   metadata: string;
   metadataItem: string;
   panel: string;
+  'processing-step-spin': string;
   repository: string;
   repositoryName: string;
+  staleHint: string;
   status: string;
   step: string;
   step_active: string;
