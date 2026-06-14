@@ -1,6 +1,10 @@
 import { randomUUID } from 'node:crypto';
 
 import { ReportAnalysisLeaseConflictError } from '../modules/reports/application/ports/reportAnalysisRepository.js';
+import {
+  defaultScoreCategoriesKey,
+  normalizeEnabledScoreCategories,
+} from '../modules/reports/domain/reportScoreCategories.js';
 
 import type {
   ClaimReportAnalysisForProcessingInput,
@@ -35,8 +39,10 @@ const matchesSnapshot = (
   {
     analysisVersion,
     branch,
+    isHistoryVisible,
     projectPath,
     repositoryKey,
+    scoreCategoriesKey,
     snapshotKey,
   }: ReportAnalysisSnapshotLookup,
 ) => {
@@ -44,6 +50,8 @@ const matchesSnapshot = (
     analysis.repositoryKey !== repositoryKey ||
     analysis.projectPath !== projectPath ||
     analysis.branch !== branch ||
+    analysis.isHistoryVisible !== isHistoryVisible ||
+    analysis.scoreCategoriesKey !== scoreCategoriesKey ||
     analysis.analysisVersion !== analysisVersion
   ) {
     return false;
@@ -60,6 +68,11 @@ export class InMemoryReportAnalysisRepository implements ReportAnalysisRepositor
     const analysis: ReportAnalysisEntity = {
       ...input,
       id: randomUUID(),
+      enabledScoreCategories: normalizeEnabledScoreCategories(
+        (input.scoreCategoriesKey ?? defaultScoreCategoriesKey).split(','),
+      ),
+      isHistoryVisible: input.isHistoryVisible ?? true,
+      scoreCategoriesKey: input.scoreCategoriesKey ?? defaultScoreCategoriesKey,
       status: 'queued',
       report: null,
       errorCode: null,
@@ -86,6 +99,7 @@ export class InMemoryReportAnalysisRepository implements ReportAnalysisRepositor
   async findLatest(limit: number) {
     return Array.from(this.analyses.values())
       .filter((analysis) => analysis.status !== 'failed')
+      .filter((analysis) => analysis.isHistoryVisible)
       .sort((left, right) => right.updatedAt.getTime() - left.updatedAt.getTime())
       .slice(0, limit);
   }
@@ -157,6 +171,7 @@ export class InMemoryReportAnalysisRepository implements ReportAnalysisRepositor
             candidate.repositoryKey === analysis.repositoryKey &&
             candidate.projectPath === analysis.projectPath &&
             candidate.branch === analysis.branch &&
+            candidate.scoreCategoriesKey === analysis.scoreCategoriesKey &&
             candidate.status === 'completed' &&
             candidate.completedAt !== null &&
             candidate.completedAt.getTime() <= completedBefore.getTime(),

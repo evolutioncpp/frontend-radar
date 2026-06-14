@@ -1,7 +1,12 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import {
+  selectEnabledScoreCategories,
+  selectIsReportHistoryEnabled,
+} from '@/features/app-settings/model/appSettingsSelectors';
 import { getReportPath } from '@/shared/config/routes/appRoutes';
+import { useAppSelector } from '@/shared/lib/redux/hooks';
 
 import { useCreateReportAnalysisMutation } from './reportAnalysisApi';
 import { getRepositoryAnalysisSubmitError } from './repositoryAnalysisErrors';
@@ -26,6 +31,8 @@ const getReportAnalysisReuseReason = (analysis: {
 
 export const useRepositoryAnalysisSubmit = () => {
   const navigate = useNavigate();
+  const enabledScoreCategories = useAppSelector(selectEnabledScoreCategories);
+  const isReportHistoryEnabled = useAppSelector(selectIsReportHistoryEnabled);
   const [submitError, setSubmitError] = useState<RepositoryAnalysisSubmitError>(null);
   const [createReportAnalysis, { isLoading: isSubmitting }] = useCreateReportAnalysisMutation();
 
@@ -38,7 +45,11 @@ export const useRepositoryAnalysisSubmit = () => {
       setSubmitError(null);
 
       void createReportAnalysis({
-        body: request,
+        body: {
+          ...request,
+          enabledScoreCategories,
+          saveToHistory: isReportHistoryEnabled,
+        },
       })
         .unwrap()
         .then((analysis) => {
@@ -56,7 +67,7 @@ export const useRepositoryAnalysisSubmit = () => {
           setSubmitError(getRepositoryAnalysisSubmitError(error));
         });
     },
-    [createReportAnalysis, navigate],
+    [createReportAnalysis, enabledScoreCategories, isReportHistoryEnabled, navigate],
   );
 
   return {

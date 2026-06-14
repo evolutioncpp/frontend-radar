@@ -116,6 +116,7 @@
         "project_detection": "Выбираем frontend-папку",
         "repository_signals": "Читаем сигналы проекта",
         "source_scan": "Сканируем исходники",
+        "workflow_analysis": "Анализируем workflow",
         "scoring": "Считаем оценку",
         "report_building": "Готовим отчёт"
       },
@@ -126,6 +127,7 @@
         "project_detection": "Frontend Radar проверяет, какую папку анализировать как frontend-проект.",
         "repository_signals": "Frontend Radar читает package metadata, конфиги, workflow и файлы репозитория.",
         "source_scan": "Frontend Radar сканирует ограниченный набор исходников, тестов и TypeScript-конфигов.",
+        "workflow_analysis": "Frontend Radar читает GitHub Actions workflow и проверяет покрытие CI.",
         "scoring": "Frontend Radar переводит найденные сигналы в оценки категорий.",
         "report_building": "Frontend Radar собирает итоговый отчёт."
       }
@@ -339,6 +341,20 @@
     "manualTitle": "Сравнение с выбранным запуском",
     "description": "Сравнение текущего готового отчёта с предыдущим готовым отчётом по этому же репозиторию.",
     "manualDescription": "Сравнение текущего готового отчёта с выбранным прошлым запуском из истории.",
+    "unavailable": {
+      "title": "Сравнение недоступно",
+      "description": "Frontend Radar не может сравнить выбранные отчёты.",
+      "reasons": {
+        "default": "Выбранный базовый отчёт недоступен для этого сравнения.",
+        "notFound": "Выбранный базовый отчёт не найден.",
+        "notCompleted": "Выбранный базовый отчёт ещё не завершён.",
+        "sameReport": "Текущий отчёт нельзя сравнить с самим собой.",
+        "differentRepository": "Выбранные отчёты относятся к разным репозиториям.",
+        "differentProjectPath": "Выбранные отчёты были созданы для разных frontend-папок.",
+        "differentBranch": "Выбранные отчёты были созданы для разных веток.",
+        "differentScoreCategories": "Выбранные отчёты собраны с разным набором включённых метрик, поэтому оценки считаются по разным правилам. Запустите анализ с одинаковыми настройками метрик, чтобы сравнить их."
+      }
+    },
     "branchContext": "Ветка: {{branch}}",
     "totalScore": "Итоговая оценка",
     "totalScoreDeltaAria": "Изменение итоговой оценки {{delta}}",

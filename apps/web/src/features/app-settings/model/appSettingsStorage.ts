@@ -1,12 +1,17 @@
 import { defaultLanguage, normalizeSupportedLanguage } from '@/shared/config/i18n';
 import { StorageKeys } from '@/shared/config/storage';
 
+import { reportScoreCategoryOptions } from './appSettingsTypes';
+
 import type { AppSettingsState, AppTheme } from './appSettingsTypes';
+import type { ScoreCategory } from '@/entities/report';
 
 const defaultAppSettingsState: AppSettingsState = {
   theme: 'dark',
   language: defaultLanguage,
   isDashboardSidebarCollapsed: false,
+  isReportHistoryEnabled: true,
+  enabledScoreCategories: [...reportScoreCategoryOptions],
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
@@ -15,6 +20,20 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
 
 const isAppTheme = (value: unknown): value is AppTheme => {
   return value === 'dark' || value === 'light';
+};
+
+const normalizeEnabledScoreCategories = (value: unknown): ScoreCategory[] => {
+  if (!Array.isArray(value)) {
+    return [...defaultAppSettingsState.enabledScoreCategories];
+  }
+
+  const enabledCategories = reportScoreCategoryOptions.filter((category) =>
+    value.some((item) => item === category),
+  );
+
+  return enabledCategories.length > 0
+    ? enabledCategories
+    : [...defaultAppSettingsState.enabledScoreCategories];
 };
 
 const canUseLocalStorage = () => {
@@ -35,6 +54,11 @@ const normalizeAppSettingsState = (value: unknown): AppSettingsState => {
       typeof value.isDashboardSidebarCollapsed === 'boolean'
         ? value.isDashboardSidebarCollapsed
         : defaultAppSettingsState.isDashboardSidebarCollapsed,
+    isReportHistoryEnabled:
+      typeof value.isReportHistoryEnabled === 'boolean'
+        ? value.isReportHistoryEnabled
+        : defaultAppSettingsState.isReportHistoryEnabled,
+    enabledScoreCategories: normalizeEnabledScoreCategories(value.enabledScoreCategories),
     ...(githubToken ? { githubToken } : {}),
   };
 };

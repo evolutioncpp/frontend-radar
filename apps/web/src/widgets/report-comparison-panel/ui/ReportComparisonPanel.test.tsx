@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
 
 import { ReportComparisonPanel } from './ReportComparisonPanel';
+import { ReportComparisonUnavailablePanel } from './ReportComparisonUnavailablePanel';
 
 import type { GetReportComparisonApiResponse } from '@/entities/report';
 
@@ -31,6 +32,11 @@ vi.mock('react-i18next', () => ({
         'comparison.noChangesDescription':
           'Score, metrics, checks and recommendations match the previous completed report.',
         'comparison.resolvedBadge': 'Resolved',
+        'comparison.unavailable.title': 'Comparison unavailable',
+        'comparison.unavailable.description':
+          'Frontend Radar could not compare the selected reports.',
+        'comparison.unavailable.reasons.differentScoreCategories':
+          'The selected reports were created with different enabled metric sets.',
 
         'statuses.excellent': 'Excellent',
         'statuses.good': 'Good',
@@ -218,6 +224,18 @@ describe('ReportComparisonPanel', () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText('Compare current report with selected history run.'),
+    ).toBeInTheDocument();
+  });
+
+  test('renders unavailable manual comparison reason', () => {
+    render(<ReportComparisonUnavailablePanel reason="different_score_categories" />);
+
+    expect(screen.getByRole('heading', { name: 'Comparison unavailable' })).toBeInTheDocument();
+    expect(
+      screen.getByText('Frontend Radar could not compare the selected reports.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('The selected reports were created with different enabled metric sets.'),
     ).toBeInTheDocument();
   });
 });

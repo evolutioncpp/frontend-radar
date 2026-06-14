@@ -94,6 +94,16 @@ export type CreateReportAnalysisApiArg = {
     branch?: string | null;
     projectPath?: string | null;
     projectPathSource?: 'url' | 'manual';
+    saveToHistory?: boolean;
+    enabledScoreCategories?: (
+      | 'documentation'
+      | 'testing'
+      | 'ci'
+      | 'dependencies'
+      | 'maintainability'
+      | 'performance'
+      | 'accessibility'
+    )[];
   };
 };
 export type ListReportAnalysesApiResponse = /** status 200 Default Response */ {
@@ -140,6 +150,14 @@ export type GetReportComparisonApiResponse =
   /** status 200 Default Response */
   | {
       status: 'unavailable';
+      reason?:
+        | 'not_found'
+        | 'not_completed'
+        | 'same_report'
+        | 'different_repository'
+        | 'different_project_path'
+        | 'different_branch'
+        | 'different_score_categories';
     }
   | {
       status: 'available';
@@ -214,6 +232,7 @@ export type GetReportAnalysisApiResponse =
             | 'project_detection'
             | 'repository_signals'
             | 'source_scan'
+            | 'workflow_analysis'
             | 'scoring'
             | 'report_building';
           updatedAt: string;
@@ -243,6 +262,7 @@ export type GetReportAnalysisApiResponse =
             | 'project_detection'
             | 'repository_signals'
             | 'source_scan'
+            | 'workflow_analysis'
             | 'scoring'
             | 'report_building';
           updatedAt: string;

@@ -116,6 +116,7 @@
         "project_detection": "Selecting frontend folder",
         "repository_signals": "Reading project signals",
         "source_scan": "Scanning source code",
+        "workflow_analysis": "Analyzing workflows",
         "scoring": "Calculating score",
         "report_building": "Preparing report"
       },
@@ -126,6 +127,7 @@
         "project_detection": "Frontend Radar is checking which folder should be analyzed as the frontend project.",
         "repository_signals": "Frontend Radar is reading package metadata, configs, workflows and repository files.",
         "source_scan": "Frontend Radar is scanning bounded source, test and TypeScript config files.",
+        "workflow_analysis": "Frontend Radar is reading GitHub Actions workflows and checking CI coverage.",
         "scoring": "Frontend Radar is converting collected signals into category scores.",
         "report_building": "Frontend Radar is assembling the final report."
       }
@@ -329,6 +331,20 @@
     "manualTitle": "Comparison with selected run",
     "description": "Compare the current completed report with the previous completed report for the same repository.",
     "manualDescription": "Compare the current completed report with the selected previous run from history.",
+    "unavailable": {
+      "title": "Comparison unavailable",
+      "description": "Frontend Radar could not compare the selected reports.",
+      "reasons": {
+        "default": "The selected baseline is not available for this report.",
+        "notFound": "The selected baseline report was not found.",
+        "notCompleted": "The selected baseline report is not completed yet.",
+        "sameReport": "The current report cannot be compared with itself.",
+        "differentRepository": "The selected reports belong to different repositories.",
+        "differentProjectPath": "The selected reports were created for different frontend paths.",
+        "differentBranch": "The selected reports were created for different branches.",
+        "differentScoreCategories": "The selected reports were created with different enabled metric sets, so their scores are calculated by different rules. Run the analysis again with the same metric settings to compare them."
+      }
+    },
     "branchContext": "Branch: {{branch}}",
     "totalScore": "Total score",
     "totalScoreDeltaAria": "Total score delta {{delta}}",

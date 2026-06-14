@@ -1,4 +1,10 @@
+import {
+  defaultEnabledScoreCategories,
+  normalizeEnabledScoreCategories,
+} from './reportScoreCategories.js';
+
 import type { ProjectReport } from './reportSchemas.js';
+import type { ScoreCategory } from './reportSchemas.js';
 import type { RepositorySignals } from './reportSignalContracts.js';
 
 type ReportRecommendation = ProjectReport['recommendations'][number];
@@ -8,6 +14,39 @@ const recommendationSeverityOrder = {
   medium: 1,
   low: 2,
 } as const satisfies Record<ReportRecommendation['severity'], number>;
+
+const recommendationCategories = {
+  'add-a11y-tooling': ['accessibility'],
+  'add-build-script': ['performance'],
+  'add-bundler': ['performance'],
+  'add-ci-build-step': ['ci'],
+  'add-ci-install-step': ['ci'],
+  'add-ci-lint-step': ['ci'],
+  'add-ci-pr-checks': ['ci'],
+  'add-ci-test-step': ['ci'],
+  'add-coverage-signal': ['testing'],
+  'add-env-example': ['documentation'],
+  'add-github-actions': ['ci'],
+  'add-lint-script': ['maintainability'],
+  'add-package-metadata': ['dependencies'],
+  'add-readme': ['documentation'],
+  'add-storybook': ['maintainability'],
+  'add-test-files': ['testing'],
+  'add-test-script': ['testing'],
+  'add-testing-library': ['testing'],
+  'add-typecheck-script': ['maintainability'],
+  'add-typescript': ['maintainability'],
+  'align-package-manager': ['dependencies'],
+  'commit-lockfile': ['dependencies'],
+  'enable-typescript-strict': ['maintainability'],
+  'improve-readme': ['documentation'],
+  'move-tooling-to-dev-dependencies': ['dependencies'],
+  'reduce-source-health-warnings': ['maintainability'],
+  'remove-mixed-lockfiles': ['dependencies'],
+  'scope-ci-to-frontend-path': ['ci'],
+} as const satisfies Record<string, readonly ScoreCategory[]>;
+const recommendationCategoryMap: Readonly<Record<string, readonly ScoreCategory[]>> =
+  recommendationCategories;
 
 const isReadmeIncomplete = (signals: RepositorySignals) => {
   return (
@@ -33,7 +72,10 @@ const sortRecommendationsByPriority = (recommendations: ProjectReport['recommend
     .map(({ recommendation }) => recommendation);
 };
 
-export const buildRecommendations = (signals: RepositorySignals) => {
+export const buildRecommendations = (
+  signals: RepositorySignals,
+  enabledCategories: readonly ScoreCategory[] = defaultEnabledScoreCategories,
+) => {
   const recommendations: ProjectReport['recommendations'] = [];
 
   if (!signals.packageJson.exists) {
@@ -310,5 +352,25 @@ export const buildRecommendations = (signals: RepositorySignals) => {
     });
   }
 
-  return sortRecommendationsByPriority(recommendations);
+  return filterRecommendationsByScoreCategories(
+    sortRecommendationsByPriority(recommendations),
+    enabledCategories,
+  );
+};
+
+const filterRecommendationsByScoreCategories = (
+  recommendations: ProjectReport['recommendations'],
+  enabledCategories: readonly ScoreCategory[] = defaultEnabledScoreCategories,
+) => {
+  const enabledCategorySet = new Set(normalizeEnabledScoreCategories(enabledCategories));
+
+  return recommendations.filter((recommendation) => {
+    const categories = recommendationCategoryMap[recommendation.id];
+
+    if (!categories) {
+      return true;
+    }
+
+    return categories.some((category) => enabledCategorySet.has(category));
+  });
 };

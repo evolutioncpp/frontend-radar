@@ -153,6 +153,11 @@ export const ReportPage = () => {
         <DashboardReportView
           comparison={comparisonState.status === 'available' ? comparisonState.comparison : null}
           comparisonMode={compareWith ? 'manual' : 'automatic'}
+          comparisonUnavailable={
+            compareWith && comparisonState.status === 'unavailable'
+              ? comparisonState.comparison
+              : null
+          }
           isRefreshing={reportForceRefresh.isRefreshing}
           onForceRefresh={reportForceRefresh.refreshReport}
           report={reportState.report}

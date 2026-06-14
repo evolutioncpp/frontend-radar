@@ -23,3 +23,11 @@ export const selectGithubToken = (state: AppSettingsRootState) => {
 export const selectHasGithubToken = (state: AppSettingsRootState) => {
   return Boolean(selectGithubToken(state));
 };
+
+export const selectIsReportHistoryEnabled = (state: AppSettingsRootState) => {
+  return state.appSettings.isReportHistoryEnabled;
+};
+
+export const selectEnabledScoreCategories = (state: AppSettingsRootState) => {
+  return state.appSettings.enabledScoreCategories;
+};

@@ -200,6 +200,39 @@ describe('buildRecommendations', () => {
     expect(buildRecommendations(createSignals())).toEqual([]);
   });
 
+  it('filters recommendations for disabled score categories', () => {
+    const recommendations = buildRecommendations(
+      createSignals({
+        ci: {
+          exists: false,
+          source: null,
+          workflowNames: [],
+        },
+        packageJson: {
+          dependencies: [],
+          exists: true,
+          path: 'package.json',
+          scripts: {
+            build: createScriptSignal('build'),
+            lint: createScriptSignal('lint'),
+            test: createScriptSignal('test'),
+          },
+        },
+        readme: {
+          exists: false,
+          hasInstallSection: false,
+          hasUsageSection: false,
+          isSubstantial: false,
+          length: 0,
+          path: null,
+        },
+      }),
+      ['documentation'],
+    );
+
+    expect(recommendations.map((recommendation) => recommendation.id)).toEqual(['add-readme']);
+  });
+
   it('prioritizes delivery and test blockers before medium and low recommendations', () => {
     const recommendations = buildRecommendations(
       createSignals({

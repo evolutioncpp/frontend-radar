@@ -27,6 +27,7 @@ enum ReportAnalysisProgressStage {
   project_detection
   repository_signals
   source_scan
+  workflow_analysis
   scoring
   report_building
 }
@@ -51,6 +52,8 @@ model ReportAnalysis {
   errorMessage      String?
   progressStage     ReportAnalysisProgressStage @default(queued)
   progressUpdatedAt DateTime             @default(now())
+  isHistoryVisible  Boolean              @default(true)
+  scoreCategoriesKey String              @default("documentation,testing,ci,dependencies,maintainability,performance,accessibility")
   leaseOwner        String?
   leaseExpiresAt    DateTime?
   startedAt         DateTime?
@@ -58,9 +61,9 @@ model ReportAnalysis {
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
 
-  @@unique([repositoryKey, projectPath, branch, snapshotKey, analysisVersion], map: "ReportAnalysis_dedupe_branch_key")
+  @@unique([repositoryKey, projectPath, branch, snapshotKey, analysisVersion, scoreCategoriesKey, isHistoryVisible], map: "ReportAnalysis_dedupe_options_key")
   @@index([createdAt])
   @@index([updatedAt])
-  @@index([repositoryKey, projectPath, branch, status, updatedAt], map: "ReportAnalysis_history_branch_idx")
+  @@index([isHistoryVisible, repositoryKey, projectPath, branch, status, updatedAt], map: "ReportAnalysis_history_options_idx")
   @@index([status, leaseExpiresAt, updatedAt], map: "ReportAnalysis_recovery_lease_idx")
 }

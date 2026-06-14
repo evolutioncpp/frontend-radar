@@ -1,4 +1,6 @@
+import { configureStore } from '@reduxjs/toolkit';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { Provider } from 'react-redux';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
@@ -118,6 +120,7 @@ vi.mock('react-i18next', () => ({
         'page.reportProcessing.steps.project_detection': 'Selecting frontend folder',
         'page.reportProcessing.steps.repository_signals': 'Reading project signals',
         'page.reportProcessing.steps.source_scan': 'Scanning source code',
+        'page.reportProcessing.steps.workflow_analysis': 'Analyzing workflows',
         'page.reportProcessing.steps.scoring': 'Calculating score',
         'page.reportProcessing.steps.report_building': 'Preparing report',
         'page.reportProcessing.stepDescriptions.queued':
@@ -132,6 +135,8 @@ vi.mock('react-i18next', () => ({
           'Frontend Radar is reading package metadata, configs, workflows and repository files.',
         'page.reportProcessing.stepDescriptions.source_scan':
           'Frontend Radar is scanning bounded source, test and TypeScript config files.',
+        'page.reportProcessing.stepDescriptions.workflow_analysis':
+          'Frontend Radar is reading GitHub Actions workflows and checking CI coverage.',
         'page.reportProcessing.stepDescriptions.scoring':
           'Frontend Radar is converting collected signals into category scores.',
         'page.reportProcessing.stepDescriptions.report_building':
@@ -255,6 +260,13 @@ vi.mock('react-i18next', () => ({
           'Compare the current completed report with the previous completed report for the same repository.',
         'comparison.manualDescription':
           'Compare the current completed report with the selected previous run from history.',
+        'comparison.unavailable.title': 'Comparison unavailable',
+        'comparison.unavailable.description':
+          'Frontend Radar could not compare the selected reports.',
+        'comparison.unavailable.reasons.default':
+          'The selected baseline is not available for this report.',
+        'comparison.unavailable.reasons.differentScoreCategories':
+          'The selected reports were created with different enabled metric sets.',
         'comparison.totalScore': 'Total score',
         'comparison.noDelta': 'No change',
         'comparison.metricsTitle': 'Metric changes',
@@ -526,13 +538,44 @@ const processingAnalysis = {
   updatedAt: '2026-06-09T00:01:00.000Z',
 };
 
+const createTestStore = () => {
+  const appSettings = {
+    theme: 'dark',
+    language: 'en',
+    isDashboardSidebarCollapsed: false,
+    isReportHistoryEnabled: true,
+    enabledScoreCategories: [
+      'documentation',
+      'testing',
+      'ci',
+      'dependencies',
+      'maintainability',
+      'performance',
+      'accessibility',
+    ],
+  };
+
+  return configureStore({
+    reducer: {
+      appSettings: (state = appSettings) => state,
+    },
+    preloadedState: {
+      appSettings,
+    },
+  });
+};
+
 const renderReportPage = (initialEntry: string | { pathname: string; state?: unknown }) => {
+  const store = createTestStore();
+
   return render(
-    <MemoryRouter initialEntries={[initialEntry]}>
-      <Routes>
-        <Route element={<ReportPage />} path={AppRoutes.REPORT} />
-      </Routes>
-    </MemoryRouter>,
+    <Provider store={store}>
+      <MemoryRouter initialEntries={[initialEntry]}>
+        <Routes>
+          <Route element={<ReportPage />} path={AppRoutes.REPORT} />
+        </Routes>
+      </MemoryRouter>
+    </Provider>,
   );
 };
 
@@ -545,13 +588,17 @@ const LocationProbe = () => {
 const renderReportPageWithLocation = (
   initialEntry: string | { pathname: string; state?: unknown },
 ) => {
+  const store = createTestStore();
+
   return render(
-    <MemoryRouter initialEntries={[initialEntry]}>
-      <LocationProbe />
-      <Routes>
-        <Route element={<ReportPage />} path={AppRoutes.REPORT} />
-      </Routes>
-    </MemoryRouter>,
+    <Provider store={store}>
+      <MemoryRouter initialEntries={[initialEntry]}>
+        <LocationProbe />
+        <Routes>
+          <Route element={<ReportPage />} path={AppRoutes.REPORT} />
+        </Routes>
+      </MemoryRouter>
+    </Provider>,
   );
 };
 
@@ -745,6 +792,24 @@ describe('ReportPage', () => {
       screen.getByText(
         'Compare the current completed report with the selected previous run from history.',
       ),
+    ).toBeInTheDocument();
+  });
+
+  test('renders unavailable manual comparison reason from query string', () => {
+    apiMocks.getReportComparison.mockReturnValue({
+      data: {
+        status: 'unavailable',
+        reason: 'different_score_categories',
+      },
+      isError: false,
+      isLoading: false,
+    });
+
+    renderReportPage('/dashboard/report/analysis-id?compareWith=previous-analysis-id');
+
+    expect(screen.getByRole('heading', { name: 'Comparison unavailable' })).toBeInTheDocument();
+    expect(
+      screen.getByText('The selected reports were created with different enabled metric sets.'),
     ).toBeInTheDocument();
   });
 

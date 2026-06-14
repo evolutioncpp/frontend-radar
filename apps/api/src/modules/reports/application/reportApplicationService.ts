@@ -10,6 +10,10 @@ import { REPORT_ANALYSIS_VERSION, reportHistoryLimit } from '../domain/reportAna
 import { createReportAnalysisSnapshotKey } from '../domain/reportAnalysisSnapshot.js';
 import { buildReportComparison } from '../domain/reportComparison.js';
 import {
+  createScoreCategoriesKey,
+  normalizeEnabledScoreCategories,
+} from '../domain/reportScoreCategories.js';
+import {
   getLocalizedReportErrorMessage,
   localizeProjectReport,
 } from '../localization/reportLocalization.js';
@@ -29,6 +33,7 @@ import type {
   ListRepositoryBranchesResponse,
   RefreshReportAnalysisResponse,
   ReportAnalysisErrorCode,
+  ReportComparisonUnavailableReason,
   RetryReportAnalysisResponse,
   ValidateGithubTokenResponse,
 } from '../domain/reportSchemas.js';
@@ -161,12 +166,16 @@ const createSnapshotLookup = (
   projectPath: string,
   latestCommitDate: string | null,
   latestCommitSha: string | null,
+  scoreCategoriesKey: string,
+  isHistoryVisible: boolean,
 ): ReportAnalysisSnapshotLookup => {
   return {
     analysisVersion: REPORT_ANALYSIS_VERSION,
     branch,
+    isHistoryVisible,
     projectPath,
     repositoryKey,
+    scoreCategoriesKey,
     snapshotKey: createReportAnalysisSnapshotKey({
       latestCommitDate,
       latestCommitSha,
@@ -225,6 +234,41 @@ const createVerificationFailedError = (
   warning: ReportApplicationWarning,
 ): ReportApplicationResult<never> => {
   return localizedError('repository_verification_failed', 502, warning);
+};
+
+const getComparisonUnavailableReason = (
+  currentAnalysis: ReportAnalysisEntity,
+  previousAnalysis: ReportAnalysisEntity | null,
+): ReportComparisonUnavailableReason | undefined => {
+  if (!previousAnalysis) {
+    return 'not_found';
+  }
+
+  if (previousAnalysis.id === currentAnalysis.id) {
+    return 'same_report';
+  }
+
+  if (previousAnalysis.status !== 'completed' || !previousAnalysis.report) {
+    return 'not_completed';
+  }
+
+  if (previousAnalysis.repositoryKey !== currentAnalysis.repositoryKey) {
+    return 'different_repository';
+  }
+
+  if (previousAnalysis.projectPath !== currentAnalysis.projectPath) {
+    return 'different_project_path';
+  }
+
+  if (previousAnalysis.branch !== currentAnalysis.branch) {
+    return 'different_branch';
+  }
+
+  if (previousAnalysis.scoreCategoriesKey !== currentAnalysis.scoreCategoriesKey) {
+    return 'different_score_categories';
+  }
+
+  return undefined;
 };
 
 export const createReportApplicationService = ({
@@ -334,6 +378,11 @@ export const createReportApplicationService = ({
       let branch = '';
       let projectPath = '';
       const projectPathSource = getProjectPathSource(request);
+      const enabledScoreCategories = normalizeEnabledScoreCategories(
+        request.enabledScoreCategories,
+      );
+      const scoreCategoriesKey = createScoreCategoriesKey(enabledScoreCategories);
+      const isHistoryVisible = request.saveToHistory ?? true;
       let analysisRef = 'main';
 
       try {
@@ -382,6 +431,8 @@ export const createReportApplicationService = ({
         projectPath,
         latestCommitDate,
         latestCommitSha,
+        scoreCategoriesKey,
+        isHistoryVisible,
       );
       const reusableAnalysis = await repository.findReusableBySnapshot(snapshotLookup);
 
@@ -393,14 +444,18 @@ export const createReportApplicationService = ({
 
       try {
         analysis = await repository.create({
-          ...request,
           ...snapshotLookup,
           branch,
+          isHistoryVisible,
           latestCommitDate,
           latestCommitSha,
           latestCommitTitle,
+          normalizedUrl: request.normalizedUrl,
+          owner: request.owner,
           projectPath,
           projectPathSource,
+          repository: request.repository,
+          scoreCategoriesKey,
         });
       } catch (error) {
         if (isReportAnalysisAlreadyExistsError(error)) {
@@ -559,6 +614,8 @@ export const createReportApplicationService = ({
         currentAnalysis.projectPath,
         latestCommitDate,
         latestCommitSha,
+        currentAnalysis.scoreCategoriesKey,
+        currentAnalysis.isHistoryVisible,
       );
 
       if (snapshotLookup.snapshotKey === currentAnalysis.snapshotKey) {
@@ -580,6 +637,7 @@ export const createReportApplicationService = ({
       try {
         newAnalysis = await repository.create({
           analysisVersion: REPORT_ANALYSIS_VERSION,
+          isHistoryVisible: currentAnalysis.isHistoryVisible,
           latestCommitDate,
           latestCommitSha,
           latestCommitTitle,
@@ -590,6 +648,7 @@ export const createReportApplicationService = ({
           projectPathSource: currentAnalysis.projectPathSource,
           repository: currentAnalysis.repository,
           repositoryKey: currentAnalysis.repositoryKey,
+          scoreCategoriesKey: currentAnalysis.scoreCategoriesKey,
           snapshotKey: snapshotLookup.snapshotKey,
         });
       } catch (error) {
@@ -648,16 +707,11 @@ export const createReportApplicationService = ({
       const previousAnalysis = previousId
         ? await repository.findById(previousId)
         : await repository.findPreviousCompleted(analysis);
+      const unavailableReason = getComparisonUnavailableReason(analysis, previousAnalysis);
 
-      if (
-        !previousAnalysis?.report ||
-        previousAnalysis.id === analysis.id ||
-        previousAnalysis.repositoryKey !== analysis.repositoryKey ||
-        previousAnalysis.projectPath !== analysis.projectPath ||
-        previousAnalysis.branch !== analysis.branch ||
-        previousAnalysis.status !== 'completed'
-      ) {
+      if (unavailableReason || !previousAnalysis?.report) {
         return success(200, {
+          ...(previousId ? { reason: unavailableReason } : {}),
           status: 'unavailable',
         } satisfies GetReportComparisonResponse);
       }

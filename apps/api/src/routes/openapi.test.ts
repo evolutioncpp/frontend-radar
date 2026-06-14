@@ -436,6 +436,20 @@ describe('GET /openapi.json', () => {
         ),
       ).toHaveLength(1);
       expect(
+        collectSchemasWithProperties(
+          getJsonResponseSchema(body, '/reports/{id}/comparison', 'get'),
+          body,
+          ['status', 'reason'],
+        ),
+      ).toHaveLength(1);
+      expect(
+        schemaContainsLiteral(
+          getJsonResponseSchema(body, '/reports/{id}/comparison', 'get'),
+          body,
+          'different_score_categories',
+        ),
+      ).toBe(true);
+      expect(
         collectSchemasWithProperties(getJsonResponseSchema(body, '/reports', 'get'), body, [
           'latestCommitTitle',
         ]),

@@ -249,6 +249,67 @@ describe('report application service', () => {
     expect(startAnalysis).toHaveBeenCalledWith(expect.any(Object), context);
   });
 
+  it('creates hidden analysis that is not returned from history', async () => {
+    const { repository, service } = createService();
+
+    const result = await service.createReportAnalysis({
+      normalizedUrl: 'https://github.com/owner/repo',
+      owner: 'owner',
+      repository: 'repo',
+      saveToHistory: false,
+    });
+
+    if (result.type !== 'success') {
+      throw new Error('Expected successful analysis creation');
+    }
+
+    const analysis = await repository.findById(result.body.id);
+    const history = await service.listReportAnalyses();
+
+    expect(analysis).toMatchObject({
+      isHistoryVisible: false,
+    });
+    expect(history).toMatchObject({
+      body: {
+        items: [],
+      },
+      statusCode: 200,
+      type: 'success',
+    });
+  });
+
+  it('does not reuse analysis with a different metric category set', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const completedAnalysis = await repository.create(createRecordInput());
+
+    await completeAnalysisForTest(repository, completedAnalysis);
+
+    const { service, startAnalysis } = createService({ repository });
+
+    const result = await service.createReportAnalysis({
+      enabledScoreCategories: ['testing'],
+      normalizedUrl: 'https://github.com/owner/repo',
+      owner: 'owner',
+      repository: 'repo',
+    });
+
+    expect(result).toMatchObject({
+      body: {
+        reuseReason: null,
+        status: 'queued',
+      },
+      statusCode: 201,
+      type: 'success',
+    });
+
+    if (result.type !== 'success') {
+      throw new Error('Expected successful analysis creation');
+    }
+
+    expect(result.body.id).not.toBe(completedAnalysis.id);
+    expect(startAnalysis).toHaveBeenCalledOnce();
+  });
+
   it('does not treat unbranded analyzer-like errors as user-facing GitHub errors', async () => {
     const { service } = createService({
       analyzer: createAnalyzer({
@@ -476,6 +537,42 @@ describe('report application service', () => {
           delta: 20,
           previous: 70,
         },
+      },
+      statusCode: 200,
+      type: 'success',
+    });
+  });
+
+  it('explains unavailable comparison when metric sets differ', async () => {
+    const repository = new InMemoryReportAnalysisRepository();
+    const previousAnalysis = await repository.create(
+      createRecordInput({
+        latestCommitDate: '2026-06-08T00:00:00.000Z',
+        latestCommitSha: 'old123',
+      }),
+    );
+    const currentAnalysis = await repository.create(
+      createRecordInput({
+        latestCommitDate: '2026-06-09T00:00:00.000Z',
+        latestCommitSha: 'new123',
+        scoreCategoriesKey: 'testing,dependencies',
+      }),
+    );
+
+    await completeAnalysisForTest(repository, previousAnalysis);
+    await completeAnalysisForTest(repository, currentAnalysis);
+
+    const { service } = createService({ repository });
+    const result = await service.getReportComparison({
+      id: currentAnalysis.id,
+      language: 'en',
+      previousId: previousAnalysis.id,
+    });
+
+    expect(result).toMatchObject({
+      body: {
+        reason: 'different_score_categories',
+        status: 'unavailable',
       },
       statusCode: 200,
       type: 'success',

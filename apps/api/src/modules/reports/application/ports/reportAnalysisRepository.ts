@@ -5,28 +5,33 @@ import type {
   ReportAnalysisProgressStage,
   ReportAnalysisStatus,
   ReportProjectPathSource,
+  ScoreCategory,
 } from '../../domain/reportSchemas.js';
 
 export interface CreateReportAnalysisRecordInput extends Omit<
   CreateReportAnalysisRequest,
-  'branch' | 'projectPath' | 'projectPathSource'
+  'branch' | 'enabledScoreCategories' | 'projectPath' | 'projectPathSource' | 'saveToHistory'
 > {
   analysisVersion: number;
   branch: string;
+  isHistoryVisible?: boolean;
   latestCommitDate: string | null;
   latestCommitSha: string | null;
   latestCommitTitle: string | null;
   projectPath: string;
   projectPathSource: ReportProjectPathSource;
   repositoryKey: string;
+  scoreCategoriesKey?: string;
   snapshotKey: string;
 }
 
 export interface ReportAnalysisSnapshotLookup {
   analysisVersion: number;
   branch: string;
+  isHistoryVisible: boolean;
   projectPath: string;
   repositoryKey: string;
+  scoreCategoriesKey: string;
   snapshotKey: string;
 }
 
@@ -74,6 +79,9 @@ export interface ReportAnalysisEntity {
   branch: string;
   projectPath: string;
   projectPathSource: ReportProjectPathSource;
+  enabledScoreCategories: ScoreCategory[];
+  isHistoryVisible: boolean;
+  scoreCategoriesKey: string;
   snapshotKey: string;
   normalizedUrl: string;
   status: ReportAnalysisStatus;

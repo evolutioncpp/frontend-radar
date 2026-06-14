@@ -32,6 +32,11 @@ export type Styles = {
   toneNeutral: string;
   tonePositive: string;
   totalDelta: string;
+  unavailableCopy: string;
+  unavailableDescription: string;
+  unavailableIcon: string;
+  unavailableMessage: string;
+  unavailableReason: string;
   valueArrow: string;
   valuePair: string;
 };

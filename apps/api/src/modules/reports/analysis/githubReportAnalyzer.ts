@@ -110,7 +110,7 @@ export class GithubReportAnalyzer implements ReportAnalyzer {
       rootPackageJson: project.rootPackageJson,
     });
     await reportProgress?.('scoring');
-    const scoreBreakdown = buildScoreBreakdown(signals);
+    const scoreBreakdown = buildScoreBreakdown(signals, input.enabledScoreCategories);
     const totalScore = calculateWeightedTotalScore(scoreBreakdown);
     await reportProgress?.('report_building');
     const analysisSources = buildReportAnalysisSources(signals, {
@@ -143,7 +143,7 @@ export class GithubReportAnalyzer implements ReportAnalyzer {
       },
       scoreBreakdown,
       checks: buildChecks(signals),
-      recommendations: buildRecommendations(signals),
+      recommendations: buildRecommendations(signals, input.enabledScoreCategories),
     };
   }
 }

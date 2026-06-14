@@ -357,6 +357,7 @@ describe('GithubReportAnalyzer', () => {
       'project_detection',
       'repository_signals',
       'source_scan',
+      'workflow_analysis',
       'scoring',
       'report_building',
     ]);

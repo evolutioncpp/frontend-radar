@@ -1,4 +1,6 @@
+import { configureStore } from '@reduxjs/toolkit';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { Provider } from 'react-redux';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
@@ -103,13 +105,39 @@ vi.mock('react-i18next', () => ({
 }));
 
 const renderDashboardPage = (initialEntry = AppRoutes.DASHBOARD) => {
+  const appSettings = {
+    theme: 'dark',
+    language: 'en',
+    isDashboardSidebarCollapsed: false,
+    isReportHistoryEnabled: true,
+    enabledScoreCategories: [
+      'documentation',
+      'testing',
+      'ci',
+      'dependencies',
+      'maintainability',
+      'performance',
+      'accessibility',
+    ],
+  };
+  const store = configureStore({
+    reducer: {
+      appSettings: (state = appSettings) => state,
+    },
+    preloadedState: {
+      appSettings,
+    },
+  });
+
   return render(
-    <MemoryRouter initialEntries={[initialEntry]}>
-      <Routes>
-        <Route element={<DashboardPage />} path={AppRoutes.DASHBOARD} />
-        <Route element={<h1>Demo report route</h1>} path={AppRoutes.REPORT} />
-      </Routes>
-    </MemoryRouter>,
+    <Provider store={store}>
+      <MemoryRouter initialEntries={[initialEntry]}>
+        <Routes>
+          <Route element={<DashboardPage />} path={AppRoutes.DASHBOARD} />
+          <Route element={<h1>Demo report route</h1>} path={AppRoutes.REPORT} />
+        </Routes>
+      </MemoryRouter>
+    </Provider>,
   );
 };
 
@@ -159,6 +187,16 @@ describe('DashboardPage', () => {
         owner: 'evolutioncpp',
         repository: 'frontend-radar',
         normalizedUrl: 'https://github.com/evolutioncpp/frontend-radar',
+        saveToHistory: true,
+        enabledScoreCategories: [
+          'documentation',
+          'testing',
+          'ci',
+          'dependencies',
+          'maintainability',
+          'performance',
+          'accessibility',
+        ],
       },
     });
   });

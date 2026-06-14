@@ -10,6 +10,7 @@ import {
   type ReportAnalysisStatus,
   type ReportProjectPathSource,
 } from '../../domain/reportSchemas.js';
+import { normalizeEnabledScoreCategories } from '../../domain/reportScoreCategories.js';
 import {
   ReportAnalysisAlreadyExistsError,
   ReportAnalysisLeaseConflictError,
@@ -60,6 +61,7 @@ const parseReportAnalysisProgressStage = (value: string | null): ReportAnalysisP
     value === 'project_detection' ||
     value === 'repository_signals' ||
     value === 'source_scan' ||
+    value === 'workflow_analysis' ||
     value === 'scoring' ||
     value === 'report_building'
   ) {
@@ -80,6 +82,9 @@ const mapPrismaReportAnalysis = (
     branch: analysis.branch,
     projectPath: analysis.projectPath,
     projectPathSource: parseReportProjectPathSource(analysis.projectPathSource),
+    enabledScoreCategories: normalizeEnabledScoreCategories(analysis.scoreCategoriesKey.split(',')),
+    isHistoryVisible: analysis.isHistoryVisible,
+    scoreCategoriesKey: analysis.scoreCategoriesKey,
     snapshotKey: analysis.snapshotKey,
     normalizedUrl: analysis.normalizedUrl,
     status: analysis.status,
@@ -104,15 +109,19 @@ const mapPrismaReportAnalysis = (
 const createSnapshotWhere = ({
   analysisVersion,
   branch,
+  isHistoryVisible,
   projectPath,
   repositoryKey,
+  scoreCategoriesKey,
   snapshotKey,
 }: ReportAnalysisSnapshotLookup): Prisma.ReportAnalysisWhereInput => {
   return {
     analysisVersion,
     branch,
+    isHistoryVisible,
     projectPath,
     repositoryKey,
+    scoreCategoriesKey,
     snapshotKey,
   };
 };
@@ -179,6 +188,7 @@ export class PrismaReportAnalysisRepository implements ReportAnalysisRepository 
       },
       take: limit,
       where: {
+        isHistoryVisible: true,
         status: {
           not: 'failed',
         },
@@ -325,6 +335,7 @@ export class PrismaReportAnalysisRepository implements ReportAnalysisRepository 
         repositoryKey: analysis.repositoryKey,
         projectPath: analysis.projectPath,
         branch: analysis.branch,
+        scoreCategoriesKey: analysis.scoreCategoriesKey,
         status: 'completed',
       },
     });

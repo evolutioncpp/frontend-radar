@@ -13,7 +13,10 @@ import { ChecksList } from '@/widgets/checks-list';
 import { HealthScorePanel } from '@/widgets/health-score-panel';
 import { MetricsGrid } from '@/widgets/metrics-grid';
 import { RecommendationsPanel } from '@/widgets/recommendations-panel';
-import { ReportComparisonPanel } from '@/widgets/report-comparison-panel';
+import {
+  ReportComparisonPanel,
+  ReportComparisonUnavailablePanel,
+} from '@/widgets/report-comparison-panel';
 import { RepositorySummary } from '@/widgets/repository-summary';
 
 import { DashboardReportSection } from '../dashboard-report-section/DashboardReportSection';
@@ -25,6 +28,7 @@ import type { GetReportComparisonApiResponse, ProjectReport } from '@/entities/r
 interface DashboardReportViewProps {
   comparison?: Extract<GetReportComparisonApiResponse, { status: 'available' }> | null;
   comparisonMode?: 'automatic' | 'manual';
+  comparisonUnavailable?: Extract<GetReportComparisonApiResponse, { status: 'unavailable' }> | null;
   isRefreshing?: boolean;
   onForceRefresh?: () => void;
   report: ProjectReport;
@@ -33,13 +37,15 @@ interface DashboardReportViewProps {
 export const DashboardReportView = ({
   comparison = null,
   comparisonMode = 'automatic',
+  comparisonUnavailable = null,
   isRefreshing = false,
   onForceRefresh,
   report,
 }: DashboardReportViewProps) => {
   const { t } = useTranslation('dashboard');
+  const hasComparisonSection = Boolean(comparison || comparisonUnavailable);
 
-  useDashboardSectionsReady(comparison ? 'with-comparison' : 'without-comparison');
+  useDashboardSectionsReady(hasComparisonSection ? 'with-comparison' : 'without-comparison');
 
   const getSectionLabel = (sectionId: DashboardSectionId) => {
     return t(dashboardSectionPageLabelKeys[sectionId]);
@@ -94,17 +100,28 @@ export const DashboardReportView = ({
         />
       </DashboardReportSection>
 
-      {comparison ? (
+      {hasComparisonSection ? (
         <DashboardReportSection
           ariaLabel={getSectionLabel(DashboardSectionIds.COMPARISON)}
           id={DashboardSectionIds.COMPARISON}
         >
-          <ReportComparisonPanel
-            branch={report.repository.branch || report.repository.defaultBranch}
-            comparison={comparison}
-            headerAction={<DashboardSectionCopyButton sectionId={DashboardSectionIds.COMPARISON} />}
-            mode={comparisonMode}
-          />
+          {comparison ? (
+            <ReportComparisonPanel
+              branch={report.repository.branch || report.repository.defaultBranch}
+              comparison={comparison}
+              headerAction={
+                <DashboardSectionCopyButton sectionId={DashboardSectionIds.COMPARISON} />
+              }
+              mode={comparisonMode}
+            />
+          ) : (
+            <ReportComparisonUnavailablePanel
+              headerAction={
+                <DashboardSectionCopyButton sectionId={DashboardSectionIds.COMPARISON} />
+              }
+              reason={comparisonUnavailable?.reason}
+            />
+          )}
         </DashboardReportSection>
       ) : null}
 

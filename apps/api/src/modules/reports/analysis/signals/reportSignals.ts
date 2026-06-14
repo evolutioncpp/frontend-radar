@@ -165,7 +165,7 @@ export const collectRepositorySignals = async ({
 }: {
   branch: string;
   context?: GithubReaderContext;
-  onProgress?: (stage: 'source_scan') => Promise<void> | void;
+  onProgress?: (stage: 'source_scan' | 'workflow_analysis') => Promise<void> | void;
   owner: string;
   packageJson: PackageJson | null;
   packageJsonPath: string | null;
@@ -313,6 +313,7 @@ export const collectRepositorySignals = async ({
     context,
   });
   const validWorkflowNames = getValidWorkflowNames(workflowNames);
+  await onProgress?.('workflow_analysis');
   const workflowFilesResult = await readWorkflowFiles({
     branch,
     owner,

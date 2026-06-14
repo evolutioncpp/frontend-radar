@@ -1,12 +1,16 @@
 import { useGetReportComparisonQuery } from './reportApi';
 
 import type { GetReportComparisonApiArg } from './reportApi';
-import type { AvailableReportComparison } from './types';
+import type { AvailableReportComparison, UnavailableReportComparison } from './types';
 
 export type ReportComparisonState =
   | {
       status: 'available';
       comparison: AvailableReportComparison;
+    }
+  | {
+      status: 'unavailable';
+      comparison: UnavailableReportComparison;
     }
   | {
       status: 'hidden';
@@ -24,9 +28,16 @@ export const useReportComparison = (
     skip: !reportId,
   });
 
-  if (isLoading || isError || data?.status !== 'available') {
+  if (isLoading || isError || !data) {
     return {
       status: 'hidden',
+    };
+  }
+
+  if (data.status === 'unavailable') {
+    return {
+      status: 'unavailable',
+      comparison: data,
     };
   }
 

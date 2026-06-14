@@ -47,6 +47,7 @@ export type {
   ToolingSource,
   ToolingSourceKind,
   ToolingSourceSection,
+  UnavailableReportComparison,
 } from './model/types';
 export type {
   ReportHistoryGroupViewModel,

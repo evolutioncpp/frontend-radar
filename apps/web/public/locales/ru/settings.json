@@ -67,5 +67,36 @@
         "unknown": "Не удалось проверить token. Попробуйте позже."
       }
     }
+  },
+  "reportPreferences": {
+    "title": "Настройки отчётов",
+    "description": "Выберите, как новые запуски сохраняются и какие области качества входят в оценку.",
+    "history": {
+      "label": "Сохранять запуски анализа в историю",
+      "hint": "Если выключено, новые отчёты останутся доступны по прямой ссылке, но не появятся на странице истории."
+    },
+    "metrics": {
+      "title": "Включённые метрики",
+      "description": "Отключённые метрики исключаются из backend scoring и расчёта общей оценки для новых запусков.",
+      "lastEnabledHint": "Хотя бы одна метрика должна остаться включённой.",
+      "categories": {
+        "documentation": "Документация",
+        "testing": "Тестирование",
+        "ci": "CI/CD",
+        "dependencies": "Зависимости",
+        "maintainability": "Поддерживаемость",
+        "performance": "Производительность",
+        "accessibility": "Доступность"
+      },
+      "categoryHints": {
+        "documentation": "README и сигналы настройки окружения.",
+        "testing": "Тестовые скрипты, файлы тестов, инструменты и coverage.",
+        "ci": "Качество GitHub Actions workflow и таргетинг на проект.",
+        "dependencies": "Package metadata, lockfile и гигиена зависимостей.",
+        "maintainability": "TypeScript, linting, formatting и здоровье исходников.",
+        "performance": "Готовность сборки, bundler и source-level сигналы загрузки.",
+        "accessibility": "Инструменты доступности и сигналы UI review."
+      }
+    }
   }
 }

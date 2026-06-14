@@ -220,6 +220,12 @@ const getMetric = (signals: RepositorySignals, category: string) => {
 };
 
 describe('buildScoreBreakdown', () => {
+  it('returns only enabled score categories', () => {
+    const scoreBreakdown = buildScoreBreakdown(createSignals(), ['testing', 'dependencies']);
+
+    expect(scoreBreakdown.map((metric) => metric.category)).toEqual(['testing', 'dependencies']);
+  });
+
   it('does not give high CI score when a workflow exists without quality steps', () => {
     const metric = getMetric(
       createSignals({

@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 import s from './DashboardSettingsPage.module.scss';
 import { GithubTokenSettingsSection } from './github-token-settings-section/GithubTokenSettingsSection';
+import { ReportPreferencesSettingsSection } from './report-preferences-settings-section/ReportPreferencesSettingsSection';
 
 export const DashboardSettingsPage = () => {
   const { t } = useTranslation('settings');
@@ -15,6 +16,7 @@ export const DashboardSettingsPage = () => {
       </div>
 
       <GithubTokenSettingsSection />
+      <ReportPreferencesSettingsSection />
     </div>
   );
 };

@@ -18,6 +18,7 @@ export const reportAnalysisProgressStages = [
   'project_detection',
   'repository_signals',
   'source_scan',
+  'workflow_analysis',
   'scoring',
   'report_building',
 ] as const;
@@ -33,6 +34,15 @@ export const reportAnalysisErrorCodes = [
   'repository_verification_failed',
   'analysis_failed',
 ] as const;
+export const reportComparisonUnavailableReasons = [
+  'not_found',
+  'not_completed',
+  'same_report',
+  'different_repository',
+  'different_project_path',
+  'different_branch',
+  'different_score_categories',
+] as const;
 
 export const scoreStatuses = ['excellent', 'good', 'warning', 'critical'] as const;
 export const scoreCategories = [
@@ -44,6 +54,7 @@ export const scoreCategories = [
   'performance',
   'accessibility',
 ] as const;
+export const scoreCategorySchema = z.enum(scoreCategories);
 export const checkStatuses = ['passed', 'failed', 'warning'] as const;
 export const signalStatuses = ['found', 'missing', 'warning'] as const;
 export const scoringCheckStatuses = [
@@ -100,6 +111,7 @@ export const reportAnalysisStatusSchema = z.enum(reportAnalysisStatuses);
 export const reportAnalysisProgressStageSchema = z.enum(reportAnalysisProgressStages);
 export const reportProjectPathSourceSchema = z.enum(reportProjectPathSources);
 export const reportAnalysisErrorCodeSchema = z.enum(reportAnalysisErrorCodes);
+export const reportComparisonUnavailableReasonSchema = z.enum(reportComparisonUnavailableReasons);
 
 export const acceptLanguageHeadersSchema = z
   .object({
@@ -126,6 +138,8 @@ export const createReportAnalysisRequestSchema = z.object({
     .transform((value) => normalizeGithubProjectPath(value) ?? value)
     .nullish(),
   projectPathSource: z.enum(['url', 'manual']).optional(),
+  saveToHistory: z.boolean().optional(),
+  enabledScoreCategories: z.array(scoreCategorySchema).min(1).optional(),
 });
 
 export const createReportAnalysisResponseSchema = z.object({
@@ -246,7 +260,7 @@ export const reportToolingSchema = z.object(
 );
 
 export const scoreBreakdownItemSchema = z.object({
-  category: z.enum(scoreCategories),
+  category: scoreCategorySchema,
   label: z.string(),
   value: z.number().int().min(0),
   maxValue: z.number().int().positive(),
@@ -379,7 +393,7 @@ export const reportComparisonValueSchema = z.object({
 });
 
 export const reportComparisonMetricSchema = z.object({
-  category: z.enum(scoreCategories),
+  category: scoreCategorySchema,
   label: z.string(),
   currentValue: z.number().int(),
   previousValue: z.number().int(),
@@ -403,6 +417,7 @@ export const reportComparisonRecommendationsSchema = z.object({
 
 export const reportComparisonUnavailableResponseSchema = z.object({
   status: z.literal('unavailable'),
+  reason: reportComparisonUnavailableReasonSchema.optional(),
 });
 
 export const reportComparisonAvailableResponseSchema = z.object({
@@ -441,9 +456,13 @@ export type ListReportAnalysesResponse = z.infer<typeof listReportAnalysesRespon
 export type ListRepositoryBranchesResponse = z.infer<typeof listRepositoryBranchesResponseSchema>;
 export type ReportAnalysisErrorCode = z.infer<typeof reportAnalysisErrorCodeSchema>;
 export type ReportAnalysisProgressStage = z.infer<typeof reportAnalysisProgressStageSchema>;
+export type ReportComparisonUnavailableReason = z.infer<
+  typeof reportComparisonUnavailableReasonSchema
+>;
 export type ProjectReport = z.infer<typeof projectReportSchema>;
 export type ReportAnalysisStatus = z.infer<typeof reportAnalysisStatusSchema>;
 export type ReportProjectPathSource = z.infer<typeof reportProjectPathSourceSchema>;
+export type ScoreCategory = z.infer<typeof scoreCategorySchema>;
 export type RefreshReportAnalysisResponse = z.infer<typeof refreshReportAnalysisResponseSchema>;
 export type RetryReportAnalysisResponse = z.infer<typeof retryReportAnalysisResponseSchema>;
 export type ValidateGithubTokenResponse = z.infer<typeof validateGithubTokenResponseSchema>;

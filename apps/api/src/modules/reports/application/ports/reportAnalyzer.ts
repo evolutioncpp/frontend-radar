@@ -6,6 +6,7 @@ import type {
   ReportAnalysisErrorCode,
   ReportAnalysisProgressStage,
   ReportProjectPathSource,
+  ScoreCategory,
 } from '../../domain/reportSchemas.js';
 import type { ReportAnalysisFailure } from './reportAnalysisRepository.js';
 
@@ -36,11 +37,12 @@ export type ReportAnalysisProgressReporter = (
 
 export type ReportAnalysisInput = Omit<
   CreateReportAnalysisRequest,
-  'branch' | 'projectPath' | 'projectPathSource'
+  'branch' | 'enabledScoreCategories' | 'projectPath' | 'projectPathSource' | 'saveToHistory'
 > & {
   id: string;
   branch: string;
   createdAt: Date;
+  enabledScoreCategories?: ScoreCategory[];
   latestCommitDate: string | null;
   latestCommitSha: string | null;
   latestCommitTitle: string | null;

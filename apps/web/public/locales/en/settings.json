@@ -67,5 +67,36 @@
         "unknown": "Could not validate this token. Try again later."
       }
     }
+  },
+  "reportPreferences": {
+    "title": "Report preferences",
+    "description": "Choose how new analyses are saved and which quality areas are included in scoring.",
+    "history": {
+      "label": "Save analysis runs to history",
+      "hint": "When disabled, new reports remain available by direct link but do not appear on the history page."
+    },
+    "metrics": {
+      "title": "Enabled metrics",
+      "description": "Disabled metrics are excluded from backend scoring and total score calculations for new analyses.",
+      "lastEnabledHint": "At least one metric must stay enabled.",
+      "categories": {
+        "documentation": "Documentation",
+        "testing": "Testing",
+        "ci": "CI/CD",
+        "dependencies": "Dependencies",
+        "maintainability": "Maintainability",
+        "performance": "Performance",
+        "accessibility": "Accessibility"
+      },
+      "categoryHints": {
+        "documentation": "README and environment setup signals.",
+        "testing": "Test scripts, test files, tooling and coverage signals.",
+        "ci": "GitHub Actions workflow quality and project targeting.",
+        "dependencies": "Package metadata, lockfiles and dependency hygiene.",
+        "maintainability": "TypeScript, linting, formatting and source health.",
+        "performance": "Build readiness, bundler and source-level loading signals.",
+        "accessibility": "Accessibility tooling and UI review signals."
+      }
+    }
   }
 }

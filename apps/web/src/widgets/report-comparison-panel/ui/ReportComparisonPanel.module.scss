@@ -240,6 +240,46 @@
   line-height: $line-height-md;
 }
 
+.unavailableMessage {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: $space-3;
+  padding: $space-4;
+  border: 1px solid color-mix(in srgb, var(--color-warning) 32%, var(--color-border-primary));
+  border-radius: $radius-md;
+  background: color-mix(in srgb, var(--color-warning) 8%, transparent);
+}
+
+.unavailableIcon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: 0 0 auto;
+  color: var(--color-warning);
+}
+
+.unavailableCopy {
+  display: grid;
+  min-width: 0;
+  gap: $space-2;
+}
+
+.unavailableDescription,
+.unavailableReason {
+  margin: 0;
+  font-size: $font-size-sm;
+  line-height: $line-height-md;
+}
+
+.unavailableDescription {
+  color: var(--color-text-primary);
+  font-weight: $font-weight-semibold;
+}
+
+.unavailableReason {
+  color: var(--color-text-secondary);
+}
+
 @include media-max($breakpoint-xl) {
   .summaryGrid,
   .changeGroups {

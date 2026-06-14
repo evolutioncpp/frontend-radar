@@ -2096,6 +2096,13 @@ describe('reports routes', () => {
         latestCommitSha: 'other-branch-sha',
       }),
     );
+    const otherMetricSetAnalysis = await repository.create(
+      createTestRecordInput({
+        latestCommitDate: '2026-06-13T00:00:00.000Z',
+        latestCommitSha: 'other-metric-set-sha',
+        scoreCategoriesKey: 'testing,dependencies',
+      }),
+    );
 
     await completeAnalysisForTest(
       repository,
@@ -2111,6 +2118,11 @@ describe('reports routes', () => {
         otherProjectAnalysis.latestCommitSha,
         'apps/docs',
       ),
+    );
+    await completeAnalysisForTest(
+      repository,
+      otherMetricSetAnalysis.id,
+      createTestReport(otherMetricSetAnalysis.id),
     );
     await completeAnalysisForTest(
       repository,
@@ -2134,12 +2146,31 @@ describe('reports routes', () => {
     );
 
     try {
-      for (const previousId of [
-        currentAnalysis.id,
-        queuedAnalysis.id,
-        otherProjectAnalysis.id,
-        otherBranchAnalysis.id,
-        'missing-analysis-id',
+      for (const { previousId, reason } of [
+        {
+          previousId: currentAnalysis.id,
+          reason: 'same_report',
+        },
+        {
+          previousId: queuedAnalysis.id,
+          reason: 'not_completed',
+        },
+        {
+          previousId: otherProjectAnalysis.id,
+          reason: 'different_project_path',
+        },
+        {
+          previousId: otherBranchAnalysis.id,
+          reason: 'different_branch',
+        },
+        {
+          previousId: otherMetricSetAnalysis.id,
+          reason: 'different_score_categories',
+        },
+        {
+          previousId: 'missing-analysis-id',
+          reason: 'not_found',
+        },
       ]) {
         const response = await app.inject({
           method: 'GET',
@@ -2148,6 +2179,7 @@ describe('reports routes', () => {
 
         expect(response.statusCode).toBe(200);
         expect(response.json()).toEqual({
+          reason,
           status: 'unavailable',
         });
       }

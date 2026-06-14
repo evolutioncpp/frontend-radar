@@ -36,6 +36,16 @@ const createTestStore = (language: AppLanguage = 'en') => {
       theme: 'dark',
       language,
       isDashboardSidebarCollapsed: false,
+      isReportHistoryEnabled: true,
+      enabledScoreCategories: [
+        'documentation',
+        'testing',
+        'ci',
+        'dependencies',
+        'maintainability',
+        'performance',
+        'accessibility',
+      ],
     },
   };
 

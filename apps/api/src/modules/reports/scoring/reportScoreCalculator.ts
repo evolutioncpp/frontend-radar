@@ -6,17 +6,34 @@ import { buildMaintainabilityScore } from './categories/reportScoreMaintainabili
 import { buildPerformanceScore } from './categories/reportScorePerformance.js';
 import { getStatusByScore } from './reportScoreCheckBuilders.js';
 import { buildTestingScore } from './categories/reportScoreTesting.js';
+import {
+  defaultEnabledScoreCategories,
+  normalizeEnabledScoreCategories,
+} from '../domain/reportScoreCategories.js';
 
+import type { ProjectReport, ScoreCategory } from '../domain/reportSchemas.js';
 import type { RepositorySignals } from '../domain/reportSignalContracts.js';
 
 export { getStatusByScore };
 
-export const buildScoreBreakdown = (signals: RepositorySignals) => [
-  buildDocumentationScore(signals),
-  buildTestingScore(signals),
-  buildCiScore(signals),
-  buildDependenciesScore(signals),
-  buildMaintainabilityScore(signals),
-  buildPerformanceScore(signals),
-  buildAccessibilityScore(signals),
-];
+const scoreCategoryBuilders = {
+  documentation: buildDocumentationScore,
+  testing: buildTestingScore,
+  ci: buildCiScore,
+  dependencies: buildDependenciesScore,
+  maintainability: buildMaintainabilityScore,
+  performance: buildPerformanceScore,
+  accessibility: buildAccessibilityScore,
+} as const satisfies Record<
+  ScoreCategory,
+  (signals: RepositorySignals) => ProjectReport['scoreBreakdown'][number]
+>;
+
+export const buildScoreBreakdown = (
+  signals: RepositorySignals,
+  enabledCategories: readonly ScoreCategory[] = defaultEnabledScoreCategories,
+) => {
+  return normalizeEnabledScoreCategories(enabledCategories).map((category) =>
+    scoreCategoryBuilders[category](signals),
+  );
+};

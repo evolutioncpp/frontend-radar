@@ -41,6 +41,16 @@ const createTestStoreWithGithubToken = (githubToken: string) => {
       appSettings: () => ({
         githubToken,
         isDashboardSidebarCollapsed: false,
+        isReportHistoryEnabled: true,
+        enabledScoreCategories: [
+          'documentation',
+          'testing',
+          'ci',
+          'dependencies',
+          'maintainability',
+          'performance',
+          'accessibility',
+        ],
         language: 'en',
         theme: 'dark',
       }),
