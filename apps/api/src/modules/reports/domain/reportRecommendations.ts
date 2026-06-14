@@ -120,6 +120,26 @@ export const buildRecommendations = (signals: RepositorySignals) => {
     });
   }
 
+  if (signals.packageJson.exists && signals.testQuality.files.count === 0) {
+    recommendations.push({
+      id: 'add-test-files',
+      severity: 'high',
+      title: 'Add representative test files',
+      description:
+        'Add test or spec files for the selected frontend package so the test script validates real behavior.',
+    });
+  }
+
+  if (signals.packageJson.exists && !signals.testQuality.coverage.found) {
+    recommendations.push({
+      id: 'add-coverage-signal',
+      severity: 'medium',
+      title: 'Add a coverage check',
+      description:
+        'Expose a coverage script or coverage configuration so test quality is easier to track over time.',
+    });
+  }
+
   if (signals.packageJson.exists && !signals.packageJson.scripts.build.exists) {
     recommendations.push({
       id: 'add-build-script',
@@ -164,6 +184,43 @@ export const buildRecommendations = (signals: RepositorySignals) => {
       title: 'Add TypeScript coverage',
       description:
         'Add TypeScript configuration or dependencies so maintainability checks can catch interface and refactor issues earlier.',
+    });
+  } else {
+    if (
+      signals.typescriptQuality.config.exists &&
+      signals.typescriptQuality.config.strict === false &&
+      !(
+        signals.typescriptQuality.config.noImplicitAny &&
+        signals.typescriptQuality.config.strictNullChecks
+      )
+    ) {
+      recommendations.push({
+        id: 'enable-typescript-strict',
+        severity: 'medium',
+        title: 'Enable stricter TypeScript checks',
+        description:
+          'Enable strict mode or noImplicitAny plus strictNullChecks so refactors catch unsafe contracts earlier.',
+      });
+    }
+
+    if (!signals.typescriptQuality.typecheck.exists) {
+      recommendations.push({
+        id: 'add-typecheck-script',
+        severity: 'medium',
+        title: 'Add a typecheck script',
+        description:
+          'Expose a dedicated typecheck script such as tsc --noEmit so CI and contributors can validate types without building.',
+      });
+    }
+  }
+
+  if (signals.sourceCode.codeHealth.issueCount > 0) {
+    recommendations.push({
+      id: 'reduce-source-health-warnings',
+      severity: signals.sourceCode.codeHealth.issueCount >= 12 ? 'medium' : 'low',
+      title: 'Reduce source-level maintainability warnings',
+      description:
+        'Review debug logs, TODO/FIXME comments, eslint-disable usage and explicit any hotspots in the selected frontend source.',
     });
   }
 

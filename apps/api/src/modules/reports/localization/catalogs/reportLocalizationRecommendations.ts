@@ -69,6 +69,16 @@ export const reportLocalizationRecommendations = {
       title: 'Add an automated test script',
       description: 'Expose a test script in package.json so quality checks are easy to run.',
     },
+    'add-test-files': {
+      title: 'Add representative test files',
+      description:
+        'Add test or spec files for the selected frontend package so the test script validates real behavior.',
+    },
+    'add-coverage-signal': {
+      title: 'Add a coverage check',
+      description:
+        'Expose a coverage script or coverage configuration so test quality is easier to track over time.',
+    },
     'add-testing-library': {
       title: 'Add frontend testing tooling',
       description:
@@ -78,6 +88,21 @@ export const reportLocalizationRecommendations = {
       title: 'Add TypeScript coverage',
       description:
         'Add TypeScript configuration or dependencies so maintainability checks can catch interface and refactor issues earlier.',
+    },
+    'add-typecheck-script': {
+      title: 'Add a typecheck script',
+      description:
+        'Expose a dedicated typecheck script such as tsc --noEmit so CI and contributors can validate types without building.',
+    },
+    'enable-typescript-strict': {
+      title: 'Enable stricter TypeScript checks',
+      description:
+        'Enable strict mode or noImplicitAny plus strictNullChecks so refactors catch unsafe contracts earlier.',
+    },
+    'reduce-source-health-warnings': {
+      title: 'Reduce source-level maintainability warnings',
+      description:
+        'Review debug logs, TODO/FIXME comments, eslint-disable usage and explicit any hotspots in the selected frontend source.',
     },
     'commit-lockfile': {
       title: 'Commit a package lockfile',
@@ -109,6 +134,31 @@ export const reportLocalizationRecommendations = {
     },
   },
   ru: {
+    'add-test-files': {
+      title: 'Добавить репрезентативные тестовые файлы',
+      description:
+        'Добавьте test/spec файлы для выбранного frontend-пакета, чтобы test-скрипт проверял реальное поведение.',
+    },
+    'add-coverage-signal': {
+      title: 'Добавить проверку покрытия',
+      description:
+        'Добавьте coverage-скрипт или coverage-конфигурацию, чтобы качество тестов было проще отслеживать со временем.',
+    },
+    'add-typecheck-script': {
+      title: 'Добавить typecheck-скрипт',
+      description:
+        'Добавьте отдельный typecheck-скрипт вроде tsc --noEmit, чтобы CI и участники могли проверять типы без сборки.',
+    },
+    'enable-typescript-strict': {
+      title: 'Включить более строгие проверки TypeScript',
+      description:
+        'Включите strict mode или noImplicitAny вместе со strictNullChecks, чтобы рефакторинг раньше ловил небезопасные контракты.',
+    },
+    'reduce-source-health-warnings': {
+      title: 'Уменьшить предупреждения по поддерживаемости исходников',
+      description:
+        'Проверьте debug-логи, TODO/FIXME, eslint-disable и explicit any hotspots в выбранном frontend-коде.',
+    },
     'add-ci-build-step': {
       title: 'Запустить production build в CI',
       description: 'Добавьте build step, чтобы выбранный frontend-проект проверялся в CI.',

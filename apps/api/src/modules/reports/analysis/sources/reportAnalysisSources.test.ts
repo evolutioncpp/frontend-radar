@@ -144,9 +144,76 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     },
     scope: 'root',
   },
+  sourceCode: {
+    codeHealth: {
+      anyCount: 0,
+      consoleCount: 0,
+      eslintDisableCount: 0,
+      issueCount: 0,
+      sources: [],
+      todoCount: 0,
+    },
+    codeSplitting: {
+      found: true,
+      sources: ['apps/web/src/main.tsx'],
+    },
+    entrypoints: {
+      found: true,
+      sources: ['apps/web/src/main.tsx'],
+    },
+    errorBoundaries: {
+      found: false,
+      sources: [],
+    },
+    files: {
+      count: 3,
+      isTruncated: false,
+      sources: ['apps/web/src/main.tsx'],
+    },
+  },
   storybook: createToolSignal(),
+  testQuality: {
+    coverage: {
+      found: false,
+      sources: [],
+    },
+    e2e: {
+      found: false,
+      sources: [],
+    },
+    files: {
+      componentCount: 0,
+      count: 0,
+      e2eCount: 0,
+      isTruncated: false,
+      sources: [],
+      unitCount: 0,
+    },
+  },
   testingLibrary: createToolSignal(),
   typescript: createToolSignal(),
+  typescriptQuality: {
+    config: {
+      allowJs: null,
+      configPaths: [],
+      exists: false,
+      hasMissingConfig: false,
+      hasParseError: false,
+      noImplicitAny: null,
+      noUncheckedIndexedAccess: null,
+      parseError: false,
+      path: null,
+      scope: null,
+      strict: null,
+      strictNullChecks: null,
+    },
+    typecheck: {
+      exists: false,
+      scope: null,
+      source: null,
+      value: null,
+    },
+  },
   ...overrides,
 });
 

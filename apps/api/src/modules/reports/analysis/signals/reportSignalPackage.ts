@@ -128,6 +128,11 @@ export const createPackageJsonSignal = ({
   dependencies,
   exists: packageJson !== null,
   path,
+  rawScripts: Object.fromEntries(
+    Object.entries(packageJson?.scripts ?? {}).filter(
+      (entry): entry is [string, string] => typeof entry[1] === 'string',
+    ),
+  ),
   scripts,
   scope: packageJson ? scope : null,
   workspaces: packageJson?.workspaces ?? [],

@@ -122,9 +122,76 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
       test: createScriptSignal('test', 'vitest run'),
     },
   },
+  sourceCode: {
+    codeHealth: {
+      anyCount: 0,
+      consoleCount: 0,
+      eslintDisableCount: 0,
+      issueCount: 0,
+      sources: [],
+      todoCount: 0,
+    },
+    codeSplitting: {
+      found: true,
+      sources: ['src/main.tsx'],
+    },
+    entrypoints: {
+      found: true,
+      sources: ['src/main.tsx'],
+    },
+    errorBoundaries: {
+      found: true,
+      sources: ['src/ErrorBoundary.tsx'],
+    },
+    files: {
+      count: 4,
+      isTruncated: false,
+      sources: ['src/main.tsx'],
+    },
+  },
   storybook: createToolSignal(['storybook']),
+  testQuality: {
+    coverage: {
+      found: true,
+      sources: ['package.json scripts.test'],
+    },
+    e2e: {
+      found: false,
+      sources: [],
+    },
+    files: {
+      componentCount: 1,
+      count: 2,
+      e2eCount: 0,
+      isTruncated: false,
+      sources: ['src/App.test.tsx'],
+      unitCount: 2,
+    },
+  },
   testingLibrary: createToolSignal(['@testing-library/react']),
   typescript: createToolSignal(['tsconfig.json', 'typescript']),
+  typescriptQuality: {
+    config: {
+      allowJs: false,
+      configPaths: ['tsconfig.json'],
+      exists: true,
+      hasMissingConfig: false,
+      hasParseError: false,
+      noImplicitAny: null,
+      noUncheckedIndexedAccess: true,
+      parseError: false,
+      path: 'tsconfig.json',
+      scope: 'project',
+      strict: true,
+      strictNullChecks: null,
+    },
+    typecheck: {
+      exists: true,
+      scope: 'project',
+      source: 'package.json scripts.typecheck',
+      value: 'tsc --noEmit',
+    },
+  },
   ...overrides,
 });
 

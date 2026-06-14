@@ -10,9 +10,16 @@ export type {
   ScriptName,
   ScriptSignal,
   SignalScope,
+  SourceCodeHealth,
+  SourceCodeSignalCheck,
+  SourceCodeSignals,
+  SourceFileSignal,
+  TestQualitySignals,
   ToolingSource,
   ToolingSourceSection,
   ToolSignal,
+  TypecheckSignal,
+  TypeScriptQualitySignals,
   WorkflowFile,
 } from '../../domain/reportSignalContracts.js';
 

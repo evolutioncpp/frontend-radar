@@ -76,10 +76,86 @@ export interface ToolSignal {
   sources: ToolingSource[];
 }
 
+export type SourceFileKind = 'source' | 'test' | 'e2e' | 'config';
+
+export type SourceFileSignal = {
+  content: string;
+  kind: SourceFileKind;
+  path: string;
+};
+
+export type SourceCodeSignalCheck = {
+  found: boolean;
+  scope?: SignalScope;
+  sources: string[];
+};
+
+export type SourceCodeHealth = {
+  anyCount: number;
+  consoleCount: number;
+  eslintDisableCount: number;
+  issueCount: number;
+  sources: string[];
+  todoCount: number;
+};
+
+export type SourceCodeSignals = {
+  codeHealth: SourceCodeHealth;
+  codeSplitting: SourceCodeSignalCheck;
+  entrypoints: SourceCodeSignalCheck;
+  errorBoundaries: SourceCodeSignalCheck;
+  files: {
+    count: number;
+    isTruncated: boolean;
+    sources: string[];
+  };
+};
+
+export type TestQualitySignals = {
+  coverage: SourceCodeSignalCheck;
+  e2e: SourceCodeSignalCheck;
+  files: {
+    componentCount: number;
+    count: number;
+    e2eCount: number;
+    isTruncated: boolean;
+    sources: string[];
+    unitCount: number;
+  };
+};
+
+export type TypecheckSignal = {
+  exists: boolean;
+  scope: SignalScope;
+  source: string | null;
+  value: string | null;
+};
+
+export type TypeScriptConfigKind = 'source' | 'test' | 'tooling' | 'unknown';
+
+export type TypeScriptQualitySignals = {
+  config: {
+    allowJs: boolean | null;
+    configPaths: string[];
+    exists: boolean;
+    hasMissingConfig: boolean;
+    hasParseError: boolean;
+    noImplicitAny: boolean | null;
+    noUncheckedIndexedAccess: boolean | null;
+    parseError: boolean;
+    path: string | null;
+    scope: SignalScope;
+    strict: boolean | null;
+    strictNullChecks: boolean | null;
+  };
+  typecheck: TypecheckSignal;
+};
+
 export interface PackageJsonSignal {
   dependencies: string[];
   exists: boolean;
   path: string | null;
+  rawScripts?: Record<string, string>;
   scripts: Record<ScriptName, ScriptSignal>;
   scope?: SignalScope;
   workspaces?: string[];
@@ -113,9 +189,12 @@ export interface RepositorySignals {
     length: number;
   };
   rootPackageJson: PackageJsonSignal;
+  sourceCode: SourceCodeSignals;
   storybook: ToolSignal;
+  testQuality: TestQualitySignals;
   testingLibrary: ToolSignal;
   typescript: ToolSignal;
+  typescriptQuality: TypeScriptQualitySignals;
   workspace?: {
     matched: boolean;
     source: string | null;
@@ -148,6 +227,13 @@ export const reportAnalysisSourceIds = [
   'linting',
   'formatting',
   'accessibility',
+  'source-files',
+  'test-files',
+  'test-coverage',
+  'typescript-config',
+  'typecheck-script',
+  'code-health',
+  'code-splitting',
 ] as const;
 
 export type ReportAnalysisSourceId = (typeof reportAnalysisSourceIds)[number];

@@ -186,6 +186,30 @@ export const sourcePreviewConfig = {
   workflowPreviewLimit: 3,
 } as const;
 
+export const sourceCodeAnalysisConfig = {
+  codeHealthIssueWarnThreshold: 3,
+  codeHealthIssueFailThreshold: 12,
+  fileExtensions: ['.ts', '.tsx', '.js', '.jsx', '.mts', '.cts'],
+  ignoredDirectoryNames: [
+    '.next',
+    '.nuxt',
+    '.vite',
+    'build',
+    'coverage',
+    'dist',
+    'node_modules',
+    'storybook-static',
+  ],
+  ignoredFilePatterns: [/\.d\.ts$/iu, /generatedApi\.(?:t|j)s$/iu],
+  maxDepth: 6,
+  maxFileSizeBytes: 80_000,
+  maxFiles: 120,
+  sourcePreviewLimit: 4,
+  tsconfigMaxDepth: 4,
+  tsconfigMaxFiles: 16,
+  tsconfigMaxRelatedPaths: 8,
+} as const;
+
 export const scoreThresholds = {
   critical: 0,
   warning: 50,

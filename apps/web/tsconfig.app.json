@@ -7,6 +7,7 @@
     "types": ["vite/client", "vitest/globals", "vitest/jsdom"],
     "skipLibCheck": true,
     "resolveJsonModule": true,
+    "strict": true,
 
     /* Bundler mode */
     "moduleResolution": "bundler",

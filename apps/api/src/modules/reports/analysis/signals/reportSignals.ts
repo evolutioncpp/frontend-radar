@@ -1,7 +1,20 @@
-import { readmeQualityConfig, repositorySignalConfig } from '../../domain/reportAnalysisConfig.js';
+import {
+  readmeQualityConfig,
+  repositorySignalConfig,
+  sourceCodeAnalysisConfig,
+} from '../../domain/reportAnalysisConfig.js';
 
 import { buildCiAnalysis } from '../ci/reportCiAnalyzer.js';
 import { buildDependencyHealth } from '../dependencies/reportDependencyAnalyzer.js';
+import { analyzeSourceCode } from '../source-code/reportSourceCodeAnalyzer.js';
+import { scanProjectSourceFiles } from '../source-code/reportSourceScanner.js';
+import { analyzeTestQuality } from '../source-code/reportTestQualityAnalyzer.js';
+import {
+  analyzeTypeScriptQuality,
+  getRelatedTsconfigPaths,
+  isTypeScriptConfigPath,
+  type ScopedTsconfigFile,
+} from '../source-code/reportTypeScriptQualityAnalyzer.js';
 import {
   createEffectiveScriptSignal,
   createPackageJsonSignal,
@@ -41,6 +54,102 @@ export type {
   SignalScope,
   ToolSignal,
 } from './reportSignalTypes.js';
+
+const listTypeScriptConfigPaths = async ({
+  branch,
+  context,
+  owner,
+  path,
+  reader,
+  repository,
+}: {
+  branch: string;
+  context: GithubReaderContext;
+  owner: string;
+  path: string;
+  reader: GithubRepositoryReader;
+  repository: string;
+}) => {
+  if (typeof reader.listDirectoryEntries !== 'function') {
+    return [];
+  }
+
+  const entries = await reader.listDirectoryEntries(owner, repository, branch, path, context);
+
+  return entries
+    .filter((entry) => entry.type === 'file')
+    .map((entry) => entry.path)
+    .filter((entryPath): entryPath is string => entryPath !== null)
+    .filter(isTypeScriptConfigPath);
+};
+
+const readTypeScriptConfigGraph = async ({
+  branch,
+  context,
+  initialPaths,
+  owner,
+  reader,
+  repository,
+  scope,
+}: {
+  branch: string;
+  context: GithubReaderContext;
+  initialPaths: string[];
+  owner: string;
+  reader: GithubRepositoryReader;
+  repository: string;
+  scope: NonNullable<RepositorySignals['typescriptQuality']['config']['scope']>;
+}) => {
+  const files: ScopedTsconfigFile[] = [];
+  const missingPaths: string[] = [];
+  const seenPaths = new Set<string>();
+  const queue = initialPaths.map((path) => ({ depth: 0, path }));
+
+  while (
+    queue.length > 0 &&
+    files.length + missingPaths.length < sourceCodeAnalysisConfig.tsconfigMaxFiles
+  ) {
+    const item = queue.shift();
+
+    if (!item || seenPaths.has(item.path)) {
+      continue;
+    }
+
+    seenPaths.add(item.path);
+    const content = await reader.readTextFile(owner, repository, branch, item.path, context);
+
+    if (content === null) {
+      missingPaths.push(item.path);
+      continue;
+    }
+
+    const file = {
+      content,
+      path: item.path,
+      scope,
+    } satisfies ScopedTsconfigFile;
+
+    files.push(file);
+
+    if (item.depth >= sourceCodeAnalysisConfig.tsconfigMaxDepth) {
+      continue;
+    }
+
+    for (const relatedPath of getRelatedTsconfigPaths(file).paths) {
+      if (!seenPaths.has(relatedPath)) {
+        queue.push({
+          depth: item.depth + 1,
+          path: relatedPath,
+        });
+      }
+    }
+  }
+
+  return {
+    files,
+    missingPaths,
+  };
+};
 
 export const collectRepositorySignals = async ({
   branch,
@@ -84,6 +193,7 @@ export const collectRepositorySignals = async ({
     testingConfigPath,
     accessibilityConfigPath,
     frameworkConfigPath,
+    sourceScan,
   ] = await Promise.all([
     readScopedTextFile({
       branch,
@@ -191,6 +301,14 @@ export const collectRepositorySignals = async ({
       repository,
       context,
     }),
+    scanProjectSourceFiles({
+      branch,
+      owner,
+      projectPath,
+      reader,
+      repository,
+      context,
+    }),
   ]);
   const validWorkflowNames = getValidWorkflowNames(workflowNames);
   const workflowFilesResult = await readWorkflowFiles({
@@ -213,6 +331,42 @@ export const collectRepositorySignals = async ({
     projectPath,
     workflowFiles: workflowFilesResult.files,
   });
+  const projectTsconfigPaths = await listTypeScriptConfigPaths({
+    branch,
+    context,
+    owner,
+    path: projectPath,
+    reader,
+    repository,
+  });
+  const rootFallbackTsconfigPaths =
+    projectTsconfigPaths.length === 0 && isNestedProject
+      ? await listTypeScriptConfigPaths({
+          branch,
+          context,
+          owner,
+          path: '',
+          reader,
+          repository,
+        })
+      : [];
+  const initialTsconfigPaths = Array.from(
+    new Set([
+      ...projectTsconfigPaths,
+      ...rootFallbackTsconfigPaths,
+      ...(typescriptPath.path ? [typescriptPath.path] : []),
+    ]),
+  );
+  const tsconfigGraph = await readTypeScriptConfigGraph({
+    branch,
+    context,
+    initialPaths: initialTsconfigPaths,
+    owner,
+    reader,
+    repository,
+    scope: rootFallbackTsconfigPaths.length > 0 ? 'root' : 'project',
+  });
+  const sourceCode = analyzeSourceCode(sourceScan);
   const scriptSignals = {
     build: createEffectiveScriptSignal({
       projectPackageJson,
@@ -236,6 +390,29 @@ export const collectRepositorySignals = async ({
       useRootFallback: isNestedProject,
     }),
   } satisfies Record<ScriptName, ScriptSignal>;
+  const packageJsonSignal = createPackageJsonSignal({
+    dependencies: projectDependencyNames,
+    packageJson: projectPackageJson,
+    path: packageJsonPath,
+    scripts: scriptSignals,
+    scope: 'project',
+  });
+  const testQuality = analyzeTestQuality({
+    files: sourceScan.files,
+    isTruncated: sourceScan.isTruncated,
+    isNestedProject,
+    projectPackageJson,
+    projectPackageJsonPath: packageJsonPath,
+    rootPackageJson: rootPackage,
+  });
+  const typescriptQuality = analyzeTypeScriptQuality({
+    isNestedProject,
+    missingTsconfigPaths: tsconfigGraph.missingPaths,
+    projectPackageJson,
+    projectPackageJsonPath: packageJsonPath,
+    rootPackageJson: rootPackage,
+    tsconfigFiles: tsconfigGraph.files,
+  });
 
   return {
     a11yTooling: buildScopedToolSignal({
@@ -300,13 +477,7 @@ export const collectRepositorySignals = async ({
       ...primaryLockfile,
       packageManager: dependencyHealth.primaryPackageManager,
     },
-    packageJson: createPackageJsonSignal({
-      dependencies: projectDependencyNames,
-      packageJson: projectPackageJson,
-      path: packageJsonPath,
-      scripts: scriptSignals,
-      scope: 'project',
-    }),
+    packageJson: packageJsonSignal,
     projectPath,
     readme: {
       ...readmeFile,
@@ -348,6 +519,7 @@ export const collectRepositorySignals = async ({
       },
       scope: isNestedProject ? 'root' : 'project',
     }),
+    sourceCode,
     storybook: buildScopedToolSignal({
       expectedDependencyNames: repositorySignalConfig.storybookDependencies,
       projectConfigPath: storybookPath.scope === 'project' ? storybookPath.path : null,
@@ -375,6 +547,8 @@ export const collectRepositorySignals = async ({
       rootDependencyNames,
       rootDependencySourceMap,
     }),
+    testQuality,
+    typescriptQuality,
     workspace,
   } satisfies RepositorySignals;
 };

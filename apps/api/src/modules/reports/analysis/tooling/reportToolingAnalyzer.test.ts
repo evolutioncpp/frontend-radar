@@ -140,7 +140,52 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
       test: createScriptSignal('test'),
     },
   },
+  sourceCode: {
+    codeHealth: {
+      anyCount: 0,
+      consoleCount: 0,
+      eslintDisableCount: 0,
+      issueCount: 0,
+      sources: [],
+      todoCount: 0,
+    },
+    codeSplitting: {
+      found: false,
+      sources: [],
+    },
+    entrypoints: {
+      found: false,
+      sources: [],
+    },
+    errorBoundaries: {
+      found: false,
+      sources: [],
+    },
+    files: {
+      count: 0,
+      isTruncated: false,
+      sources: [],
+    },
+  },
   storybook: createToolSignal(),
+  testQuality: {
+    coverage: {
+      found: false,
+      sources: [],
+    },
+    e2e: {
+      found: false,
+      sources: [],
+    },
+    files: {
+      componentCount: 0,
+      count: 0,
+      e2eCount: 0,
+      isTruncated: false,
+      sources: [],
+      unitCount: 0,
+    },
+  },
   testingLibrary: createToolSignal({
     dependencies: ['vitest'],
     projectSources: [dependencySource('apps/web/package.json', 'devDependencies', 'vitest')],
@@ -149,6 +194,28 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     dependencies: ['typescript'],
     projectSources: [createFileSource('apps/web/tsconfig.json')],
   }),
+  typescriptQuality: {
+    config: {
+      allowJs: null,
+      configPaths: ['apps/web/tsconfig.json'],
+      exists: true,
+      hasMissingConfig: false,
+      hasParseError: false,
+      noImplicitAny: null,
+      noUncheckedIndexedAccess: null,
+      parseError: false,
+      path: 'apps/web/tsconfig.json',
+      scope: 'project',
+      strict: null,
+      strictNullChecks: null,
+    },
+    typecheck: {
+      exists: false,
+      scope: null,
+      source: null,
+      value: null,
+    },
+  },
   ...overrides,
 });
 

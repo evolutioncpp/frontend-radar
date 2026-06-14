@@ -543,7 +543,9 @@ export type GetReportAnalysisApiResponse =
                 | 'env-example'
                 | 'package-json'
                 | 'test-script'
+                | 'test-files'
                 | 'testing-library'
+                | 'test-coverage'
                 | 'github-actions'
                 | 'ci-pr-trigger'
                 | 'ci-install-step'
@@ -557,11 +559,16 @@ export type GetReportAnalysisApiResponse =
                 | 'package-manager'
                 | 'dependency-hygiene'
                 | 'typescript'
+                | 'typescript-config'
+                | 'typescript-strict'
+                | 'typecheck-script'
                 | 'lint-script'
                 | 'linting'
                 | 'formatting'
+                | 'code-health'
                 | 'storybook'
                 | 'bundler'
+                | 'code-splitting'
                 | 'a11y-tooling';
               label: string;
               status: 'passed' | 'partial' | 'failed' | 'unknown' | 'not_applicable';

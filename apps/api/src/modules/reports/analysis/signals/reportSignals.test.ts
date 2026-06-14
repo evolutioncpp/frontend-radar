@@ -244,6 +244,99 @@ describe('collectRepositorySignals', () => {
     });
   });
 
+  it('collects sibling TypeScript configs and scores strictness from app configs', async () => {
+    const packageJson: PackageJson = {
+      devDependencies: {
+        typescript: '^6.0.0',
+      },
+      scripts: {
+        typecheck: 'tsc -b --noEmit',
+      },
+    };
+    const reader = {
+      findFirstPath: async () => null,
+      findExistingPaths: async () => [],
+      listDirectoryEntries: async (
+        _owner: string,
+        _repository: string,
+        _branch: string,
+        path: string,
+      ) => {
+        if (path !== 'apps/web') {
+          return [];
+        }
+
+        return [
+          { name: 'tsconfig.json', path: 'apps/web/tsconfig.json', type: 'file' },
+          { name: 'tsconfig.app.json', path: 'apps/web/tsconfig.app.json', type: 'file' },
+          { name: 'tsconfig.node.json', path: 'apps/web/tsconfig.node.json', type: 'file' },
+          {
+            name: 'tsconfig.eslint.json',
+            path: 'apps/web/tsconfig.eslint.json',
+            type: 'file',
+          },
+        ];
+      },
+      listDirectoryFiles: async () => [],
+      readFirstTextFile: async () => null,
+      readTextFile: async (_owner: string, _repository: string, _branch: string, path: string) => {
+        const files: Record<string, string> = {
+          'apps/web/tsconfig.json': JSON.stringify({
+            files: [],
+            references: [
+              { path: './tsconfig.app.json' },
+              { path: './tsconfig.node.json' },
+              { path: './tsconfig.eslint.json' },
+            ],
+          }),
+          'apps/web/tsconfig.app.json': JSON.stringify({
+            compilerOptions: {
+              strict: true,
+            },
+          }),
+          'apps/web/tsconfig.node.json': JSON.stringify({
+            compilerOptions: {
+              strict: false,
+            },
+          }),
+          'apps/web/tsconfig.eslint.json': JSON.stringify({
+            compilerOptions: {
+              allowJs: true,
+            },
+          }),
+        };
+
+        return files[path] ?? null;
+      },
+    } as unknown as GithubRepositoryReader;
+
+    const signals = await collectRepositorySignals({
+      branch: 'abc123',
+      owner: 'owner',
+      packageJson,
+      packageJsonPath: 'apps/web/package.json',
+      projectPath: 'apps/web',
+      reader,
+      repository: 'repo',
+    });
+
+    expect(signals.typescriptQuality.config).toMatchObject({
+      configPaths: [
+        'apps/web/tsconfig.json',
+        'apps/web/tsconfig.app.json',
+        'apps/web/tsconfig.node.json',
+        'apps/web/tsconfig.eslint.json',
+      ],
+      exists: true,
+      path: 'apps/web/tsconfig.app.json',
+      strict: true,
+    });
+    expect(signals.typescriptQuality.typecheck).toMatchObject({
+      exists: true,
+      source: 'apps/web/package.json scripts.typecheck',
+    });
+  });
+
   it('uses project and root config files as tooling signals', async () => {
     const packageJson: PackageJson = {
       scripts: {

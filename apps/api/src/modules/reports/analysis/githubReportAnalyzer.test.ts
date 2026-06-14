@@ -54,7 +54,8 @@ describe('GithubReportAnalyzer', () => {
               scripts: {
                 build: 'vite build',
                 lint: 'eslint .',
-                test: 'vitest run',
+                test: 'vitest run --coverage',
+                typecheck: 'tsc --noEmit',
               },
               devDependencies: {
                 '@testing-library/react': '^16.0.0',
@@ -86,12 +87,84 @@ describe('GithubReportAnalyzer', () => {
         });
       }
 
+      if (path === '/repos/owner/repo/contents/') {
+        contentRefs.push(url.searchParams.get('ref'));
+
+        return createGithubJsonResponse([
+          {
+            name: 'src',
+            path: 'src',
+            type: 'dir',
+          },
+          {
+            name: 'package.json',
+            path: 'package.json',
+            type: 'file',
+          },
+          {
+            name: 'tsconfig.json',
+            path: 'tsconfig.json',
+            type: 'file',
+          },
+        ]);
+      }
+
+      if (path === '/repos/owner/repo/contents/src') {
+        contentRefs.push(url.searchParams.get('ref'));
+
+        return createGithubJsonResponse([
+          {
+            name: 'main.tsx',
+            path: 'src/main.tsx',
+            type: 'file',
+          },
+          {
+            name: 'App.test.tsx',
+            path: 'src/App.test.tsx',
+            type: 'file',
+          },
+        ]);
+      }
+
+      if (path === '/repos/owner/repo/contents/src/main.tsx') {
+        contentRefs.push(url.searchParams.get('ref'));
+
+        return createGithubJsonResponse({
+          content: encodeContent("const App = React.lazy(() => import('./App'));"),
+          encoding: 'base64',
+        });
+      }
+
+      if (path === '/repos/owner/repo/contents/src/App.test.tsx') {
+        contentRefs.push(url.searchParams.get('ref'));
+
+        return createGithubJsonResponse({
+          content: encodeContent("import { render } from '@testing-library/react';"),
+          encoding: 'base64',
+        });
+      }
+
+      if (path === '/repos/owner/repo/contents/tsconfig.json') {
+        contentRefs.push(url.searchParams.get('ref'));
+
+        return createGithubJsonResponse({
+          content: encodeContent(
+            JSON.stringify({
+              compilerOptions: {
+                noUncheckedIndexedAccess: true,
+                strict: true,
+              },
+            }),
+          ),
+          encoding: 'base64',
+        });
+      }
+
       if (
         [
           '/repos/owner/repo/contents/.env.example',
           '/repos/owner/repo/contents/.github/workflows',
           '/repos/owner/repo/contents/package-lock.json',
-          '/repos/owner/repo/contents/tsconfig.json',
         ].includes(path)
       ) {
         contentRefs.push(url.searchParams.get('ref'));
