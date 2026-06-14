@@ -159,6 +159,7 @@ export const localizeProjectReport = (
         ...recommendation,
         title: translation?.title ?? recommendation.title,
         description: translation?.description ?? recommendation.description,
+        action: translation?.action ?? recommendation.action,
       };
     }),
     scoreBreakdown: report.scoreBreakdown.map((metric) => {

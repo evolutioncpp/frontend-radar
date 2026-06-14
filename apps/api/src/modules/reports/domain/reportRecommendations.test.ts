@@ -296,10 +296,17 @@ describe('buildRecommendations', () => {
     );
 
     expect(recommendations.map((recommendation) => recommendation.id).slice(0, 3)).toEqual([
-      'add-github-actions',
       'add-test-script',
       'add-build-script',
+      'add-github-actions',
     ]);
+    expect(recommendations[0]).toMatchObject({
+      categories: ['testing'],
+      checkIds: ['test-script'],
+      effort: 'small',
+      impactLevel: 'key',
+      action: expect.any(String),
+    });
     expect(recommendations.map((recommendation) => recommendation.severity)).toEqual([
       'high',
       'high',

@@ -325,7 +325,34 @@
     "counter_one": "{{count}} recommendation",
     "counter_other": "{{count}} recommendations",
     "listAria": "Recommendations list",
-    "empty": "No recommendations for now."
+    "groupListAria": "{{group}} recommendations",
+    "empty": "No recommendations for now.",
+    "source": "Source: {{source}}",
+    "groups": {
+      "first": "High priority",
+      "next": "Medium priority",
+      "later": "Low priority"
+    },
+    "impact": {
+      "key": "Key impact",
+      "important": "Important",
+      "supporting": "Supporting"
+    },
+    "effort": {
+      "small": "Small effort",
+      "medium": "Medium effort",
+      "large": "Large effort"
+    },
+    "categories": {
+      "accessibility": "Accessibility",
+      "ci": "CI/CD",
+      "dependencies": "Dependencies",
+      "documentation": "Documentation",
+      "maintainability": "Maintainability",
+      "performance": "Performance",
+      "security": "Security",
+      "testing": "Testing"
+    }
   },
   "comparison": {
     "label": "Comparison",

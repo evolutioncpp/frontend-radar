@@ -71,6 +71,7 @@ export const scoringCheckScopes = ['project', 'root', 'workspace', 'repository',
 export const scoringCheckConfidences = ['high', 'medium', 'low'] as const;
 export const scoreImpactLevels = ['key', 'important', 'supporting'] as const;
 export const recommendationSeverities = ['low', 'medium', 'high'] as const;
+export const recommendationEfforts = ['small', 'medium', 'large'] as const;
 export const analysisSourceKinds = [
   'github_api',
   'file',
@@ -281,8 +282,14 @@ export const reportCheckSchema = z.object({
 export const reportRecommendationSchema = z.object({
   id: z.string(),
   severity: z.enum(recommendationSeverities),
+  categories: z.array(scoreCategorySchema).min(1),
+  checkIds: z.array(z.string()),
+  impactLevel: z.enum(scoreImpactLevels),
+  effort: z.enum(recommendationEfforts),
   title: z.string(),
   description: z.string(),
+  action: z.string(),
+  source: z.string().optional(),
 });
 
 export const projectReportSchema = z.object({

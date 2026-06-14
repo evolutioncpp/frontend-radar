@@ -1815,6 +1815,22 @@ describe('reports routes', () => {
 
   it('returns comparison between current and previous completed reports', async () => {
     const repository = new InMemoryReportAnalysisRepository();
+    const createRecommendation = (
+      overrides: Partial<ProjectReport['recommendations'][number]> & {
+        id: string;
+      },
+    ): ProjectReport['recommendations'][number] => ({
+      severity: 'medium',
+      categories: ['maintainability'],
+      checkIds: [],
+      impactLevel: 'important',
+      effort: 'small',
+      title: 'Recommendation title',
+      description: 'Recommendation description.',
+      action: 'Recommendation action.',
+      ...overrides,
+      id: overrides.id,
+    });
     const createComparisonReport = (
       id: string,
       options: {
@@ -1858,18 +1874,25 @@ describe('reports routes', () => {
       createComparisonReport(previousAnalysis.id, {
         checkStatus: 'failed',
         recommendations: [
-          {
+          createRecommendation({
             id: 'add-test-script',
             severity: 'high',
+            categories: ['testing'],
+            checkIds: ['test-script'],
+            impactLevel: 'key',
             title: 'Add an automated test script',
             description: 'Expose a test script.',
-          },
-          {
+            action: 'Add a test script.',
+          }),
+          createRecommendation({
             id: 'add-a11y-tooling',
             severity: 'medium',
+            categories: ['accessibility'],
+            checkIds: ['a11y-tooling'],
             title: 'Add accessibility checks',
             description: 'Add accessibility tooling.',
-          },
+            action: 'Add accessibility tooling.',
+          }),
         ],
         score: 60,
       }),
@@ -1890,18 +1913,25 @@ describe('reports routes', () => {
       createComparisonReport(currentAnalysis.id, {
         checkStatus: 'passed',
         recommendations: [
-          {
+          createRecommendation({
             id: 'add-a11y-tooling',
             severity: 'medium',
+            categories: ['accessibility'],
+            checkIds: ['a11y-tooling'],
             title: 'Add accessibility checks',
             description: 'Add accessibility tooling.',
-          },
-          {
+            action: 'Add accessibility tooling.',
+          }),
+          createRecommendation({
             id: 'add-env-example',
             severity: 'low',
+            categories: ['documentation', 'security'],
+            checkIds: ['env-example', 'security-env-documentation'],
+            impactLevel: 'supporting',
             title: 'Document environment variables',
             description: 'Add an .env.example file.',
-          },
+            action: 'Add an .env.example file.',
+          }),
         ],
         score: 90,
       }),

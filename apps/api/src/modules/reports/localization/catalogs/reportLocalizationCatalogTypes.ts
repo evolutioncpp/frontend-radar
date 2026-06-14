@@ -40,7 +40,7 @@ export type ReportLocalizationCatalog = {
     }
   >;
   toolingNotDetected: string;
-  recommendations: Record<string, { title: string; description: string }>;
+  recommendations: Record<string, { title: string; description: string; action: string }>;
   reportNotFound: string;
   reportRefreshUnavailable: string;
 };

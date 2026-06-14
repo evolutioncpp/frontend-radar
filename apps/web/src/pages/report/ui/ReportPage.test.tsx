@@ -730,8 +730,13 @@ describe('ReportPage', () => {
             {
               id: 'add-test-script',
               severity: 'high',
+              categories: ['testing'],
+              checkIds: ['test-script'],
+              impactLevel: 'key',
+              effort: 'small',
               title: 'Add an automated test script',
               description: 'Expose a test script.',
+              action: 'Add a package.json test script.',
             },
           ],
           persistentCount: 1,

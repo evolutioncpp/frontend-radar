@@ -1,7 +1,5 @@
 @use 'app/styles/helpers' as *;
 
-$recommendation-severity-width: 6.75rem;
-
 .recommendationsPanel {
   display: grid;
   gap: $space-5;
@@ -14,18 +12,38 @@ $recommendation-severity-width: 6.75rem;
   white-space: nowrap;
 }
 
+.groups {
+  display: grid;
+  gap: $space-5;
+  border-top: 1px solid var(--color-border-secondary);
+}
+
+.group {
+  display: grid;
+  min-width: 0;
+  padding-top: $space-4;
+}
+
+.groupTitle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0;
+  line-height: $line-height-sm;
+  text-transform: uppercase;
+}
+
 .list {
   display: grid;
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid var(--color-border-secondary);
 }
 
 .item {
   display: grid;
-  grid-template-columns: $recommendation-severity-width minmax(0, 1fr);
-  gap: $space-4;
+  gap: $space-3;
   padding: $space-4 0;
 
   &:not(:last-child) {
@@ -33,9 +51,10 @@ $recommendation-severity-width: 6.75rem;
   }
 }
 
-.severity {
-  align-self: flex-start;
-  width: $recommendation-severity-width;
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
 }
 
 .content {
@@ -52,11 +71,44 @@ $recommendation-severity-width: 6.75rem;
   line-height: $line-height-sm;
 }
 
+.action {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: $font-size-sm;
+  line-height: $line-height-md;
+}
+
 .description {
   margin: 0;
   color: var(--color-text-muted);
   font-size: $font-size-sm;
   line-height: $line-height-md;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $space-2;
+  min-width: 0;
+}
+
+.category,
+.source {
+  max-width: 100%;
+  color: var(--color-text-muted);
+  font-size: $font-size-xs;
+  line-height: $line-height-sm;
+}
+
+.category {
+  padding: $space-1 $space-2;
+  border: 1px solid var(--color-border-secondary);
+  border-radius: $radius-sm;
+}
+
+.source {
+  overflow-wrap: anywhere;
 }
 
 .emptyState {
@@ -69,12 +121,7 @@ $recommendation-severity-width: 6.75rem;
 }
 
 @include media-max($breakpoint-sm) {
-  .item {
-    grid-template-columns: 1fr;
-    gap: $space-2;
-  }
-
-  .severity {
-    width: auto;
+  .badges {
+    gap: $space-1;
   }
 }

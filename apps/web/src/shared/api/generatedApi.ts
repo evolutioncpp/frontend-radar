@@ -196,14 +196,44 @@ export type GetReportComparisonApiResponse =
         added: {
           id: string;
           severity: 'low' | 'medium' | 'high';
+          categories: (
+            | 'documentation'
+            | 'testing'
+            | 'ci'
+            | 'dependencies'
+            | 'security'
+            | 'maintainability'
+            | 'performance'
+            | 'accessibility'
+          )[];
+          checkIds: string[];
+          impactLevel: 'key' | 'important' | 'supporting';
+          effort: 'small' | 'medium' | 'large';
           title: string;
           description: string;
+          action: string;
+          source?: string;
         }[];
         resolved: {
           id: string;
           severity: 'low' | 'medium' | 'high';
+          categories: (
+            | 'documentation'
+            | 'testing'
+            | 'ci'
+            | 'dependencies'
+            | 'security'
+            | 'maintainability'
+            | 'performance'
+            | 'accessibility'
+          )[];
+          checkIds: string[];
+          impactLevel: 'key' | 'important' | 'supporting';
+          effort: 'small' | 'medium' | 'large';
           title: string;
           description: string;
+          action: string;
+          source?: string;
         }[];
         persistentCount: number;
       };
@@ -646,8 +676,23 @@ export type GetReportAnalysisApiResponse =
         recommendations: {
           id: string;
           severity: 'low' | 'medium' | 'high';
+          categories: (
+            | 'documentation'
+            | 'testing'
+            | 'ci'
+            | 'dependencies'
+            | 'security'
+            | 'maintainability'
+            | 'performance'
+            | 'accessibility'
+          )[];
+          checkIds: string[];
+          impactLevel: 'key' | 'important' | 'supporting';
+          effort: 'small' | 'medium' | 'large';
           title: string;
           description: string;
+          action: string;
+          source?: string;
         }[];
         createdAt: string;
       };

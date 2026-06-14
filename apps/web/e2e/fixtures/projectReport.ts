@@ -94,8 +94,13 @@ export const createE2eProjectReport = (): ProjectReport => ({
     {
       id: 'add-ci',
       severity: 'medium',
+      categories: ['ci'],
+      checkIds: ['github-actions'],
+      impactLevel: 'important',
+      effort: 'medium',
       title: 'Add CI',
       description: 'Run automated checks for each change.',
+      action: 'Create a GitHub Actions workflow for pull requests.',
     },
   ],
 });

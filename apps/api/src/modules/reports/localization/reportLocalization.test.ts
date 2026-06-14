@@ -6,6 +6,7 @@ import {
   reportAnalysisSourceIds,
   reportProjectDetectionSignalIds,
 } from '../domain/reportSignalContracts.js';
+import { reportRecommendationIds } from '../domain/reportRecommendations.js';
 import { reportScoreCheckIds } from '../scoring/reportScoreCheckIds.js';
 
 import type { ProjectReport } from '../domain/reportSchemas.js';
@@ -21,6 +22,23 @@ const emptyTooling: ProjectReport['tooling'] = {
   typing: [],
   uiReview: [],
 };
+
+const createRecommendation = (
+  overrides: Partial<ProjectReport['recommendations'][number]> & {
+    id: string;
+  },
+): ProjectReport['recommendations'][number] => ({
+  severity: 'medium',
+  categories: ['maintainability'],
+  checkIds: [],
+  impactLevel: 'important',
+  effort: 'small',
+  title: 'Recommendation title',
+  description: 'Recommendation description.',
+  action: 'Recommendation action.',
+  ...overrides,
+  id: overrides.id,
+});
 
 const createReport = (recommendations: ProjectReport['recommendations']): ProjectReport => ({
   analysisSources: [],
@@ -63,16 +81,18 @@ const createReport = (recommendations: ProjectReport['recommendations']): Projec
 });
 
 describe('localizeProjectReport', () => {
-  it('localizes new recommendation ids', () => {
+  it('localizes recommendation title, description and action', () => {
     const localizedReport = localizeProjectReport(
       createReport([
-        {
+        createRecommendation({
           description:
             'Add eslint-plugin-jsx-a11y, axe-core or similar tooling so accessibility regressions are easier to catch.',
           id: 'add-a11y-tooling',
           severity: 'medium',
           title: 'Add accessibility checks',
-        },
+          action:
+            'Add accessibility linting or test tooling and wire it into regular frontend checks.',
+        }),
       ]),
       'ru',
     );
@@ -81,6 +101,8 @@ describe('localizeProjectReport', () => {
       description:
         'Добавьте eslint-plugin-jsx-a11y, axe-core или похожий инструмент, чтобы раньше находить регрессии доступности.',
       title: 'Добавить проверки доступности',
+      action:
+        'Подключите accessibility linting или тестовый инструмент к регулярным frontend-проверкам.',
     });
   });
 
@@ -130,12 +152,13 @@ describe('localizeProjectReport', () => {
 
   it('localizes new CI and dependency analysis details without mojibake', () => {
     const report = createReport([
-      {
+      createRecommendation({
         description: 'Add a build step so the selected frontend project is compiled in CI.',
         id: 'add-ci-build-step',
         severity: 'high',
         title: 'Run production build in CI',
-      },
+        action: 'Add a production build step to the workflow for the selected frontend package.',
+      }),
     ]);
     report.analysisSources = [
       {
@@ -152,7 +175,6 @@ describe('localizeProjectReport', () => {
       {
         category: 'ci',
         description: 'Automated delivery checks from GitHub Actions and build scripts.',
-
         label: 'CI/CD',
         maxValue: 100,
         status: 'warning',
@@ -207,8 +229,9 @@ describe('localizeProjectReport', () => {
       label: 'Package lockfile',
     });
     expect(localizedReport.recommendations[0]).toMatchObject({
-      description: 'Добавьте build step, чтобы выбранный frontend-проект проверялся в CI.',
-      title: 'Запустить production build в CI',
+      description: 'Добавьте build step, чтобы выбранный frontend-проект компилировался в CI.',
+      title: 'Запускать production build в CI',
+      action: 'Добавьте production build step в workflow для выбранного frontend-пакета.',
     });
   });
 
@@ -263,6 +286,18 @@ describe('localizeProjectReport', () => {
 
       for (const id of reportProjectDetectionSignalIds) {
         expect(catalog.projectDetection[id]?.label).toBeTruthy();
+      }
+    }
+  });
+
+  it('contains English and Russian localization for every recommendation id', () => {
+    for (const language of ['en', 'ru'] as const) {
+      const catalog = getCatalog(language);
+
+      for (const id of reportRecommendationIds) {
+        expect(catalog.recommendations[id]?.title).toBeTruthy();
+        expect(catalog.recommendations[id]?.description).toBeTruthy();
+        expect(catalog.recommendations[id]?.action).toBeTruthy();
       }
     }
   });

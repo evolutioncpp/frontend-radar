@@ -44,5 +44,5 @@ test('opens completed report page', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /evolutioncpp\/frontend-radar/i })).toBeVisible();
   await expect(page.getByText(/Frontend Health Score/i)).toBeVisible();
   await expect(page.getByLabel('Score breakdown')).toBeVisible();
-  await expect(page.getByLabel('Recommendations list')).toBeVisible();
+  await expect(page.getByLabel('Medium priority recommendations')).toBeVisible();
 });

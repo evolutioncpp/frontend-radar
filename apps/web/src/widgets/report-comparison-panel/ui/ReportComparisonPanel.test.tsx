@@ -6,6 +6,24 @@ import { ReportComparisonUnavailablePanel } from './ReportComparisonUnavailableP
 
 import type { GetReportComparisonApiResponse } from '@/entities/report';
 
+type AvailableComparison = Extract<GetReportComparisonApiResponse, { status: 'available' }>;
+type ComparisonRecommendation = AvailableComparison['recommendations']['added'][number];
+
+const createComparisonRecommendation = (
+  overrides: Partial<ComparisonRecommendation> & Pick<ComparisonRecommendation, 'id'>,
+): ComparisonRecommendation => ({
+  severity: 'medium',
+  categories: ['ci'],
+  checkIds: [],
+  impactLevel: 'important',
+  effort: 'small',
+  title: 'Recommendation title',
+  description: 'Recommendation description.',
+  action: 'Recommendation action.',
+  ...overrides,
+  id: overrides.id,
+});
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: Record<string, string | number>) => {
@@ -82,7 +100,7 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-const comparison: Extract<GetReportComparisonApiResponse, { status: 'available' }> = {
+const comparison: AvailableComparison = {
   status: 'available',
   currentReportId: 'current-id',
   previousReportId: 'previous-id',
@@ -136,20 +154,30 @@ const comparison: Extract<GetReportComparisonApiResponse, { status: 'available' 
   ],
   recommendations: {
     added: [
-      {
+      createComparisonRecommendation({
         id: 'restore-ci',
         severity: 'high',
+        categories: ['ci'],
+        checkIds: ['github-actions'],
+        impactLevel: 'key',
+        effort: 'medium',
         title: 'Restore CI workflows',
         description: 'Bring CI coverage back.',
-      },
+        action: 'Create a GitHub Actions workflow.',
+      }),
     ],
     resolved: [
-      {
+      createComparisonRecommendation({
         id: 'add-test-script',
         severity: 'high',
+        categories: ['testing'],
+        checkIds: ['test-script'],
+        impactLevel: 'key',
+        effort: 'small',
         title: 'Add an automated test script',
         description: 'Expose a test script.',
-      },
+        action: 'Add a package.json test script.',
+      }),
     ],
     persistentCount: 1,
   },

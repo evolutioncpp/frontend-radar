@@ -335,7 +335,34 @@
     "counter_many": "{{count}} рекомендаций",
     "counter_other": "{{count}} рекомендации",
     "listAria": "Список рекомендаций",
-    "empty": "Пока рекомендаций нет."
+    "groupListAria": "{{group}}: рекомендации",
+    "empty": "Пока рекомендаций нет.",
+    "source": "Источник: {{source}}",
+    "groups": {
+      "first": "Высокий приоритет",
+      "next": "Средний приоритет",
+      "later": "Низкий приоритет"
+    },
+    "impact": {
+      "key": "Ключевое влияние",
+      "important": "Важно",
+      "supporting": "Поддерживает"
+    },
+    "effort": {
+      "small": "Быстро",
+      "medium": "Средняя задача",
+      "large": "Крупная задача"
+    },
+    "categories": {
+      "accessibility": "Доступность",
+      "ci": "CI/CD",
+      "dependencies": "Зависимости",
+      "documentation": "Документация",
+      "maintainability": "Поддерживаемость",
+      "performance": "Производительность",
+      "security": "Безопасность",
+      "testing": "Тестирование"
+    }
   },
   "comparison": {
     "label": "Сравнение",

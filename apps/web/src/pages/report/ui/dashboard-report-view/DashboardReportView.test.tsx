@@ -114,7 +114,18 @@ vi.mock('react-i18next', () => ({
         'recommendations.label': 'Next steps',
         'recommendations.title': 'Recommendations',
         'recommendations.listAria': 'Recommendations list',
+        'recommendations.groupListAria': `${options?.group} recommendations`,
         'recommendations.empty': 'No recommendations for now.',
+        'recommendations.groups.first': 'High priority',
+        'recommendations.groups.next': 'Medium priority',
+        'recommendations.groups.later': 'Low priority',
+        'recommendations.impact.key': 'Key impact',
+        'recommendations.impact.important': 'Important',
+        'recommendations.impact.supporting': 'Supporting',
+        'recommendations.effort.small': 'Small effort',
+        'recommendations.effort.medium': 'Medium effort',
+        'recommendations.effort.large': 'Large effort',
+        'recommendations.categories.testing': 'Testing',
 
         'statuses.excellent': 'Excellent',
         'statuses.good': 'Good',
@@ -192,6 +203,10 @@ vi.mock('react-i18next', () => ({
 
       if (key === 'recommendations.counter') {
         return `${options?.count} ${options?.count === 1 ? 'recommendation' : 'recommendations'}`;
+      }
+
+      if (key === 'recommendations.source') {
+        return `Source: ${options?.source}`;
       }
 
       if (key === 'metrics.scoreAria') {
@@ -273,8 +288,13 @@ const customReport: ProjectReport = {
     {
       id: 'custom-recommendation',
       severity: 'high',
+      categories: ['testing'],
+      checkIds: ['test-script'],
+      impactLevel: 'key',
+      effort: 'small',
       title: 'Custom recommendation title',
       description: 'Custom recommendation description',
+      action: 'Custom recommendation action',
     },
   ],
   tooling: {
