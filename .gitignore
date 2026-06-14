@@ -19,6 +19,14 @@ build
 .env
 .env.*
 !.env.example
+.npmrc
+
+# Private keys / certificates
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
 
 # Local config
 *.local
