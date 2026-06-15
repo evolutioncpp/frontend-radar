@@ -1,4 +1,4 @@
-import type { ProjectReport } from '../../src/entities/report';
+import type { ListReportAnalysesApiResponse, ProjectReport } from '../../src/entities/report';
 
 const emptyTooling: ProjectReport['tooling'] = {
   packageManager: [],
@@ -101,6 +101,47 @@ export const createE2eProjectReport = (): ProjectReport => ({
       title: 'Add CI',
       description: 'Run automated checks for each change.',
       action: 'Create a GitHub Actions workflow for pull requests.',
+    },
+  ],
+});
+
+export const createE2eHistoryResponse = (): ListReportAnalysesApiResponse => ({
+  items: [
+    {
+      id: 'analysis-id',
+      owner: 'evolutioncpp',
+      repository: 'frontend-radar',
+      normalizedUrl: 'https://github.com/evolutioncpp/frontend-radar',
+      branch: 'main',
+      projectPath: 'apps/web',
+      status: 'completed',
+      latestCommitDate: '2026-06-10T00:00:00.000Z',
+      latestCommitSha: 'abc123',
+      latestCommitTitle: 'Add report fixtures',
+      createdAt: '2026-06-10T00:00:00.000Z',
+      updatedAt: '2026-06-10T00:00:00.000Z',
+      score: 82,
+      metricsCount: 1,
+      checksCount: 1,
+      recommendationsCount: 1,
+    },
+    {
+      id: 'previous-analysis-id',
+      owner: 'evolutioncpp',
+      repository: 'frontend-radar',
+      normalizedUrl: 'https://github.com/evolutioncpp/frontend-radar',
+      branch: 'main',
+      projectPath: 'apps/web',
+      status: 'completed',
+      latestCommitDate: '2026-06-09T00:00:00.000Z',
+      latestCommitSha: 'def456',
+      latestCommitTitle: 'Initial report fixtures',
+      createdAt: '2026-06-09T00:00:00.000Z',
+      updatedAt: '2026-06-09T00:00:00.000Z',
+      score: 76,
+      metricsCount: 1,
+      checksCount: 1,
+      recommendationsCount: 2,
     },
   ],
 });

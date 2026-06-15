@@ -34,7 +34,6 @@ export default defineConfig({
       exclude: [
         'dist/**',
         'coverage/**',
-        'storybook-static/**',
         'playwright-report/**',
         'test-results/**',
         'e2e/**',

@@ -28,7 +28,7 @@ Frontend Radar analyzes frontend repositories and turns repository signals into 
 
 - React 19, Vite, Redux Toolkit and RTK Query
 - Fastify, Zod, Prisma and PostgreSQL
-- Vitest, Playwright and Storybook
+- Vitest and Playwright
 - Docker Compose for the local database
 
 ## Requirements
