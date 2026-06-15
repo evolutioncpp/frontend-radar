@@ -8,6 +8,57 @@ import {
 import type { RepositorySignals } from '../../domain/reportSignalContracts.js';
 import type { ScoringCheck } from '../reportScoringEngine.js';
 
+const getReadmePresenceCheck = (signals: RepositorySignals): ScoringCheck => {
+  const max = 45;
+
+  if (!signals.readme.exists) {
+    return createCheck({
+      description: 'README file was not found.',
+      earned: 0,
+      id: 'readme',
+      label: 'README',
+      max,
+      scope: 'project',
+      severity: 'critical',
+      source: signals.readme.path ?? 'README',
+      status: 'failed',
+      confidence: 'high',
+    });
+  }
+
+  if (
+    signals.readme.scope === 'root' &&
+    signals.isNestedProject &&
+    !signals.readme.projectRelevance.found
+  ) {
+    return createCheck({
+      description:
+        'Root README was found, but it does not clearly document the selected frontend path.',
+      earned: 20,
+      id: 'readme',
+      label: 'README',
+      max,
+      scope: 'root',
+      severity: 'critical',
+      source: signals.readme.path ?? 'README',
+      status: 'partial',
+      confidence: 'medium',
+    });
+  }
+
+  return createCheck({
+    earned: max,
+    id: 'readme',
+    label: 'README',
+    max,
+    scope: getScope(signals.readme.scope, 'project'),
+    severity: 'critical',
+    source: signals.readme.path ?? 'README',
+    status: 'passed',
+    confidence: signals.readme.scope === 'root' && signals.isNestedProject ? 'medium' : 'high',
+  });
+};
+
 const getReadmeQualityCheck = (signals: RepositorySignals): ScoringCheck => {
   if (!signals.readme.exists) {
     return createCheck({
@@ -52,17 +103,7 @@ export const buildDocumentationScore = (signals: RepositorySignals) =>
     label: 'Documentation',
     description: 'README and environment documentation signals found in the repository.',
     checks: [
-      createPathCheck({
-        id: 'readme',
-        label: 'README',
-        max: 45,
-        missingDescription: 'README file was not found.',
-        partialDescription: 'Only a root README was found for this nested frontend project.',
-        partialEarned: 20,
-        severity: 'critical',
-        signal: signals.readme,
-        signals,
-      }),
+      getReadmePresenceCheck(signals),
       getReadmeQualityCheck(signals),
       createPathCheck({
         id: 'env-example',

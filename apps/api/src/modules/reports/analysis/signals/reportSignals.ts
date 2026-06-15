@@ -9,6 +9,7 @@ import {
   getDependencySourceMap,
   getWorkspaceMatch,
 } from './reportSignalPackage.js';
+import { getReadmeProjectRelevance } from './reportReadmeRelevance.js';
 import { createPathSignal, getPrimaryLockfile, hasTextPattern } from './reportSignalPaths.js';
 import { collectRepositoryBaseSignals } from './reportSignalBaseCollector.js';
 import { collectSourceQualitySignals } from './reportSignalSourceAnalysis.js';
@@ -180,6 +181,16 @@ export const collectRepositorySignals = async ({
         ? baseSignals.readmeFile.content.length >= readmeQualityConfig.minLength
         : false,
       length: baseSignals.readmeFile?.content.length ?? 0,
+      projectRelevance: baseSignals.readmeFile
+        ? getReadmeProjectRelevance({
+            content: baseSignals.readmeFile.content,
+            packageJson: projectPackageJson,
+            projectPath,
+          })
+        : {
+            found: false,
+            reasons: [],
+          },
     },
     rootPackageJson: createPackageJsonSignal({
       dependencies: rootDependencyNames,

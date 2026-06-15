@@ -125,6 +125,10 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     isSubstantial: false,
     length: 0,
     path: null,
+    projectRelevance: {
+      found: false,
+      reasons: [],
+    },
   },
   rootPackageJson: {
     dependencies: [],
@@ -495,6 +499,96 @@ describe('buildScoreBreakdown', () => {
       status: 'critical',
       value: 0,
     });
+  });
+
+  it('fully credits relevant root README for a nested frontend project', () => {
+    const metric = getMetric(
+      createSignals({
+        envExample: {
+          exists: true,
+          path: 'apps/web/.env.example',
+          scope: 'project',
+        },
+        isNestedProject: true,
+        projectPath: 'apps/web',
+        readme: {
+          exists: true,
+          hasInstallSection: true,
+          hasUsageSection: true,
+          isSubstantial: true,
+          length: 1_200,
+          path: 'README.md',
+          projectRelevance: {
+            found: true,
+            reasons: ['project-path'],
+          },
+          scope: 'root',
+        },
+      }),
+      'documentation',
+    );
+
+    expect(metric).toMatchObject({
+      status: 'excellent',
+      value: 100,
+    });
+    expect(metric.scoreDetails.cap).toBeUndefined();
+    expect(metric.scoreDetails.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          confidence: 'medium',
+          earned: 45,
+          id: 'readme',
+          scope: 'root',
+          status: 'passed',
+        }),
+      ]),
+    );
+  });
+
+  it('keeps unrelated root README partial for a nested frontend project', () => {
+    const metric = getMetric(
+      createSignals({
+        envExample: {
+          exists: true,
+          path: 'apps/web/.env.example',
+          scope: 'project',
+        },
+        isNestedProject: true,
+        projectPath: 'apps/web',
+        readme: {
+          exists: true,
+          hasInstallSection: true,
+          hasUsageSection: true,
+          isSubstantial: true,
+          length: 1_200,
+          path: 'README.md',
+          projectRelevance: {
+            found: false,
+            reasons: [],
+          },
+          scope: 'root',
+        },
+      }),
+      'documentation',
+    );
+
+    expect(metric).toMatchObject({
+      status: 'good',
+      value: 75,
+    });
+    expect(metric.scoreDetails.cap).toMatchObject({
+      value: 89,
+    });
+    expect(metric.scoreDetails.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          earned: 20,
+          id: 'readme',
+          status: 'partial',
+        }),
+      ]),
+    );
   });
 
   it('scores CI as zero when GitHub Actions workflows are missing', () => {

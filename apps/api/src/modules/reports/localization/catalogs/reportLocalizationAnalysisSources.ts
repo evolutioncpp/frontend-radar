@@ -26,7 +26,8 @@ const en = {
     label: 'README',
     descriptions: {
       found: 'README was found for the selected project.',
-      warning: 'Only root-level README or incomplete README was found.',
+      warning:
+        'Root README was found, but it does not clearly document the selected frontend path.',
       missing: 'README file was not found.',
     },
   },
@@ -306,7 +307,7 @@ const ru = {
     label: 'README',
     descriptions: {
       found: 'README найден для выбранного проекта.',
-      warning: 'Найден только корневой README или неполный README.',
+      warning: 'README найден в корне, но не ясно, что он описывает выбранный frontend-путь.',
       missing: 'README не найден.',
     },
   },

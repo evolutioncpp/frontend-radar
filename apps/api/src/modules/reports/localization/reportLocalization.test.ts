@@ -276,6 +276,83 @@ describe('localizeProjectReport', () => {
     }
   });
 
+  it('keeps README presence and README quality warning descriptions distinct', () => {
+    const report = createReport([]);
+    report.scoreBreakdown = [
+      {
+        category: 'documentation',
+        description: 'Documentation signals.',
+        label: 'Documentation',
+        maxValue: 100,
+        status: 'good',
+        value: 75,
+        scoreDetails: {
+          rawValue: 75,
+          finalValue: 75,
+          weight: 6,
+          impactLevel: 'supporting',
+          checks: [
+            {
+              confidence: 'medium',
+              description:
+                'Root README was found, but it does not clearly document the selected frontend path.',
+              earned: 20,
+              id: 'readme',
+              label: 'README',
+              max: 45,
+              scope: 'root',
+              severity: 'critical',
+              source: 'README.md',
+              status: 'partial',
+            },
+            {
+              confidence: 'high',
+              description: 'README was found, but it is short or misses setup and usage details.',
+              earned: 10,
+              id: 'readme-quality',
+              label: 'README quality',
+              max: 35,
+              scope: 'root',
+              severity: 'major',
+              source: 'README.md',
+              status: 'partial',
+            },
+          ],
+        },
+      },
+    ];
+
+    const englishReport = localizeProjectReport(report, 'en');
+    const russianReport = localizeProjectReport(report, 'ru');
+
+    expect(englishReport.scoreBreakdown[0]?.scoreDetails.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'readme',
+          description:
+            'Root README exists, but it does not clearly document the selected frontend path.',
+        }),
+        expect.objectContaining({
+          id: 'readme-quality',
+          description: 'README was found, but it is short or misses setup and usage details.',
+        }),
+      ]),
+    );
+    expect(russianReport.scoreBreakdown[0]?.scoreDetails.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'readme',
+          description:
+            'README найден в корне, но не ясно, что он описывает выбранный frontend-путь.',
+        }),
+        expect.objectContaining({
+          id: 'readme-quality',
+          description: 'README найден, но он короткий или без деталей установки и использования.',
+        }),
+      ]),
+    );
+  });
+
   it('contains English and Russian localization for every source and project detection id', () => {
     for (const language of ['en', 'ru'] as const) {
       const catalog = getCatalog(language);

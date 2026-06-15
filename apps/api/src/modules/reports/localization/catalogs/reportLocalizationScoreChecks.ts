@@ -204,7 +204,7 @@ export const reportLocalizationScoreChecks = {
       descriptions: {
         found: 'README file was found.',
         missing: 'README file was not found.',
-        warning: 'README was found, but it is short or misses setup and usage details.',
+        warning: 'Root README exists, but it does not clearly document the selected frontend path.',
       },
     },
     'readme-quality': {
@@ -488,7 +488,7 @@ export const reportLocalizationScoreChecks = {
       descriptions: {
         found: 'README-файл найден.',
         missing: 'README-файл не найден.',
-        warning: 'README-файл найден, но он короткий или без деталей установки и использования.',
+        warning: 'README найден в корне, но не ясно, что он описывает выбранный frontend-путь.',
       },
     },
     'readme-quality': {

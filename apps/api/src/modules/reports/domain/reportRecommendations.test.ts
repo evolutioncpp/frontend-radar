@@ -111,6 +111,10 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     isSubstantial: true,
     length: 900,
     path: 'README.md',
+    projectRelevance: {
+      found: false,
+      reasons: [],
+    },
   },
   rootPackageJson: {
     dependencies: ['@testing-library/react', 'eslint-plugin-jsx-a11y', 'typescript', 'vite'],
@@ -252,6 +256,10 @@ describe('buildRecommendations', () => {
           isSubstantial: false,
           length: 0,
           path: null,
+          projectRelevance: {
+            found: false,
+            reasons: [],
+          },
         },
       }),
       ['documentation'],
@@ -289,6 +297,10 @@ describe('buildRecommendations', () => {
           isSubstantial: false,
           length: 0,
           path: null,
+          projectRelevance: {
+            found: false,
+            reasons: [],
+          },
         },
         storybook: createToolSignal(),
         typescript: createToolSignal(),
@@ -336,6 +348,10 @@ describe('buildRecommendations', () => {
           isSubstantial: false,
           length: 120,
           path: 'README.md',
+          projectRelevance: {
+            found: false,
+            reasons: [],
+          },
         },
         storybook: createToolSignal(),
         testingLibrary: createToolSignal(),

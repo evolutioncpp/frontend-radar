@@ -228,6 +228,10 @@ export interface RepositorySignals {
     hasUsageSection: boolean;
     isSubstantial: boolean;
     length: number;
+    projectRelevance: {
+      found: boolean;
+      reasons: string[];
+    };
   };
   rootPackageJson: PackageJsonSignal;
   security: SecuritySignals;

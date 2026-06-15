@@ -132,6 +132,10 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     isSubstantial: false,
     length: 0,
     path: null,
+    projectRelevance: {
+      found: false,
+      reasons: [],
+    },
   },
   rootPackageJson: {
     dependencies: [],
@@ -306,6 +310,37 @@ describe('buildReportAnalysisSources', () => {
           kind: 'file',
           scope: 'project',
           source: 'apps/web/vite.config.ts',
+          status: 'found',
+        }),
+      ]),
+    );
+  });
+
+  it('marks root README as found when it clearly documents the selected frontend path', () => {
+    const sources = buildReportAnalysisSources(
+      createSignals({
+        readme: {
+          exists: true,
+          hasInstallSection: true,
+          hasUsageSection: true,
+          isSubstantial: true,
+          length: 1_200,
+          path: 'README.md',
+          projectRelevance: {
+            found: true,
+            reasons: ['project-path'],
+          },
+          scope: 'root',
+        },
+      }),
+    );
+
+    expect(sources).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'readme',
+          scope: 'root',
+          source: 'README.md',
           status: 'found',
         }),
       ]),

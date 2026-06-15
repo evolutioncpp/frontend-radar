@@ -87,6 +87,10 @@ describe('collectRepositorySignals', () => {
       hasUsageSection: true,
       isSubstantial: true,
       path: 'README.md',
+      projectRelevance: {
+        found: false,
+        reasons: [],
+      },
     });
     expect(signals.packageJson.scripts.test).toMatchObject({
       exists: true,
@@ -241,6 +245,180 @@ describe('collectRepositorySignals', () => {
     expect(signals.lockfile).toMatchObject({
       exists: true,
       path: 'package-lock.json',
+    });
+  });
+
+  it('marks a root README as relevant when it mentions the selected project path', async () => {
+    const packageJson: PackageJson = {
+      scripts: {},
+    };
+    const reader = {
+      findFirstPath: async () => null,
+      findExistingPaths: async () => [],
+      listDirectoryFiles: async () => [],
+      readTextFile: async () => null,
+      readFirstTextFile: async (
+        _owner: string,
+        _repository: string,
+        _branch: string,
+        paths: readonly string[],
+      ) => {
+        if (paths.includes('README.md')) {
+          return {
+            content: `${createSubstantialReadme()}\nProject files live in apps/web.`,
+            path: 'README.md',
+          };
+        }
+
+        return null;
+      },
+    } as unknown as ReportRepositoryReader;
+
+    const signals = await collectRepositorySignals({
+      branch: 'main',
+      owner: 'owner',
+      packageJson,
+      packageJsonPath: 'apps/web/package.json',
+      projectPath: 'apps/web',
+      reader,
+      repository: 'repo',
+    });
+
+    expect(signals.readme).toMatchObject({
+      path: 'README.md',
+      scope: 'root',
+      projectRelevance: {
+        found: true,
+        reasons: ['project-path'],
+      },
+    });
+  });
+
+  it('marks a root README as relevant when it mentions the selected package name', async () => {
+    const packageJson: PackageJson = {
+      name: '@scope/web',
+      scripts: {},
+    };
+    const reader = {
+      findFirstPath: async () => null,
+      findExistingPaths: async () => [],
+      listDirectoryFiles: async () => [],
+      readTextFile: async () => null,
+      readFirstTextFile: async (
+        _owner: string,
+        _repository: string,
+        _branch: string,
+        paths: readonly string[],
+      ) => {
+        if (paths.includes('README.md')) {
+          return {
+            content: `${createSubstantialReadme()}\nRun commands for @scope/web.`,
+            path: 'README.md',
+          };
+        }
+
+        return null;
+      },
+    } as unknown as ReportRepositoryReader;
+
+    const signals = await collectRepositorySignals({
+      branch: 'main',
+      owner: 'owner',
+      packageJson,
+      packageJsonPath: 'apps/web/package.json',
+      projectPath: 'apps/web',
+      reader,
+      repository: 'repo',
+    });
+
+    expect(signals.readme.projectRelevance).toMatchObject({
+      found: true,
+      reasons: ['package-name'],
+    });
+  });
+
+  it('marks a root README as relevant when it contains a workspace command for the project path', async () => {
+    const packageJson: PackageJson = {
+      scripts: {},
+    };
+    const reader = {
+      findFirstPath: async () => null,
+      findExistingPaths: async () => [],
+      listDirectoryFiles: async () => [],
+      readTextFile: async () => null,
+      readFirstTextFile: async (
+        _owner: string,
+        _repository: string,
+        _branch: string,
+        paths: readonly string[],
+      ) => {
+        if (paths.includes('README.md')) {
+          return {
+            content: `${createSubstantialReadme()}\nnpm run build -w apps/web`,
+            path: 'README.md',
+          };
+        }
+
+        return null;
+      },
+    } as unknown as ReportRepositoryReader;
+
+    const signals = await collectRepositorySignals({
+      branch: 'main',
+      owner: 'owner',
+      packageJson,
+      packageJsonPath: 'apps/web/package.json',
+      projectPath: 'apps/web',
+      reader,
+      repository: 'repo',
+    });
+
+    expect(signals.readme.projectRelevance).toMatchObject({
+      found: true,
+      reasons: ['project-path', 'workspace-command'],
+    });
+  });
+
+  it('keeps a generic root README unrelated to the selected project path', async () => {
+    const packageJson: PackageJson = {
+      name: '@scope/web',
+      scripts: {},
+    };
+    const reader = {
+      findFirstPath: async () => null,
+      findExistingPaths: async () => [],
+      listDirectoryFiles: async () => [],
+      readTextFile: async () => null,
+      readFirstTextFile: async (
+        _owner: string,
+        _repository: string,
+        _branch: string,
+        paths: readonly string[],
+      ) => {
+        if (paths.includes('README.md')) {
+          return {
+            content: `${createSubstantialReadme()}\nThis repository contains several packages.`,
+            path: 'README.md',
+          };
+        }
+
+        return null;
+      },
+    } as unknown as ReportRepositoryReader;
+
+    const signals = await collectRepositorySignals({
+      branch: 'main',
+      owner: 'owner',
+      packageJson,
+      packageJsonPath: 'apps/web/package.json',
+      projectPath: 'apps/web',
+      reader,
+      repository: 'repo',
+    });
+
+    expect(signals.readme.projectRelevance).toEqual({
+      found: false,
+      reasons: [],
     });
   });
 

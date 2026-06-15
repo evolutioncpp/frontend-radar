@@ -129,6 +129,10 @@ const createSignals = (overrides: Partial<RepositorySignals> = {}): RepositorySi
     isSubstantial: false,
     length: 0,
     path: null,
+    projectRelevance: {
+      found: false,
+      reasons: [],
+    },
   },
   rootPackageJson: {
     dependencies: [],

@@ -29,11 +29,18 @@ export const buildRepositoryPackageSources = (
       source: signals.packageJson.path,
       status: signals.packageJson.exists ? 'found' : 'missing',
     }),
-    sourceFromPathSignal({
+    createSource({
+      description: signals.readme.exists ? undefined : 'README file was not found.',
       id: 'readme',
+      kind: 'file',
       label: 'README',
-      missingDescription: 'README file was not found.',
-      signal: signals.readme,
+      scope: signals.readme.scope ?? 'project',
+      source: signals.readme.path,
+      status: signals.readme.exists
+        ? signals.readme.scope === 'root' && !signals.readme.projectRelevance.found
+          ? 'warning'
+          : 'found'
+        : 'missing',
     }),
     sourceFromPathSignal({
       id: 'env-example',
