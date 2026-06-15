@@ -45,18 +45,20 @@ Install dependencies:
 npm install
 ```
 
-Create local environment files:
+Create local environment files. Choose the command block for your shell.
 
-```bash
-cp apps/api/.env.example apps/api/.env
-cp apps/web/.env.example apps/web/.env
-```
-
-PowerShell alternative:
+Windows PowerShell:
 
 ```powershell
 Copy-Item apps/api/.env.example apps/api/.env
 Copy-Item apps/web/.env.example apps/web/.env
+```
+
+macOS, Linux or Git Bash:
+
+```bash
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env
 ```
 
 Start PostgreSQL and prepare the database:
@@ -112,6 +114,20 @@ Recommended fine-grained token permissions:
 | `npm run scss:types -w apps/web` | Regenerate SCSS module typings |
 
 ## Project Structure
+
+The web app follows Feature-Sliced Design principles:
+
+```text
+apps/web/src/
+  app/       application providers, store, layouts and global styles
+  pages/     route-level screens
+  widgets/   composed page blocks
+  features/  user-facing interactions and feature logic
+  entities/  domain entities and API adapters
+  shared/    reusable UI, libs, config and low-level infrastructure
+```
+
+The backend is organized by layers: application, domain, analysis, scoring, localization and infrastructure.
 
 ```text
 apps/
