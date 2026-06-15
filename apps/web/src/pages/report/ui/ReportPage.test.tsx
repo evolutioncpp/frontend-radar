@@ -646,7 +646,7 @@ describe('ReportPage', () => {
   });
 
   test('renders completed report', () => {
-    renderReportPage('/dashboard/report/analysis-id');
+    renderReportPage('/report/analysis-id');
 
     expect(
       screen.getByRole('heading', { name: 'Frontend project health overview' }),
@@ -661,7 +661,7 @@ describe('ReportPage', () => {
   });
 
   test('shows up-to-date notice after force refresh without navigation', async () => {
-    renderReportPage('/dashboard/report/analysis-id');
+    renderReportPage('/report/analysis-id');
 
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
 
@@ -683,14 +683,12 @@ describe('ReportPage', () => {
         }),
     });
 
-    renderReportPageWithLocation('/dashboard/report/analysis-id');
+    renderReportPageWithLocation('/report/analysis-id');
 
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
 
     await waitFor(() => {
-      expect(screen.getByTestId('location')).toHaveTextContent(
-        '/dashboard/report/next-analysis-id',
-      );
+      expect(screen.getByTestId('location')).toHaveTextContent('/report/next-analysis-id');
     });
   });
 
@@ -746,7 +744,7 @@ describe('ReportPage', () => {
       isLoading: false,
     });
 
-    renderReportPage('/dashboard/report/analysis-id');
+    renderReportPage('/report/analysis-id');
 
     expect(
       screen.getByRole('heading', { name: 'Changes since previous report' }),
@@ -756,7 +754,7 @@ describe('ReportPage', () => {
   });
 
   test('requests manual comparison baseline from query string', () => {
-    renderReportPage('/dashboard/report/analysis-id?compareWith=previous-analysis-id');
+    renderReportPage('/report/analysis-id?compareWith=previous-analysis-id');
 
     expect(apiMocks.getReportComparison).toHaveBeenCalledWith(
       {
@@ -792,7 +790,7 @@ describe('ReportPage', () => {
       isLoading: false,
     });
 
-    renderReportPage('/dashboard/report/analysis-id?compareWith=previous-analysis-id');
+    renderReportPage('/report/analysis-id?compareWith=previous-analysis-id');
 
     expect(
       screen.getByRole('heading', { name: 'Comparison with selected run' }),
@@ -814,7 +812,7 @@ describe('ReportPage', () => {
       isLoading: false,
     });
 
-    renderReportPage('/dashboard/report/analysis-id?compareWith=previous-analysis-id');
+    renderReportPage('/report/analysis-id?compareWith=previous-analysis-id');
 
     expect(screen.getByRole('heading', { name: 'Comparison unavailable' })).toBeInTheDocument();
     expect(
@@ -824,7 +822,7 @@ describe('ReportPage', () => {
 
   test('renders completed reuse notice from navigation state', () => {
     renderReportPage({
-      pathname: '/dashboard/report/analysis-id',
+      pathname: '/report/analysis-id',
       state: {
         reportAnalysisReuseReason: 'completed',
       },
@@ -841,7 +839,7 @@ describe('ReportPage', () => {
       isLoading: true,
     });
 
-    renderReportPage('/dashboard/report/analysis-id');
+    renderReportPage('/report/analysis-id');
 
     expect(screen.getByRole('heading', { name: 'Loading report' })).toBeInTheDocument();
     expect(screen.getByText(/checking the analysis status/i)).toBeInTheDocument();
@@ -858,7 +856,7 @@ describe('ReportPage', () => {
       isLoading: false,
     });
 
-    renderReportPage('/dashboard/report/analysis-id');
+    renderReportPage('/report/analysis-id');
 
     expect(screen.getByRole('heading', { name: 'Analysis in progress' })).toBeInTheDocument();
     expect(screen.getByText(/being assembled/i)).toBeInTheDocument();
@@ -889,7 +887,7 @@ describe('ReportPage', () => {
       isLoading: false,
     });
 
-    renderReportPage('/dashboard/report/analysis-id');
+    renderReportPage('/report/analysis-id');
 
     expect(screen.getByRole('heading', { name: 'Analysis is queued' })).toBeInTheDocument();
     expect(screen.getByText('abc123')).toBeInTheDocument();
@@ -918,7 +916,7 @@ describe('ReportPage', () => {
         isLoading: false,
       });
 
-      renderReportPage('/dashboard/report/analysis-id');
+      renderReportPage('/report/analysis-id');
 
       expect(screen.getByText(/taking longer than usual/i)).toBeInTheDocument();
     } finally {
@@ -935,7 +933,7 @@ describe('ReportPage', () => {
       isLoading: false,
     });
 
-    renderReportPage('/dashboard/report/unknown');
+    renderReportPage('/report/unknown');
 
     expect(
       screen.getByRole('heading', { name: 'Frontend project health overview' }),
@@ -956,7 +954,7 @@ describe('ReportPage', () => {
       isLoading: false,
     });
 
-    renderReportPage('/dashboard/report/analysis-id');
+    renderReportPage('/report/analysis-id');
 
     expect(screen.getByRole('heading', { name: 'Report could not be loaded' })).toBeInTheDocument();
     expect(screen.getByText(/could not load this report/i)).toBeInTheDocument();
@@ -975,7 +973,7 @@ describe('ReportPage', () => {
       isLoading: false,
     });
 
-    renderReportPage('/dashboard/report/analysis-id');
+    renderReportPage('/report/analysis-id');
 
     expect(
       screen.getByRole('heading', { name: 'Frontend Radar API is unavailable' }),
@@ -999,7 +997,7 @@ describe('ReportPage', () => {
       isLoading: false,
     });
 
-    renderReportPage('/dashboard/report/analysis-id');
+    renderReportPage('/report/analysis-id');
 
     expect(screen.getByRole('heading', { name: 'Could not reach GitHub' })).toBeInTheDocument();
     expect(screen.getByText(/GitHub API did not respond/i)).toBeInTheDocument();
@@ -1024,7 +1022,7 @@ describe('ReportPage', () => {
       isLoading: false,
     });
 
-    renderReportPage('/dashboard/report/analysis-id');
+    renderReportPage('/report/analysis-id');
 
     expect(screen.getByRole('heading', { name: 'Branch was not found' })).toBeInTheDocument();
     expect(screen.getByText(/selected branch is no longer available/i)).toBeInTheDocument();
@@ -1045,7 +1043,7 @@ describe('ReportPage', () => {
       isLoading: false,
     });
 
-    renderReportPage('/dashboard/report/analysis-id');
+    renderReportPage('/report/analysis-id');
 
     fireEvent.click(screen.getByRole('button', { name: 'Start a new analysis' }));
 

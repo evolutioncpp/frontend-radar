@@ -31,50 +31,50 @@
     "reportAria": "Dashboard report",
     "analysisInfo": {
       "title": "How the analysis works",
-      "description": "The report is assembled from repository data that can be checked consistently: project files, package metadata, quality tooling and delivery configuration.",
+      "description": "The report is assembled from repository data, bounded source scans, workflow checks and the metric set enabled in settings.",
       "steps": {
         "repository": {
-          "title": "Read the repository context",
-          "description": "Frontend Radar starts with the repository structure, package metadata, default branch, license, README and other files that describe how the project is maintained.",
+          "title": "Read the repository and frontend path",
+          "description": "Frontend Radar starts with GitHub metadata, the selected branch, package metadata and project files that describe the frontend entry point.",
           "detailsTitle": "Used as input",
           "details": {
             "package": "package.json",
+            "path": "Frontend path",
             "readme": "README",
-            "license": "License",
-            "branch": "Default branch"
+            "branch": "Branch and commit"
           }
         },
         "signals": {
-          "title": "Detect frontend quality signals",
-          "description": "The analyzer looks for scripts, TypeScript and bundler setup, linting, formatting, testing, CI/CD, dependency metadata and documentation coverage.",
+          "title": "Scan source code and configs",
+          "description": "The analyzer reads a bounded set of source, test and config files to detect TypeScript quality, test coverage and maintainability signals.",
           "detailsTitle": "Checked signals",
           "details": {
-            "scripts": "Project scripts",
-            "typescript": "TypeScript and bundler setup",
-            "quality": "Linting, formatting and tests",
-            "delivery": "CI/CD configuration"
+            "source": "Source files",
+            "typescript": "TypeScript configs",
+            "tests": "Tests and coverage",
+            "codeHealth": "Code health hints"
           }
         },
         "metrics": {
-          "title": "Build the score breakdown",
-          "description": "Signals are grouped into report sections so the result shows not only the final health score, but also which areas are strong and which need attention.",
-          "detailsTitle": "Report output",
+          "title": "Check delivery and security signals",
+          "description": "Frontend Radar checks dependency hygiene, GitHub Actions workflows and basic secret hygiene before building the final score.",
+          "detailsTitle": "Extra checks",
           "details": {
-            "score": "Health score",
-            "metrics": "Quality metrics",
-            "checks": "Project checks",
-            "statuses": "Status labels"
+            "dependencies": "Lockfiles and package manager",
+            "ci": "CI install, lint, test and build",
+            "security": "Secrets, env files and gitignore",
+            "settings": "Enabled metrics from settings"
           }
         },
         "recommendations": {
-          "title": "Prioritize next steps",
-          "description": "The final report turns weak signals into practical recommendations, ordered by impact on project maintainability and delivery readiness.",
-          "detailsTitle": "Recommendation logic",
+          "title": "Build the score and next steps",
+          "description": "The final report explains the weighted score and turns weak checks into practical recommendations with impact and effort labels.",
+          "detailsTitle": "Report output",
           "details": {
-            "high": "High priority",
-            "medium": "Medium priority",
-            "low": "Low priority",
-            "impact": "Impact on maintainability"
+            "score": "Weighted health score",
+            "reasons": "Reasons behind each metric",
+            "actions": "Actionable recommendations",
+            "history": "History and comparison"
           }
         }
       }

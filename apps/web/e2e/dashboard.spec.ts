@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 import { createE2eProjectReport } from './fixtures/projectReport';
 
 test('opens dashboard analysis page', async ({ page }) => {
-  await page.goto('/dashboard');
+  await page.goto('/');
 
   await expect(
     page.getByRole('heading', { name: /Frontend project health overview/i }),
@@ -36,7 +36,7 @@ test('opens completed report page', async ({ page }) => {
     });
   });
 
-  await page.goto('/dashboard/report/analysis-id');
+  await page.goto('/report/analysis-id');
 
   await expect(
     page.getByRole('heading', { name: /Frontend project health overview/i }),

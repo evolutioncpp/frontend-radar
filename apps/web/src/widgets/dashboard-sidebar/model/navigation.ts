@@ -25,11 +25,11 @@ export const dashboardNavigationItems: DashboardNavigationItem[] = [
     end: true,
   },
   {
-    to: AppRoutes.DASHBOARD_HISTORY,
+    to: AppRoutes.HISTORY,
     icon: 'history',
   },
   {
-    to: AppRoutes.DASHBOARD_SETTINGS,
+    to: AppRoutes.SETTINGS,
     icon: 'settings',
   },
 ];

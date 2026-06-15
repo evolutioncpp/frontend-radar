@@ -98,7 +98,10 @@ describe('RouteErrorPage', () => {
 
     expect(screen.getByRole('button', { name: 'Go back' })).toBeInTheDocument();
 
-    expect(screen.getByRole('link', { name: 'Go home' })).toHaveAttribute('href', AppRoutes.HOME);
+    expect(screen.getByRole('link', { name: 'Go home' })).toHaveAttribute(
+      'href',
+      AppRoutes.DASHBOARD,
+    );
   });
 
   test('renders error details in dev mode', () => {

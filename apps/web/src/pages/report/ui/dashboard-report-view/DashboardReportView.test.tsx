@@ -322,7 +322,7 @@ const customReport: ProjectReport = {
 
 const renderDashboardReportView = (report: ProjectReport) => {
   return render(
-    <MemoryRouter initialEntries={['/dashboard/report/demo']}>
+    <MemoryRouter initialEntries={['/report/demo']}>
       <DashboardReportView report={report} />
     </MemoryRouter>,
   );

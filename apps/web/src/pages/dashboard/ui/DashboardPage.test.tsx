@@ -45,39 +45,39 @@ vi.mock('react-i18next', () => ({
           'Analyze repository quality, tooling, testing, documentation and delivery readiness in a single dashboard.',
         'page.analysisInfo.title': 'How the analysis works',
         'page.analysisInfo.description':
-          'The report is assembled from repository data that can be checked consistently: project files, package metadata, quality tooling and delivery configuration.',
-        'page.analysisInfo.steps.repository.title': 'Read the repository context',
+          'The report is assembled from repository data, bounded source scans, workflow checks and the metric set enabled in settings.',
+        'page.analysisInfo.steps.repository.title': 'Read the repository and frontend path',
         'page.analysisInfo.steps.repository.description':
-          'Frontend Radar starts with the repository structure, package metadata, default branch, license, README and other files that describe how the project is maintained.',
+          'Frontend Radar starts with GitHub metadata, the selected branch, package metadata and project files that describe the frontend entry point.',
         'page.analysisInfo.steps.repository.detailsTitle': 'Used as input',
         'page.analysisInfo.steps.repository.details.package': 'package.json',
+        'page.analysisInfo.steps.repository.details.path': 'Frontend path',
         'page.analysisInfo.steps.repository.details.readme': 'README',
-        'page.analysisInfo.steps.repository.details.license': 'License',
-        'page.analysisInfo.steps.repository.details.branch': 'Default branch',
-        'page.analysisInfo.steps.signals.title': 'Detect frontend quality signals',
+        'page.analysisInfo.steps.repository.details.branch': 'Branch and commit',
+        'page.analysisInfo.steps.signals.title': 'Scan source code and configs',
         'page.analysisInfo.steps.signals.description':
-          'The analyzer looks for scripts, TypeScript and bundler setup, linting, formatting, testing, CI/CD, dependency metadata and documentation coverage.',
+          'The analyzer reads a bounded set of source, test and config files to detect TypeScript quality, test coverage and maintainability signals.',
         'page.analysisInfo.steps.signals.detailsTitle': 'Checked signals',
-        'page.analysisInfo.steps.signals.details.scripts': 'Project scripts',
-        'page.analysisInfo.steps.signals.details.typescript': 'TypeScript and bundler setup',
-        'page.analysisInfo.steps.signals.details.quality': 'Linting, formatting and tests',
-        'page.analysisInfo.steps.signals.details.delivery': 'CI/CD configuration',
-        'page.analysisInfo.steps.metrics.title': 'Build the score breakdown',
+        'page.analysisInfo.steps.signals.details.source': 'Source files',
+        'page.analysisInfo.steps.signals.details.typescript': 'TypeScript configs',
+        'page.analysisInfo.steps.signals.details.tests': 'Tests and coverage',
+        'page.analysisInfo.steps.signals.details.codeHealth': 'Code health hints',
+        'page.analysisInfo.steps.metrics.title': 'Check delivery and security signals',
         'page.analysisInfo.steps.metrics.description':
-          'Signals are grouped into report sections so the result shows not only the final health score, but also which areas are strong and which need attention.',
-        'page.analysisInfo.steps.metrics.detailsTitle': 'Report output',
-        'page.analysisInfo.steps.metrics.details.score': 'Health score',
-        'page.analysisInfo.steps.metrics.details.metrics': 'Quality metrics',
-        'page.analysisInfo.steps.metrics.details.checks': 'Project checks',
-        'page.analysisInfo.steps.metrics.details.statuses': 'Status labels',
-        'page.analysisInfo.steps.recommendations.title': 'Prioritize next steps',
+          'Frontend Radar checks dependency hygiene, GitHub Actions workflows and basic secret hygiene before building the final score.',
+        'page.analysisInfo.steps.metrics.detailsTitle': 'Extra checks',
+        'page.analysisInfo.steps.metrics.details.dependencies': 'Lockfiles and package manager',
+        'page.analysisInfo.steps.metrics.details.ci': 'CI install, lint, test and build',
+        'page.analysisInfo.steps.metrics.details.security': 'Secrets, env files and gitignore',
+        'page.analysisInfo.steps.metrics.details.settings': 'Enabled metrics from settings',
+        'page.analysisInfo.steps.recommendations.title': 'Build the score and next steps',
         'page.analysisInfo.steps.recommendations.description':
-          'The final report turns weak signals into practical recommendations, ordered by impact on project maintainability and delivery readiness.',
-        'page.analysisInfo.steps.recommendations.detailsTitle': 'Recommendation logic',
-        'page.analysisInfo.steps.recommendations.details.high': 'High priority',
-        'page.analysisInfo.steps.recommendations.details.medium': 'Medium priority',
-        'page.analysisInfo.steps.recommendations.details.low': 'Low priority',
-        'page.analysisInfo.steps.recommendations.details.impact': 'Impact on maintainability',
+          'The final report explains the weighted score and turns weak checks into practical recommendations with impact and effort labels.',
+        'page.analysisInfo.steps.recommendations.detailsTitle': 'Report output',
+        'page.analysisInfo.steps.recommendations.details.score': 'Weighted health score',
+        'page.analysisInfo.steps.recommendations.details.reasons': 'Reasons behind each metric',
+        'page.analysisInfo.steps.recommendations.details.actions': 'Actionable recommendations',
+        'page.analysisInfo.steps.recommendations.details.history': 'History and comparison',
 
         'form.label': 'Repository',
         'form.placeholder': 'https://github.com/owner/repo',
@@ -158,7 +158,9 @@ describe('DashboardPage', () => {
     expect(screen.getByLabelText('Repository')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Analyze' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'How the analysis works' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Build the score breakdown' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Check delivery and security signals' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Used as input')).toBeInTheDocument();
     expect(screen.getByText('package.json')).toBeInTheDocument();
   });

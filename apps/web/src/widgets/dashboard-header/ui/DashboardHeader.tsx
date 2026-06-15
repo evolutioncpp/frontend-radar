@@ -61,7 +61,7 @@ export const DashboardHeader = ({
           <MobileToggleIcon aria-hidden="true" className={s.toggleIcon} strokeWidth={2} />
         </Button>
 
-        <Link className={s.logo} to={AppRoutes.HOME}>
+        <Link className={s.logo} to={AppRoutes.DASHBOARD}>
           {projectConfig.name}
         </Link>
       </div>

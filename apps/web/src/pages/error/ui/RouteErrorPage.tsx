@@ -78,7 +78,7 @@ export const RouteErrorPage = () => {
             {t('goBack')}
           </Button>
 
-          <Link className={s.secondaryAction} to={AppRoutes.HOME}>
+          <Link className={s.secondaryAction} to={AppRoutes.DASHBOARD}>
             <Home aria-hidden="true" className={s.actionIcon} strokeWidth={2} />
             {t('goHome')}
           </Link>

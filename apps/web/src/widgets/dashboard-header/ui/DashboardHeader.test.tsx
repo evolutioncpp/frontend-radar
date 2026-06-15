@@ -46,7 +46,7 @@ describe('DashboardHeader', () => {
 
     expect(screen.getByRole('link', { name: projectConfig.name })).toHaveAttribute(
       'href',
-      AppRoutes.HOME,
+      AppRoutes.DASHBOARD,
     );
   });
 

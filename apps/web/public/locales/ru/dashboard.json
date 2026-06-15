@@ -31,50 +31,50 @@
     "reportAria": "Отчёт дашборда",
     "analysisInfo": {
       "title": "Как работает анализ",
-      "description": "Отчёт собирается из данных репозитория, которые можно проверять последовательно: файлов проекта, package metadata, quality tooling и конфигурации доставки.",
+      "description": "Отчёт собирается из данных репозитория, ограниченного сканирования исходников, workflow-проверок и набора метрик из настроек.",
       "steps": {
         "repository": {
-          "title": "Считываем контекст репозитория",
-          "description": "Frontend Radar начинает со структуры проекта, package metadata, основной ветки, лицензии, README и других файлов, которые показывают, как проект поддерживается.",
+          "title": "Считываем репозиторий и frontend path",
+          "description": "Frontend Radar начинает с GitHub metadata, выбранной ветки, package metadata и файлов проекта, которые описывают frontend-точку входа.",
           "detailsTitle": "Используем как вход",
           "details": {
             "package": "package.json",
+            "path": "Путь к frontend",
             "readme": "README",
-            "license": "Лицензия",
-            "branch": "Основная ветка"
+            "branch": "Ветка и коммит"
           }
         },
         "signals": {
-          "title": "Ищем frontend-сигналы качества",
-          "description": "Анализатор проверяет scripts, TypeScript и bundler setup, linting, formatting, тесты, CI/CD, dependency metadata и покрытие документацией.",
+          "title": "Сканируем исходники и конфиги",
+          "description": "Анализатор читает ограниченный набор исходников, тестов и config-файлов, чтобы найти сигналы TypeScript quality, coverage и поддерживаемости.",
           "detailsTitle": "Проверяемые сигналы",
           "details": {
-            "scripts": "Project scripts",
-            "typescript": "TypeScript и bundler setup",
-            "quality": "Linting, formatting и тесты",
-            "delivery": "CI/CD configuration"
+            "source": "Исходники",
+            "typescript": "TypeScript configs",
+            "tests": "Тесты и coverage",
+            "codeHealth": "Code health hints"
           }
         },
         "metrics": {
-          "title": "Собираем разбивку оценки",
-          "description": "Сигналы группируются по разделам отчёта, чтобы результат показывал не только итоговую оценку здоровья, но и сильные зоны вместе с проблемными.",
-          "detailsTitle": "На выходе в отчёте",
+          "title": "Проверяем доставку и безопасность",
+          "description": "Frontend Radar проверяет гигиену зависимостей, GitHub Actions workflow и базовую гигиену секретов перед сборкой итоговой оценки.",
+          "detailsTitle": "Дополнительные проверки",
           "details": {
-            "score": "Health score",
-            "metrics": "Метрики качества",
-            "checks": "Проверки проекта",
-            "statuses": "Статусы"
+            "dependencies": "Lockfile и package manager",
+            "ci": "CI install, lint, test и build",
+            "security": "Секреты, env-файлы и gitignore",
+            "settings": "Метрики из настроек"
           }
         },
         "recommendations": {
-          "title": "Приоритизируем следующие шаги",
-          "description": "Финальный отчёт превращает слабые сигналы в практические рекомендации, отсортированные по влиянию на поддерживаемость и готовность к доставке.",
-          "detailsTitle": "Логика рекомендаций",
+          "title": "Собираем оценку и следующие шаги",
+          "description": "Финальный отчёт объясняет взвешенную оценку и превращает слабые проверки в практические рекомендации с влиянием и сложностью.",
+          "detailsTitle": "На выходе в отчёте",
           "details": {
-            "high": "Высокий приоритет",
-            "medium": "Средний приоритет",
-            "low": "Низкий приоритет",
-            "impact": "Влияние на поддерживаемость"
+            "score": "Взвешенная оценка здоровья",
+            "reasons": "Причины оценки по метрикам",
+            "actions": "Практические рекомендации",
+            "history": "История и сравнение"
           }
         }
       }
