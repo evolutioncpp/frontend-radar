@@ -225,6 +225,41 @@
     "copySectionTitle": "Скопировать ссылку на раздел",
     "copied": "Скопировано"
   },
+  "reportExport": {
+    "button": "Скачать отчет",
+    "buttonAria": "Скачать отчет в Markdown",
+    "title": "Отчет Frontend Radar: {{repository}}",
+    "sections": {
+      "metadata": "Метаданные",
+      "summary": "Сводка",
+      "metrics": "Метрики",
+      "checks": "Проверки",
+      "recommendations": "Рекомендации",
+      "analysisSources": "Источники анализа",
+      "tooling": "Стек проекта"
+    },
+    "fields": {
+      "repository": "Репозиторий",
+      "repositoryUrl": "URL репозитория",
+      "commit": "Коммит",
+      "commitTitle": "Название коммита",
+      "commitDate": "Дата коммита",
+      "reportDate": "Дата отчета",
+      "totalScore": "Итоговая оценка",
+      "score": "Оценка",
+      "status": "Статус",
+      "description": "Описание",
+      "severity": "Приоритет",
+      "impact": "Влияние",
+      "effort": "Сложность",
+      "categories": "Категории",
+      "action": "Действие",
+      "source": "Источник"
+    },
+    "emptyChecks": "Проверок нет.",
+    "emptyAnalysisSources": "Источников анализа нет.",
+    "emptyTooling": "Стек не определен."
+  },
   "analysisDetails": {
     "label": "Детали анализа",
     "title": "Стек проекта и источники",

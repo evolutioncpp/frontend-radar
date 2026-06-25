@@ -1,7 +1,11 @@
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 
-import { getCheckStatusBadgeVariant, type ReportCheck } from '@/entities/report';
+import {
+  getCheckStatusBadgeVariant,
+  reportCheckStatusLabelKeys,
+  type ReportCheck,
+} from '@/entities/report';
 import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
@@ -15,12 +19,6 @@ interface ChecksListProps {
   className?: string;
   headerAction?: ReactNode;
 }
-
-const checkStatusLabelKeys = {
-  passed: 'statuses.passed',
-  warning: 'statuses.warning',
-  failed: 'statuses.failed',
-} as const satisfies Record<ReportCheck['status'], string>;
 
 export const ChecksList = ({ checks, className, headerAction }: ChecksListProps) => {
   const { t } = useTranslation('dashboard');
@@ -38,7 +36,7 @@ export const ChecksList = ({ checks, className, headerAction }: ChecksListProps)
         {checks.map((check) => (
           <li className={s.item} key={check.id}>
             <Badge className={s.status} variant={getCheckStatusBadgeVariant(check.status)}>
-              {t(checkStatusLabelKeys[check.status])}
+              {t(reportCheckStatusLabelKeys[check.status])}
             </Badge>
 
             <div className={s.content}>

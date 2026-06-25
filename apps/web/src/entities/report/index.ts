@@ -44,6 +44,7 @@ export type {
   ScoringCheckSeverity,
   ScoringCheckStatus,
   ToolingItem,
+  ToolingGroup,
   ToolingSource,
   ToolingSourceKind,
   ToolingSourceSection,
@@ -64,6 +65,18 @@ export type {
   ListReportAnalysesApiResponse,
 } from './model/reportApi';
 
+export {
+  reportAnalysisSourceScopeLabelKeys,
+  reportAnalysisSourceStatusLabelKeys,
+  reportCheckStatusLabelKeys,
+  reportRecommendationCategoryLabelKeys,
+  reportRecommendationEffortLabelKeys,
+  reportRecommendationImpactLabelKeys,
+  reportRecommendationSeverityLabelKeys,
+  reportScoreStatusLabelKeys,
+  reportToolingGroupLabelKeys,
+  reportToolingGroupOrder,
+} from './model/reportLabelKeys';
 export {
   getCheckStatusBadgeVariant,
   getRecommendationSeverityBadgeVariant,

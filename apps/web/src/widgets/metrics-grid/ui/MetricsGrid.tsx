@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 import {
   getScoreStatusBadgeVariant,
+  reportScoreStatusLabelKeys,
   ReportScoreDetailsList,
   type ScoreBreakdownItem,
 } from '@/entities/report';
@@ -19,13 +20,6 @@ interface MetricsGridProps {
   metrics: ScoreBreakdownItem[];
   headerAction?: ReactNode;
 }
-
-const scoreStatusLabelKeys = {
-  excellent: 'statuses.excellent',
-  good: 'statuses.good',
-  warning: 'statuses.warning',
-  critical: 'statuses.critical',
-} as const satisfies Record<ScoreBreakdownItem['status'], string>;
 
 export const MetricsGrid = ({ headerAction, metrics }: MetricsGridProps) => {
   const { t } = useTranslation('dashboard');
@@ -55,7 +49,7 @@ export const MetricsGrid = ({ headerAction, metrics }: MetricsGridProps) => {
                   className={s.metricStatus}
                   variant={getScoreStatusBadgeVariant(metric.status)}
                 >
-                  {t(scoreStatusLabelKeys[metric.status])}
+                  {t(reportScoreStatusLabelKeys[metric.status])}
                 </Badge>
 
                 <span

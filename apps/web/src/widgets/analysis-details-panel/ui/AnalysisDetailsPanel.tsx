@@ -2,6 +2,11 @@ import { ChevronDown, FileSearch, Layers3 } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import {
+  reportAnalysisSourceStatusLabelKeys,
+  reportToolingGroupLabelKeys,
+  reportToolingGroupOrder,
+} from '@/entities/report';
 import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
 import { SectionHeader } from '@/shared/ui/SectionHeader';
@@ -22,18 +27,6 @@ interface AnalysisDetailsPanelProps {
   headerAction?: ReactNode;
 }
 
-const toolingGroups = [
-  'packageManager',
-  'frameworks',
-  'bundlers',
-  'testing',
-  'linting',
-  'formatting',
-  'typing',
-  'uiReview',
-  'accessibility',
-] as const satisfies readonly (keyof ProjectReport['tooling'])[];
-
 const sourceScopes = [
   'project',
   'root',
@@ -46,12 +39,6 @@ const statusVariantMap = {
   missing: 'danger',
   warning: 'warning',
 } as const satisfies Record<ReportSignalStatus, 'success' | 'danger' | 'warning'>;
-
-const statusLabelKeys = {
-  found: 'analysisDetails.statuses.found',
-  missing: 'analysisDetails.statuses.missing',
-  warning: 'analysisDetails.statuses.warning',
-} as const satisfies Record<ReportSignalStatus, string>;
 
 const getPrimaryToolingItem = (items: ToolingItem[]) => {
   return (
@@ -90,20 +77,20 @@ export const AnalysisDetailsPanel = ({
         </div>
 
         <dl className={s.toolingGrid}>
-          {toolingGroups.map((group) => {
+          {reportToolingGroupOrder.map((group) => {
             const item = getPrimaryToolingItem(tooling[group]);
             const primarySource = item?.sources[0] ?? null;
 
             return (
               <div className={s.toolingItem} key={group}>
-                <dt>{t(`analysisDetails.tooling.groups.${group}`)}</dt>
+                <dt>{t(reportToolingGroupLabelKeys[group])}</dt>
                 <dd>
                   {item ? (
                     <>
                       <div className={s.toolingTitleRow}>
                         <span className={s.toolingName}>{item.label}</span>
                         <Badge variant={statusVariantMap[item.status]}>
-                          {t(statusLabelKeys[item.status])}
+                          {t(reportAnalysisSourceStatusLabelKeys[item.status])}
                         </Badge>
                       </div>
 
@@ -181,7 +168,7 @@ export const AnalysisDetailsPanel = ({
                         ) : null}
                       </div>
                       <Badge variant={statusVariantMap[source.status]}>
-                        {t(statusLabelKeys[source.status])}
+                        {t(reportAnalysisSourceStatusLabelKeys[source.status])}
                       </Badge>
                     </li>
                   ))}

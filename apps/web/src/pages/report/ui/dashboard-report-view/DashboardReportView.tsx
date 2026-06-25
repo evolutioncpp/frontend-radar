@@ -2,6 +2,7 @@ import { RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { useDashboardSectionsReady } from '@/features/dashboard-section-navigation';
+import { ReportExportButton } from '@/features/report-export';
 import {
   DashboardSectionIds,
   dashboardSectionPageLabelKeys,
@@ -59,18 +60,22 @@ export const DashboardReportView = ({
       >
         <RepositorySummary
           asideAction={
-            onForceRefresh ? (
-              <Button
-                className={s.refreshButton}
-                disabled={isRefreshing}
-                onClick={onForceRefresh}
-                type="button"
-                variant="secondary"
-              >
-                <RefreshCw className={s.refreshIcon} aria-hidden="true" strokeWidth={2} />
-                {isRefreshing ? t('repository.refreshLoading') : t('repository.refresh')}
-              </Button>
-            ) : null
+            <>
+              <ReportExportButton className={s.refreshButton} report={report} />
+
+              {onForceRefresh ? (
+                <Button
+                  className={s.refreshButton}
+                  disabled={isRefreshing}
+                  onClick={onForceRefresh}
+                  type="button"
+                  variant="secondary"
+                >
+                  <RefreshCw className={s.refreshIcon} aria-hidden="true" strokeWidth={2} />
+                  {isRefreshing ? t('repository.refreshLoading') : t('repository.refresh')}
+                </Button>
+              ) : null}
+            </>
           }
           headerAction={<DashboardSectionCopyButton sectionId={DashboardSectionIds.REPOSITORY} />}
           repository={report.repository}

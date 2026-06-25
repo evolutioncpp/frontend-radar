@@ -225,6 +225,41 @@
     "copySectionTitle": "Copy section link",
     "copied": "Copied"
   },
+  "reportExport": {
+    "button": "Download report",
+    "buttonAria": "Download report as Markdown",
+    "title": "Frontend Radar report: {{repository}}",
+    "sections": {
+      "metadata": "Metadata",
+      "summary": "Summary",
+      "metrics": "Metrics",
+      "checks": "Checks",
+      "recommendations": "Recommendations",
+      "analysisSources": "Analysis sources",
+      "tooling": "Project stack"
+    },
+    "fields": {
+      "repository": "Repository",
+      "repositoryUrl": "Repository URL",
+      "commit": "Commit",
+      "commitTitle": "Commit title",
+      "commitDate": "Commit date",
+      "reportDate": "Report date",
+      "totalScore": "Total score",
+      "score": "Score",
+      "status": "Status",
+      "description": "Description",
+      "severity": "Severity",
+      "impact": "Impact",
+      "effort": "Effort",
+      "categories": "Categories",
+      "action": "Action",
+      "source": "Source"
+    },
+    "emptyChecks": "No checks.",
+    "emptyAnalysisSources": "No analysis sources.",
+    "emptyTooling": "No tooling detected."
+  },
   "repository": {
     "label": "Repository",
     "openRepository": "Open repository",

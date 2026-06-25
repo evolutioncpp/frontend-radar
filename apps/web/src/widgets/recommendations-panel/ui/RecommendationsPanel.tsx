@@ -3,6 +3,10 @@ import { useTranslation } from 'react-i18next';
 
 import {
   getRecommendationSeverityBadgeVariant,
+  reportRecommendationCategoryLabelKeys,
+  reportRecommendationEffortLabelKeys,
+  reportRecommendationImpactLabelKeys,
+  reportRecommendationSeverityLabelKeys,
   type ReportRecommendation,
 } from '@/entities/report';
 import { Badge, type BadgeVariant } from '@/shared/ui/Badge';
@@ -19,40 +23,11 @@ interface RecommendationsPanelProps {
   headerAction?: ReactNode;
 }
 
-const recommendationSeverityLabelKeys = {
-  high: 'statuses.high',
-  medium: 'statuses.medium',
-  low: 'statuses.low',
-} as const satisfies Record<ReportRecommendation['severity'], string>;
-
-const recommendationImpactLabelKeys = {
-  key: 'recommendations.impact.key',
-  important: 'recommendations.impact.important',
-  supporting: 'recommendations.impact.supporting',
-} as const satisfies Record<ReportRecommendation['impactLevel'], string>;
-
 const recommendationImpactBadgeVariants = {
   key: 'warning',
   important: 'info',
   supporting: 'default',
 } as const satisfies Record<ReportRecommendation['impactLevel'], BadgeVariant>;
-
-const recommendationEffortLabelKeys = {
-  small: 'recommendations.effort.small',
-  medium: 'recommendations.effort.medium',
-  large: 'recommendations.effort.large',
-} as const satisfies Record<ReportRecommendation['effort'], string>;
-
-const recommendationCategoryLabelKeys = {
-  accessibility: 'recommendations.categories.accessibility',
-  ci: 'recommendations.categories.ci',
-  dependencies: 'recommendations.categories.dependencies',
-  documentation: 'recommendations.categories.documentation',
-  maintainability: 'recommendations.categories.maintainability',
-  performance: 'recommendations.categories.performance',
-  security: 'recommendations.categories.security',
-  testing: 'recommendations.categories.testing',
-} as const satisfies Record<ReportRecommendation['categories'][number], string>;
 
 const recommendationGroupLabelKeys = {
   first: 'recommendations.groups.first',
@@ -120,15 +95,15 @@ export const RecommendationsPanel = ({
                         <Badge
                           variant={getRecommendationSeverityBadgeVariant(recommendation.severity)}
                         >
-                          {t(recommendationSeverityLabelKeys[recommendation.severity])}
+                          {t(reportRecommendationSeverityLabelKeys[recommendation.severity])}
                         </Badge>
                         <Badge
                           variant={recommendationImpactBadgeVariants[recommendation.impactLevel]}
                         >
-                          {t(recommendationImpactLabelKeys[recommendation.impactLevel])}
+                          {t(reportRecommendationImpactLabelKeys[recommendation.impactLevel])}
                         </Badge>
                         <Badge variant="default">
-                          {t(recommendationEffortLabelKeys[recommendation.effort])}
+                          {t(reportRecommendationEffortLabelKeys[recommendation.effort])}
                         </Badge>
                       </div>
 
@@ -140,7 +115,7 @@ export const RecommendationsPanel = ({
                         <div className={s.meta}>
                           {recommendation.categories.map((category) => (
                             <span className={s.category} key={category}>
-                              {t(recommendationCategoryLabelKeys[category])}
+                              {t(reportRecommendationCategoryLabelKeys[category])}
                             </span>
                           ))}
                           {recommendation.source ? (

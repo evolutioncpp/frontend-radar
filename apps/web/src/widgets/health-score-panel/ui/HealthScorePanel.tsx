@@ -1,7 +1,12 @@
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 
-import { getScoreStatus, getScoreStatusBadgeVariant, type ScoreStatus } from '@/entities/report';
+import {
+  getScoreStatus,
+  getScoreStatusBadgeVariant,
+  reportScoreStatusLabelKeys,
+  type ScoreStatus,
+} from '@/entities/report';
 import { normalizeScore } from '@/shared/lib/format-score';
 import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
@@ -24,13 +29,6 @@ const scoreStatusClassMap: Record<ScoreStatus, string> = {
   critical: s.scoreValueCritical,
 };
 
-const scoreStatusLabelKeys = {
-  excellent: 'statuses.excellent',
-  good: 'statuses.good',
-  warning: 'statuses.warning',
-  critical: 'statuses.critical',
-} as const satisfies Record<ScoreStatus, string>;
-
 export const HealthScorePanel = ({ headerAction, score }: HealthScorePanelProps) => {
   const { t } = useTranslation('dashboard');
 
@@ -43,7 +41,7 @@ export const HealthScorePanel = ({ headerAction, score }: HealthScorePanelProps)
         action={headerAction}
         aside={
           <Badge className={s.status} variant={getScoreStatusBadgeVariant(status)}>
-            {t(scoreStatusLabelKeys[status])}
+            {t(reportScoreStatusLabelKeys[status])}
           </Badge>
         }
         label={t('healthScore.label')}

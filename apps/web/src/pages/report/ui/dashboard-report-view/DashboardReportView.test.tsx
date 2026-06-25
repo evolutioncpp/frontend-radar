@@ -1,10 +1,16 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { DashboardReportView } from './DashboardReportView';
 
 import type { ProjectReport } from '@/entities/report';
+
+const downloadFileMock = vi.hoisted(() => vi.fn());
+
+vi.mock('@/shared/lib/download-file', () => ({
+  downloadFile: downloadFileMock,
+}));
 
 const emptyTooling: ProjectReport['tooling'] = {
   accessibility: [],
@@ -42,6 +48,9 @@ const createScoreDetails = (
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
+    i18n: {
+      language: 'en',
+    },
     t: (key: string, options?: Record<string, string | number>) => {
       const translations: Record<string, string> = {
         'page.reportAria': 'Dashboard report',
@@ -54,6 +63,34 @@ vi.mock('react-i18next', () => ({
         'page.sections.recommendations': 'Recommendations',
         'page.copySectionTitle': 'Copy section link',
         'page.copied': 'Copied',
+        'reportExport.button': 'Download report',
+        'reportExport.buttonAria': 'Download report as Markdown',
+        'reportExport.sections.metadata': 'Metadata',
+        'reportExport.sections.summary': 'Summary',
+        'reportExport.sections.metrics': 'Metrics',
+        'reportExport.sections.checks': 'Checks',
+        'reportExport.sections.recommendations': 'Recommendations',
+        'reportExport.sections.analysisSources': 'Analysis sources',
+        'reportExport.sections.tooling': 'Project stack',
+        'reportExport.fields.repository': 'Repository',
+        'reportExport.fields.repositoryUrl': 'Repository URL',
+        'reportExport.fields.commit': 'Commit',
+        'reportExport.fields.commitTitle': 'Commit title',
+        'reportExport.fields.commitDate': 'Commit date',
+        'reportExport.fields.reportDate': 'Report date',
+        'reportExport.fields.totalScore': 'Total score',
+        'reportExport.fields.score': 'Score',
+        'reportExport.fields.status': 'Status',
+        'reportExport.fields.description': 'Description',
+        'reportExport.fields.severity': 'Severity',
+        'reportExport.fields.impact': 'Impact',
+        'reportExport.fields.effort': 'Effort',
+        'reportExport.fields.categories': 'Categories',
+        'reportExport.fields.action': 'Action',
+        'reportExport.fields.source': 'Source',
+        'reportExport.emptyChecks': 'No checks.',
+        'reportExport.emptyAnalysisSources': 'No analysis sources.',
+        'reportExport.emptyTooling': 'No tooling detected.',
 
         'repository.label': 'Repository',
         'repository.openRepository': 'Open repository',
@@ -163,6 +200,10 @@ vi.mock('react-i18next', () => ({
 
       if (key === 'page.copySectionLink') {
         return `Copy link to ${options?.section} section`;
+      }
+
+      if (key === 'reportExport.title') {
+        return `Frontend Radar report: ${options?.repository}`;
       }
 
       if (key === 'scoreDetails.source') {
@@ -329,6 +370,10 @@ const renderDashboardReportView = (report: ProjectReport) => {
 };
 
 describe('DashboardReportView', () => {
+  beforeEach(() => {
+    downloadFileMock.mockClear();
+  });
+
   test('renders report data from props', () => {
     renderDashboardReportView(customReport);
 
@@ -340,5 +385,24 @@ describe('DashboardReportView', () => {
     expect(screen.getByText('Custom check label')).toBeInTheDocument();
     expect(screen.getByText('Custom recommendation title')).toBeInTheDocument();
     expect(screen.queryByText(/evolutioncpp\/frontend-radar/i)).not.toBeInTheDocument();
+  });
+
+  test('exports report to markdown from repository actions', () => {
+    renderDashboardReportView(customReport);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Download report as Markdown' }));
+
+    expect(downloadFileMock).toHaveBeenCalledTimes(1);
+    expect(downloadFileMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filename: 'frontend-radar-acme-custom-dashboard-abc123-2026-06-06.md',
+        mimeType: 'text/markdown;charset=utf-8',
+      }),
+    );
+    expect(downloadFileMock.mock.calls[0]?.[0].content).toContain(
+      '# Frontend Radar report: acme/custom-dashboard',
+    );
+    expect(downloadFileMock.mock.calls[0]?.[0].content).toContain('Custom testing score');
+    expect(downloadFileMock.mock.calls[0]?.[0].content).toContain('Custom recommendation title');
   });
 });

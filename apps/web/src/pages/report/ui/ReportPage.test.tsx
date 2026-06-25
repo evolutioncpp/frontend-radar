@@ -192,6 +192,8 @@ vi.mock('react-i18next', () => ({
         'page.sections.recommendations': 'Recommendations',
         'page.copySectionTitle': 'Copy section link',
         'page.copied': 'Copied',
+        'reportExport.button': 'Download report',
+        'reportExport.buttonAria': 'Download report as Markdown',
 
         'repository.label': 'Repository',
         'repository.openRepository': 'Open repository',
